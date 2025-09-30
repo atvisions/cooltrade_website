@@ -57,11 +57,14 @@
 
 <script setup>
 import { ref, computed, onMounted, provide, markRaw } from 'vue'
+import { useRoute } from 'vue-router'
 import Header from '../common/Header.vue'
 import UserSidebar from '../common/UserSidebar.vue'
 import notification from '../../utils/notification.js'
 import { userAPI } from '../../utils/api.js'
 import { useUserStore } from '../../utils/userStore.js'
+
+const route = useRoute()
 
 // 导入子组件
 import ProfileTab from './tabs/ProfileTab.vue'
@@ -79,8 +82,8 @@ import {
   EyeSlashIcon
 } from '@heroicons/vue/24/outline'
 
-// 当前激活的标签页 - 添加状态持久化
-const activeTab = ref(localStorage.getItem('settings_active_tab') || 'profile')
+// 当前激活的标签页 - 支持 URL 参数
+const activeTab = ref(route.query.tab || localStorage.getItem('settings_active_tab') || 'profile')
 
 // 设置活跃标签页并保存到localStorage
 const setActiveTab = (tabId) => {
@@ -610,14 +613,110 @@ const resetAssessment = () => {
   localStorage.removeItem('risk_assessment_date')
 }
 
-const calculateRiskProfile = () => {
-  const now = new Date().toLocaleDateString()
-  riskAssessmentDate.value = now
+// 从后端加载风险评估数据
+const loadRiskAssessment = async () => {
+  try {
+    const response = await apiRequest(`${API_BASE_URL}/api/auth/risk-assessment/status/`, {
+      method: 'GET'
+    })
 
-  localStorage.setItem('risk_answers', JSON.stringify(riskAnswers.value))
-  localStorage.setItem('risk_assessment_date', now)
+    if (response.status === 'success' && response.data.has_assessment) {
+      const profile = response.data.risk_profile
 
-  notification.success('风险评估完成', '评估成功')
+      // 如果有评估数据，更新日期
+      if (profile.updated_at) {
+        riskAssessmentDate.value = new Date(profile.updated_at).toLocaleDateString('zh-CN')
+      }
+
+      // 如果有问卷答案，恢复答案
+      if (profile.assessment_data && profile.assessment_data.answers) {
+        // 尝试从assessment_data中恢复答案
+        const savedAnswers = profile.assessment_data.answers
+        if (Array.isArray(savedAnswers)) {
+          riskAnswers.value = savedAnswers.map(a => a.answer || a.value || null)
+        }
+      }
+    }
+  } catch (error) {
+    console.error('加载风险评估失败:', error)
+    // 如果API加载失败，尝试从localStorage加载
+    const savedRiskAnswers = localStorage.getItem('risk_answers')
+    if (savedRiskAnswers) {
+      try {
+        riskAnswers.value = JSON.parse(savedRiskAnswers)
+      } catch (e) {
+        console.error('解析localStorage风险评估失败:', e)
+      }
+    }
+
+    const savedRiskDate = localStorage.getItem('risk_assessment_date')
+    if (savedRiskDate) {
+      riskAssessmentDate.value = savedRiskDate
+    }
+  }
+}
+
+const calculateRiskProfile = async () => {
+  try {
+    // 计算风险等级
+    const totalScore = riskAnswers.value.reduce((sum, answer) => sum + (answer || 0), 0)
+    let riskLevel = 'moderate'
+    let riskType = '稳健型'
+    let riskDescription = '追求稳健收益，可承受适度风险'
+
+    if (totalScore <= 4) {
+      riskLevel = 'conservative'
+      riskType = '保守型'
+      riskDescription = '注重资本保值，偏好低风险投资'
+    } else if (totalScore <= 8) {
+      riskLevel = 'moderate'
+      riskType = '稳健型'
+      riskDescription = '追求稳健收益，可承受适度风险'
+    } else {
+      riskLevel = 'aggressive'
+      riskType = '激进型'
+      riskDescription = '追求最高收益，愿意承担高风险'
+    }
+
+    // 准备提交数据
+    const assessmentData = {
+      answers: riskAnswers.value.map((answer, index) => ({
+        questionIndex: index,
+        answer: answer,
+        question: riskQuestions.value[index].question
+      })),
+      risk_profile: {
+        level: riskLevel,
+        type: riskType,
+        description: riskDescription
+      }
+    }
+
+    // 提交到后端API
+    const response = await apiRequest(
+      `${API_BASE_URL}/api/auth/risk-assessment/submit/`,
+      {
+        method: 'POST',
+        body: JSON.stringify(assessmentData)
+      }
+    )
+
+    if (response.status === 'success') {
+      const now = new Date().toLocaleDateString()
+      riskAssessmentDate.value = now
+
+      // 同时保存到localStorage作为备份
+      localStorage.setItem('risk_answers', JSON.stringify(riskAnswers.value))
+      localStorage.setItem('risk_assessment_date', now)
+
+      notification.success('风险评估已保存到服务器', '评估成功')
+    } else {
+      notification.error(response.message || '保存失败', '错误')
+    }
+  } catch (error) {
+    console.error('保存风险评估失败:', error)
+    notification.error(error.message || '保存失败，请重试', '错误')
+  }
 }
 
 const saveTradingPreferences = async () => {
@@ -869,20 +968,8 @@ onMounted(async () => {
     }
   }
 
-  // 加载风险评估数据
-  const savedRiskAnswers = localStorage.getItem('risk_answers')
-  if (savedRiskAnswers) {
-    try {
-      riskAnswers.value = JSON.parse(savedRiskAnswers)
-    } catch (error) {
-      console.error('解析风险评估失败:', error)
-    }
-  }
-
-  const savedRiskDate = localStorage.getItem('risk_assessment_date')
-  if (savedRiskDate) {
-    riskAssessmentDate.value = savedRiskDate
-  }
+  // 加载风险评估数据（从后端API）
+  await loadRiskAssessment()
 
   // 加载交易偏好
   const savedTradingPrefs = localStorage.getItem('trading_preferences')

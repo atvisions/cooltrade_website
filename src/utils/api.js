@@ -24,6 +24,17 @@ export const API_ENDPOINTS = {
   GET_FOLLOWERS: `${API_BASE_URL}/auth/followers/`,
   GET_FOLLOWING: `${API_BASE_URL}/auth/following/`,
 
+  // 积分相关
+  POINTS_CONFIG: `${API_BASE_URL}/auth/points/config/`,
+  POINTS_TRANSACTIONS: `${API_BASE_URL}/auth/points/transactions/`,
+  SPEND_POINTS: `${API_BASE_URL}/auth/points/spend/`,
+  CHECK_PREMIUM_ACCESS: `${API_BASE_URL}/auth/points/check-access/`,
+
+  // 邀请相关
+  GENERATE_INVITATION_CODE: `${API_BASE_URL}/auth/generate-invitation-code/`,
+  INVITATION_INFO: `${API_BASE_URL}/auth/invitation-info/`,
+  USER_RANKING: `${API_BASE_URL}/auth/invitation-info/ranking/`,
+
   // 其他端点可以在这里添加
 }
 

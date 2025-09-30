@@ -1,116 +1,18 @@
 <template>
   <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-    <!-- Header -->
     <Header />
 
-    <!-- Page Header -->
-    <div class="bg-white border-b border-gray-200">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 class="text-4xl font-bold text-gray-900 mb-2">策略市场</h1>
-        <p class="text-gray-600">发现和订阅优质交易策略</p>
+    <div class="max-w-7xl mx-auto pt-20 pb-8 px-4 sm:px-6 lg:px-8">
+      <!-- 页面标题 -->
+      <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">合约策略市场</h1>
+        <p class="text-gray-600 mt-2">发现和订阅优质交易策略</p>
       </div>
-    </div>
 
-    <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div class="grid lg:grid-cols-4 gap-8">
-        <!-- Sidebar Filters -->
-        <div class="lg:col-span-1">
-          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 sticky top-8">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">筛选条件</h3>
-
-            <!-- Category Filter -->
-            <div class="mb-6">
-              <label class="block text-sm font-medium text-gray-700 mb-2">策略类型</label>
-              <div class="space-y-2">
-                <label v-for="cat in categories" :key="cat.value" class="flex items-center">
-                  <input
-                    type="checkbox"
-                    v-model="selectedCategories"
-                    :value="cat.value"
-                    class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span class="ml-2 text-sm text-gray-700">{{ cat.label }}</span>
-                </label>
-              </div>
-            </div>
-
-            <!-- Risk Level Filter -->
-            <div class="mb-6">
-              <label class="block text-sm font-medium text-gray-700 mb-2">风险等级</label>
-              <div class="space-y-2">
-                <label v-for="risk in riskLevels" :key="risk.value" class="flex items-center">
-                  <input
-                    type="checkbox"
-                    v-model="selectedRisks"
-                    :value="risk.value"
-                    class="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span class="ml-2 text-sm text-gray-700">{{ risk.label }}</span>
-                </label>
-              </div>
-            </div>
-
-            <!-- Return Range Filter -->
-            <div class="mb-6">
-              <label class="block text-sm font-medium text-gray-700 mb-2">收益率范围</label>
-              <select v-model="returnRange" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="all">全部</option>
-                <option value="0-10">0% - 10%</option>
-                <option value="10-30">10% - 30%</option>
-                <option value="30-50">30% - 50%</option>
-                <option value="50+">50%+</option>
-              </select>
-            </div>
-
-            <!-- Status Filter -->
-            <div class="mb-6">
-              <label class="block text-sm font-medium text-gray-700 mb-2">状态</label>
-              <div class="space-y-2">
-                <label class="flex items-center">
-                  <input
-                    type="radio"
-                    v-model="statusFilter"
-                    value="all"
-                    class="border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span class="ml-2 text-sm text-gray-700">全部</span>
-                </label>
-                <label class="flex items-center">
-                  <input
-                    type="radio"
-                    v-model="statusFilter"
-                    value="active"
-                    class="border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span class="ml-2 text-sm text-gray-700">运行中</span>
-                </label>
-                <label class="flex items-center">
-                  <input
-                    type="radio"
-                    v-model="statusFilter"
-                    value="stopped"
-                    class="border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span class="ml-2 text-sm text-gray-700">已停止</span>
-                </label>
-              </div>
-            </div>
-
-            <button
-              @click="resetFilters"
-              class="w-full py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
-            >
-              重置筛选
-            </button>
-          </div>
-        </div>
-
-        <!-- Main Content -->
-        <div class="lg:col-span-3">
-          <!-- Search and Sort -->
-          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-            <div class="flex flex-wrap items-center gap-4">
+          <!-- 搜索和筛选 -->
+          <div class="bg-white rounded-2xl border border-gray-200 p-6 mb-6">
+            <div class="flex items-center gap-4 flex-wrap">
+              <!-- 搜索框 -->
               <div class="flex-1 min-w-[300px]">
                 <div class="relative">
                   <input
@@ -124,25 +26,49 @@
                   </svg>
                 </div>
               </div>
-              
-              <select v-model="sortBy" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="popular">最受欢迎</option>
-                <option value="return">收益率</option>
-                <option value="winRate">胜率</option>
-                <option value="trades">交易次数</option>
-                <option value="recent">最新发布</option>
-              </select>
+
+              <!-- 风险等级筛选 -->
+              <div>
+                <select v-model="filterRisk" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="">全部风险</option>
+                  <option value="low">低风险</option>
+                  <option value="medium">中风险</option>
+                  <option value="high">高风险</option>
+                </select>
+              </div>
+
+              <!-- 策略类型筛选 -->
+              <div>
+                <select v-model="filterCategory" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="">全部类型</option>
+                  <option value="grid">网格交易</option>
+                  <option value="trend">趋势跟踪</option>
+                  <option value="arbitrage">套利</option>
+                  <option value="dca">定投</option>
+                  <option value="swing">波段交易</option>
+                </select>
+              </div>
+
+              <!-- 排序 -->
+              <div>
+                <select v-model="sortBy" class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="popular">最受欢迎</option>
+                  <option value="return">收益率</option>
+                  <option value="winRate">胜率</option>
+                  <option value="recent">最新发布</option>
+                </select>
+              </div>
             </div>
           </div>
 
-          <!-- Strategy Cards -->
+          <!-- 策略列表 -->
           <div class="space-y-6">
             <div
               v-for="strategy in filteredStrategies"
               :key="strategy.id"
-              class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-all"
+              class="bg-white rounded-xl border-2 border-gray-200 p-6 hover:border-blue-300 hover:shadow-lg transition-all duration-200"
             >
-              <!-- Header -->
+              <!-- 头部 -->
               <div class="flex items-start justify-between mb-4">
                 <div class="flex-1">
                   <div class="flex items-center space-x-3 mb-2">
@@ -178,7 +104,7 @@
                 </span>
               </div>
 
-              <!-- Stats -->
+              <!-- 统计数据 -->
               <div class="grid grid-cols-5 gap-4 mb-4 p-4 bg-gray-50 rounded-lg">
                 <div>
                   <div class="text-xs text-gray-500 mb-1">收益率</div>
@@ -204,7 +130,7 @@
                 </div>
               </div>
 
-              <!-- Actions -->
+              <!-- 操作按钮 -->
               <div class="flex items-center space-x-3">
                 <button class="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
                   查看详情
@@ -221,27 +147,12 @@
             </div>
           </div>
 
-          <!-- Empty State -->
-          <div v-if="filteredStrategies.length === 0" class="text-center py-16">
+          <!-- 空状态 -->
+          <div v-if="filteredStrategies.length === 0" class="bg-white rounded-2xl border border-gray-200 p-12 text-center">
             <div class="text-6xl mb-4">📊</div>
             <h3 class="text-xl font-semibold text-gray-900 mb-2">暂无策略</h3>
             <p class="text-gray-600">尝试调整搜索条件或筛选器</p>
           </div>
-
-          <!-- Pagination -->
-          <div v-if="filteredStrategies.length > 0" class="mt-8 flex items-center justify-center space-x-2">
-            <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50" disabled>
-              上一页
-            </button>
-            <button class="px-4 py-2 bg-blue-600 text-white rounded-lg">1</button>
-            <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">2</button>
-            <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">3</button>
-            <button class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-              下一页
-            </button>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </template>
@@ -250,31 +161,11 @@
 import { ref, computed } from 'vue'
 import Header from '../common/Header.vue'
 
-// 响应式数据
 const searchQuery = ref('')
 const sortBy = ref('popular')
-const selectedCategories = ref([])
-const selectedRisks = ref([])
-const returnRange = ref('all')
-const statusFilter = ref('all')
+const filterRisk = ref('')
+const filterCategory = ref('')
 
-// 筛选选项
-const categories = [
-  { value: 'grid', label: '网格交易' },
-  { value: 'trend', label: '趋势跟踪' },
-  { value: 'arbitrage', label: '套利' },
-  { value: 'dca', label: '定投' },
-  { value: 'swing', label: '波段交易' },
-  { value: 'scalping', label: '剥头皮' }
-]
-
-const riskLevels = [
-  { value: 'low', label: '低风险' },
-  { value: 'medium', label: '中风险' },
-  { value: 'high', label: '高风险' }
-]
-
-// 模拟策略数据
 const strategies = ref([
   { id: 1, name: 'BTC网格交易策略', description: '适合震荡市场的BTC网格交易策略，自动低买高卖，稳定获利', author: 'CryptoMaster', category: 'grid', risk: 'low', status: 'active', return: 23.5, trades: 156, winRate: 68, maxDrawdown: 8.5, sharpeRatio: 1.8, subscribers: 234 },
   { id: 2, name: 'ETH趋势跟踪策略', description: '基于移动平均线的ETH趋势跟踪策略，捕捉大趋势', author: 'QuantTrader', category: 'trend', risk: 'medium', status: 'active', return: 45.2, trades: 89, winRate: 72, maxDrawdown: 15.2, sharpeRatio: 2.1, subscribers: 567 },
@@ -284,59 +175,29 @@ const strategies = ref([
   { id: 6, name: '多币种网格策略', description: '同时运行多个币种的网格策略，分散风险', author: 'SmartContract', category: 'grid', risk: 'medium', status: 'active', return: 34.6, trades: 123, winRate: 58, maxDrawdown: 12.4, sharpeRatio: 1.9, subscribers: 456 }
 ])
 
-// 计算属性 - 过滤后的策略
 const filteredStrategies = computed(() => {
   let result = strategies.value
-
-  // 搜索过滤
   if (searchQuery.value) {
     result = result.filter(s =>
       s.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
       s.description.toLowerCase().includes(searchQuery.value.toLowerCase())
     )
   }
-
-  // 类型过滤
-  if (selectedCategories.value.length > 0) {
-    result = result.filter(s => selectedCategories.value.includes(s.category))
+  if (filterRisk.value) {
+    result = result.filter(s => s.risk === filterRisk.value)
   }
-
-  // 风险过滤
-  if (selectedRisks.value.length > 0) {
-    result = result.filter(s => selectedRisks.value.includes(s.risk))
+  if (filterCategory.value) {
+    result = result.filter(s => s.category === filterCategory.value)
   }
-
-  // 收益率过滤
-  if (returnRange.value !== 'all') {
-    const [min, max] = returnRange.value.split('-').map(v => v === '+' ? Infinity : parseFloat(v))
-    result = result.filter(s => s.return >= min && (max ? s.return <= max : true))
-  }
-
-  // 状态过滤
-  if (statusFilter.value !== 'all') {
-    result = result.filter(s => s.status === statusFilter.value)
-  }
-
-  // 排序
   if (sortBy.value === 'return') {
     result = [...result].sort((a, b) => b.return - a.return)
   } else if (sortBy.value === 'winRate') {
     result = [...result].sort((a, b) => b.winRate - a.winRate)
-  } else if (sortBy.value === 'trades') {
-    result = [...result].sort((a, b) => b.trades - a.trades)
+  } else if (sortBy.value === 'popular') {
+    result = [...result].sort((a, b) => b.subscribers - a.subscribers)
   }
-
   return result
 })
-
-// 方法
-const resetFilters = () => {
-  selectedCategories.value = []
-  selectedRisks.value = []
-  returnRange.value = 'all'
-  statusFilter.value = 'all'
-  searchQuery.value = ''
-}
 
 const getRiskLabel = (risk) => {
   const labels = { low: '低风险', medium: '中风险', high: '高风险' }
@@ -344,8 +205,13 @@ const getRiskLabel = (risk) => {
 }
 
 const getCategoryLabel = (category) => {
-  const cat = categories.find(c => c.value === category)
-  return cat ? cat.label : category
+  const labels = {
+    grid: '网格交易',
+    trend: '趋势跟踪',
+    arbitrage: '套利',
+    dca: '定投',
+    swing: '波段交易'
+  }
+  return labels[category] || category
 }
 </script>
-

@@ -14,6 +14,9 @@ import OrdersPage from '../components/user/OrdersPage.vue'
 import SubscriptionsPage from '../components/user/SubscriptionsPage.vue'
 import FollowingPage from '../components/user/FollowingPage.vue'
 import NotificationsPage from '../components/user/NotificationsPage.vue'
+import axios from 'axios'
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
 const routes = [
   {
@@ -39,6 +42,30 @@ const routes = [
     name: 'Strategies',
     component: StrategiesPage,
     meta: { requiresAuth: false }
+  },
+  {
+    path: '/my-strategies',
+    name: 'MyStrategies',
+    component: () => import('../components/strategies/MyStrategiesPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/trading',
+    name: 'Trading',
+    component: () => import('../components/trading/TradingPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/membership',
+    name: 'Membership',
+    component: () => import('../components/membership/MembershipPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/points',
+    name: 'Points',
+    component: () => import('../components/points/PointsPage.vue'),
+    meta: { requiresAuth: true }
   },
   {
     path: '/dashboard',
@@ -121,23 +148,75 @@ const router = createRouter({
   routes
 })
 
+// 检查用户是否完成风险评估
+async function checkRiskAssessment() {
+  const token = localStorage.getItem('auth_token')
+  console.log('[风险评估检查] Token:', token ? '存在' : '不存在')
+
+  if (!token) return false
+
+  try {
+    console.log('[风险评估检查] 开始调用API...')
+    const response = await axios.get(`${API_BASE_URL}/api/auth/risk-assessment/status/`, {
+      headers: {
+        'Authorization': `Token ${token}`
+      }
+    })
+    console.log('[风险评估检查] API响应:', response.data)
+    const hasAssessment = response.data?.data?.has_assessment || false
+    console.log('[风险评估检查] 是否完成评估:', hasAssessment)
+    return hasAssessment
+  } catch (error) {
+    console.error('[风险评估检查] API调用失败:', error)
+    return false
+  }
+}
+
 // 路由守卫
-router.beforeEach((to, _from, next) => {
-  // 检查用户是否已登录（这里使用localStorage模拟）
+router.beforeEach(async (to, _from, next) => {
+  // 检查用户是否已登录
   const isAuthenticated = localStorage.getItem('auth_token')
 
+  // 1. 未登录用户访问需要认证的页面，跳转到登录页
   if (to.meta.requiresAuth && !isAuthenticated) {
-    // 需要登录但未登录，跳转到登录页
     next('/auth')
-  } else if (to.meta.requiresGuest && isAuthenticated) {
-    // 已登录用户访问登录页，跳转到仪表板
-    next('/dashboard')
-  } else if (to.path === '/' && isAuthenticated) {
-    // 已登录用户访问首页，跳转到仪表板
-    next('/dashboard')
-  } else {
-    next()
+    return
   }
+
+  // 2. 已登录用户访问登录/注册页，跳转到首页（会触发后续的风险评估检查）
+  if (to.meta.requiresGuest && isAuthenticated) {
+    next('/')
+    return
+  }
+
+  // 3. 已登录用户访问需要认证的页面（除了风险评估页面本身）
+  if (isAuthenticated && to.meta.requiresAuth && to.path !== '/risk-assessment') {
+    // 检查是否完成风险评估
+    const hasAssessment = await checkRiskAssessment()
+    if (!hasAssessment) {
+      // 未完成风险评估，跳转到风险评估页面
+      console.log('用户未完成风险评估，跳转到风险评估页面')
+      next('/risk-assessment')
+      return
+    }
+  }
+
+  // 4. 已登录用户访问首页，检查风险评估后跳转到仪表板
+  if (to.path === '/' && isAuthenticated) {
+    // 先检查风险评估
+    const hasAssessment = await checkRiskAssessment()
+    if (!hasAssessment) {
+      console.log('用户未完成风险评估，跳转到风险评估页面')
+      next('/risk-assessment')
+      return
+    }
+    // 已完成风险评估，跳转到仪表板
+    next('/dashboard')
+    return
+  }
+
+  // 5. 其他情况，正常放行
+  next()
 })
 
 export default router

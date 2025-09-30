@@ -1,0 +1,518 @@
+<template>
+  <div class="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <!-- 侧边栏 -->
+    <Sidebar activeItem="profile" />
+
+    <!-- 主内容区域 -->
+    <main class="ml-64 min-h-screen">
+      <!-- 加载状态 -->
+      <div v-if="loading" class="flex items-center justify-center h-screen">
+        <div class="text-center">
+          <div class="animate-spin rounded-full h-16 w-16 border-4 border-blue-500 border-t-transparent mx-auto mb-4"></div>
+          <p class="text-gray-600 font-medium">加载中...</p>
+        </div>
+      </div>
+
+      <!-- 用户不存在或私密 -->
+      <div v-else-if="!userProfile" class="flex items-center justify-center h-screen">
+        <div class="text-center bg-white rounded-2xl shadow-xl p-12 max-w-md mx-4">
+          <div class="w-20 h-20 bg-gradient-to-br from-red-100 to-red-200 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg class="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+            </svg>
+          </div>
+          <h2 class="text-2xl font-bold text-gray-900 mb-3">无法访问此主页</h2>
+          <p class="text-gray-600 mb-6">该用户不存在或已将主页设置为私密</p>
+          <router-link to="/" class="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
+            返回首页
+          </router-link>
+        </div>
+      </div>
+
+      <!-- 用户主页内容 -->
+      <div v-else class="pb-12">
+        <!-- 现代化头部区域 -->
+        <div class="relative">
+          <!-- 背景装饰 -->
+          <div class="h-80 bg-gradient-to-br from-blue-600 via-purple-600 to-pink-600 relative overflow-hidden">
+            <div class="absolute inset-0 bg-black bg-opacity-10"></div>
+            <!-- 动态圆形装饰 -->
+            <div class="absolute top-10 right-20 w-64 h-64 bg-white opacity-10 rounded-full blur-3xl"></div>
+            <div class="absolute bottom-10 left-20 w-96 h-96 bg-blue-400 opacity-10 rounded-full blur-3xl"></div>
+          </div>
+
+          <!-- 主要内容容器 -->
+          <div class="max-w-7xl mx-auto px-8 -mt-32 relative z-10">
+            <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
+              <!-- 顶部操作栏 -->
+              <div class="bg-gradient-to-r from-gray-50 to-white px-8 py-4 border-b border-gray-100 flex items-center justify-between">
+                <div class="flex items-center space-x-2 text-sm text-gray-600">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                  </svg>
+                  <span class="font-mono">{{ profileUrl }}</span>
+                </div>
+                <div class="flex items-center space-x-3">
+                  <!-- 复制链接按钮 -->
+                  <button
+                    @click="copyProfileUrl"
+                    class="flex items-center space-x-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition-colors"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                    </svg>
+                    <span class="text-sm font-medium">复制链接</span>
+                  </button>
+                  <!-- 分享按钮 -->
+                  <button
+                    @click="shareProfile"
+                    class="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                  >
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path>
+                    </svg>
+                    <span class="text-sm font-medium">分享</span>
+                  </button>
+                </div>
+              </div>
+
+              <!-- 用户信息区域 -->
+              <div class="p-8">
+                <div class="flex items-start space-x-8">
+                  <!-- 头像 -->
+                  <div class="relative flex-shrink-0">
+                    <div class="w-32 h-32 rounded-2xl overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600 p-1 shadow-xl">
+                      <div class="w-full h-full rounded-xl overflow-hidden bg-white">
+                        <img
+                          v-if="userProfile.avatar"
+                          :src="userProfile.avatar"
+                          :alt="userProfile.username"
+                          class="w-full h-full object-cover"
+                        />
+                        <div v-else class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-white text-4xl font-bold">
+                          {{ userProfile.username?.charAt(0).toUpperCase() }}
+                        </div>
+                      </div>
+                    </div>
+                    <!-- 在线状态 -->
+                    <div v-if="userProfile.isOnline" class="absolute -bottom-1 -right-1 flex items-center space-x-1 bg-green-500 text-white text-xs font-medium px-3 py-1 rounded-full shadow-lg">
+                      <div class="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                      <span>在线</span>
+                    </div>
+                  </div>
+
+                  <!-- 用户详情 -->
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-start justify-between mb-4">
+                      <div>
+                        <h1 class="text-3xl font-bold text-gray-900 mb-2">{{ userProfile.username }}</h1>
+                        <p v-if="userProfile.bio" class="text-gray-600 text-lg mb-3">{{ userProfile.bio }}</p>
+                        <div class="flex items-center space-x-4 text-sm text-gray-500">
+                          <span v-if="userProfile.location" class="flex items-center space-x-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            <span>{{ userProfile.location }}</span>
+                          </span>
+                          <span v-if="userProfile.joinDate" class="flex items-center space-x-1">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            <span>{{ formatJoinDate(userProfile.joinDate) }}</span>
+                          </span>
+                        </div>
+                      </div>
+
+                      <!-- 关注按钮 -->
+                      <div v-if="!isOwnProfile" class="flex-shrink-0">
+                        <button
+                          @click="toggleFollow"
+                          :disabled="followLoading"
+                          :class="[
+                            'px-6 py-3 rounded-xl font-semibold transition-all duration-200 shadow-lg',
+                            isFollowing
+                              ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                              : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 hover:shadow-xl'
+                          ]"
+                        >
+                          <span v-if="followLoading" class="flex items-center space-x-2">
+                            <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            <span>处理中</span>
+                          </span>
+                          <span v-else class="flex items-center space-x-2">
+                            <svg v-if="!isFollowing" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                            </svg>
+                            <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <span>{{ isFollowing ? '已关注' : '关注' }}</span>
+                          </span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- 社交媒体链接 -->
+                    <div v-if="hasSocialLinks" class="flex items-center space-x-3 mb-6">
+                      <a v-if="userProfile.telegram" :href="`https://t.me/${userProfile.telegram}`" target="_blank"
+                         class="flex items-center space-x-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition-colors">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.14.18-.357.295-.6.295-.002 0-.003 0-.005 0l.213-3.054 5.56-5.022c.24-.213-.054-.334-.373-.121l-6.869 4.326-2.96-.924c-.64-.203-.658-.64.135-.954l11.566-4.458c.538-.196 1.006.128.832.941z"/>
+                        </svg>
+                        <span class="text-sm font-medium">Telegram</span>
+                      </a>
+                      <a v-if="userProfile.twitter" :href="`https://twitter.com/${userProfile.twitter}`" target="_blank"
+                         class="flex items-center space-x-2 px-4 py-2 bg-sky-50 hover:bg-sky-100 text-sky-600 rounded-lg transition-colors">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M23.953 4.57a10 10 0 01-2.825.775 4.958 4.958 0 002.163-2.723c-.951.555-2.005.959-3.127 1.184a4.92 4.92 0 00-8.384 4.482C7.69 8.095 4.067 6.13 1.64 3.162a4.822 4.822 0 00-.666 2.475c0 1.71.87 3.213 2.188 4.096a4.904 4.904 0 01-2.228-.616v.06a4.923 4.923 0 003.946 4.827 4.996 4.996 0 01-2.212.085 4.936 4.936 0 004.604 3.417 9.867 9.867 0 01-6.102 2.105c-.39 0-.779-.023-1.17-.067a13.995 13.995 0 007.557 2.209c9.053 0 13.998-7.496 13.998-13.985 0-.21 0-.42-.015-.63A9.935 9.935 0 0024 4.59z"/>
+                        </svg>
+                        <span class="text-sm font-medium">Twitter</span>
+                      </a>
+                      <a v-if="userProfile.website" :href="userProfile.website" target="_blank"
+                         class="flex items-center space-x-2 px-4 py-2 bg-purple-50 hover:bg-purple-100 text-purple-600 rounded-lg transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
+                        </svg>
+                        <span class="text-sm font-medium">Website</span>
+                      </a>
+                      <a v-if="userProfile.wechat_id" href="#" @click.prevent="showWechatQR"
+                         class="flex items-center space-x-2 px-4 py-2 bg-green-50 hover:bg-green-100 text-green-600 rounded-lg transition-colors">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M8.691 2.188C3.891 2.188 0 5.476 0 9.53c0 2.212 1.17 4.203 3.002 5.55a.59.59 0 01.213.665l-.39 1.48c-.019.07-.048.141-.048.213 0 .163.13.295.29.295a.326.326 0 00.167-.054l1.903-1.114a.864.864 0 01.717-.098 10.16 10.16 0 002.837.403c.276 0 .543-.027.811-.05-.857-2.578.157-4.972 1.932-6.446 1.703-1.415 3.882-1.98 5.853-1.838-.576-3.583-4.196-6.348-8.596-6.348zM5.785 5.991c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 01-1.162 1.178A1.17 1.17 0 014.623 7.17c0-.651.52-1.18 1.162-1.18zm5.813 0c.642 0 1.162.529 1.162 1.18a1.17 1.17 0 01-1.162 1.178 1.17 1.17 0 01-1.162-1.178c0-.651.52-1.18 1.162-1.18zm5.34 2.867c-1.797-.052-3.746.512-5.28 1.786-1.72 1.428-2.687 3.72-1.78 6.22.942 2.453 3.666 4.229 6.884 4.229.826 0 1.622-.12 2.361-.336a.722.722 0 01.598.082l1.584.926a.272.272 0 00.14.047c.134 0 .24-.111.24-.247 0-.06-.023-.12-.038-.177l-.327-1.233a.582.582 0 01.18-.557c1.527-1.123 2.498-2.807 2.498-4.637 0-3.51-3.28-6.103-7.06-6.103zm-2.47 3.632a.972.972 0 011.958 0 .972.972 0 01-1.959 0zm4.818 0a.972.972 0 011.959 0 .972.972 0 01-1.959 0z"/>
+                        </svg>
+                        <span class="text-sm font-medium">WeChat</span>
+                      </a>
+                    </div>
+
+                    <!-- 统计信息卡片 -->
+                    <div class="grid grid-cols-4 gap-4">
+                      <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-200">
+                        <div class="flex items-center justify-between mb-2">
+                          <span class="text-sm font-medium text-blue-700">交易策略</span>
+                          <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                          </svg>
+                        </div>
+                        <div class="text-3xl font-bold text-blue-900">{{ userProfile.stats?.strategies || 0 }}</div>
+                      </div>
+
+                      <div
+                        @click="openFollowersModal"
+                        class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 border border-purple-200 cursor-pointer hover:shadow-lg transition-all"
+                      >
+                        <div class="flex items-center justify-between mb-2">
+                          <span class="text-sm font-medium text-purple-700">关注者</span>
+                          <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                          </svg>
+                        </div>
+                        <div class="text-3xl font-bold text-purple-900">{{ userProfile.stats?.followers || 0 }}</div>
+                      </div>
+
+                      <div
+                        @click="openFollowingModal"
+                        class="bg-gradient-to-br from-pink-50 to-pink-100 rounded-xl p-4 border border-pink-200 cursor-pointer hover:shadow-lg transition-all"
+                      >
+                        <div class="flex items-center justify-between mb-2">
+                          <span class="text-sm font-medium text-pink-700">正在关注</span>
+                          <svg class="w-5 h-5 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                          </svg>
+                        </div>
+                        <div class="text-3xl font-bold text-pink-900">{{ userProfile.stats?.following || 0 }}</div>
+                      </div>
+
+                      <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 border border-green-200">
+                        <div class="flex items-center justify-between mb-2">
+                          <span class="text-sm font-medium text-green-700">总收益率</span>
+                          <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                          </svg>
+                        </div>
+                        <div class="text-3xl font-bold text-green-900">+{{ userProfile.stats?.totalReturn || 0 }}%</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 主要内容区域 -->
+        <div class="max-w-7xl mx-auto px-8 py-8">
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- 左侧主要内容 -->
+            <div class="lg:col-span-2 space-y-8">
+              <!-- 联系信息 -->
+              <div v-if="hasContactInfo" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">联系方式</h3>
+                <div class="grid grid-cols-2 gap-4">
+                  <div v-if="userProfile.phone" class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                      <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path>
+                      </svg>
+                    </div>
+                    <span class="text-gray-700">{{ userProfile.phone }}</span>
+                  </div>
+                  <div v-if="userProfile.wechatId" class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                      <span class="text-green-600 text-xs font-bold">微</span>
+                    </div>
+                    <span class="text-gray-700">{{ userProfile.wechatId }}</span>
+                  </div>
+                  <div v-if="userProfile.telegram" class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                      <span class="text-blue-600 text-xs font-bold">TG</span>
+                    </div>
+                    <span class="text-gray-700">{{ userProfile.telegram }}</span>
+                  </div>
+                  <div v-if="userProfile.twitter" class="flex items-center space-x-3">
+                    <div class="w-8 h-8 bg-sky-100 rounded-full flex items-center justify-center">
+                      <span class="text-sky-600 text-xs font-bold">X</span>
+                    </div>
+                    <span class="text-gray-700">{{ userProfile.twitter }}</span>
+                  </div>
+                </div>
+                <div v-if="userProfile.website" class="mt-4 pt-4 border-t border-gray-200">
+                  <a :href="userProfile.website" target="_blank" class="flex items-center space-x-3 text-blue-600 hover:text-blue-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                    </svg>
+                    <span>访问个人网站</span>
+                  </a>
+                </div>
+              </div>
+
+              <!-- 交易策略列表 -->
+              <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                <div class="p-6 border-b border-gray-200">
+                  <h3 class="text-lg font-semibold text-gray-900">交易策略</h3>
+                </div>
+                <div class="divide-y divide-gray-200">
+                  <div v-for="strategy in strategies" :key="strategy.id" class="p-6 hover:bg-gray-50 transition-colors duration-200">
+                    <div class="flex items-start justify-between">
+                      <div class="flex-1">
+                        <h4 class="text-lg font-medium text-gray-900 mb-2">{{ strategy.name }}</h4>
+                        <p class="text-gray-600 mb-3">{{ strategy.description }}</p>
+                        <div class="flex items-center space-x-4 text-sm text-gray-500">
+                          <span>📈 {{ strategy.returnRate }}%</span>
+                          <span>📊 {{ strategy.trades }}笔交易</span>
+                          <span>📅 {{ formatDate(strategy.createdAt) }}</span>
+                        </div>
+                      </div>
+                      <div class="ml-4">
+                        <span :class="[
+                          'px-3 py-1 rounded-full text-xs font-medium',
+                          strategy.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                        ]">
+                          {{ strategy.status === 'active' ? '运行中' : '已停止' }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div v-if="strategies.length === 0" class="p-12 text-center text-gray-500">
+                  <div class="text-4xl mb-4">📊</div>
+                  <p>暂无公开的交易策略</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- 右侧边栏 -->
+            <div class="space-y-6">
+              <!-- 关注列表 -->
+              <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">正在关注</h3>
+                <div class="space-y-3">
+                  <div v-for="user in followingList" :key="user.id" class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-full overflow-hidden bg-gray-200">
+                      <img v-if="user.avatar" :src="user.avatar" :alt="user.username" class="w-full h-full object-cover" />
+                      <div v-else class="w-full h-full flex items-center justify-center bg-blue-500 text-white text-sm font-bold">
+                        {{ user.username.charAt(0).toUpperCase() }}
+                      </div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-medium text-gray-900 truncate">{{ user.username }}</p>
+                      <p class="text-xs text-gray-500 truncate">{{ user.bio || '暂无简介' }}</p>
+                    </div>
+                  </div>
+                </div>
+                <div v-if="followingList.length === 0" class="text-center text-gray-500 py-4">
+                  <p class="text-sm">暂无关注的用户</p>
+                </div>
+              </div>
+
+              <!-- 最近活动 -->
+              <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h3 class="text-lg font-semibold text-gray-900 mb-4">最近活动</h3>
+                <div class="space-y-3">
+                  <div v-for="activity in recentActivities" :key="activity.id" class="text-sm">
+                    <div class="flex items-start space-x-2">
+                      <div class="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+                      <div>
+                        <p class="text-gray-700">{{ activity.description }}</p>
+                        <p class="text-gray-500 text-xs mt-1">{{ formatDate(activity.createdAt) }}</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div v-if="recentActivities.length === 0" class="text-center text-gray-500 py-4">
+                  <p class="text-sm">暂无最近活动</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- 粉丝列表弹窗 -->
+    <FollowersModal
+      :isOpen="showFollowersModal"
+      :userId="userProfile?.id"
+      @close="showFollowersModal = false"
+    />
+
+    <!-- 关注列表弹窗 -->
+    <FollowingModal
+      :isOpen="showFollowingModal"
+      :userId="userProfile?.id"
+      @close="showFollowingModal = false"
+    />
+  </div>
+</template>
+
+<script setup>
+import { ref, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import Sidebar from '../common/Sidebar.vue'
+import FollowersModal from './FollowersModal.vue'
+import FollowingModal from './FollowingModal.vue'
+import { userAPI } from '../../utils/api.js'
+import notification from '../../utils/notification.js'
+
+const route = useRoute()
+
+// 响应式数据
+const loading = ref(true)
+const userProfile = ref(null)
+const strategies = ref([])
+const followingList = ref([])
+const recentActivities = ref([])
+const isFollowing = ref(false)
+const followLoading = ref(false)
+const showFollowersModal = ref(false)
+const showFollowingModal = ref(false)
+
+// 计算属性
+const isOwnProfile = computed(() => {
+  // 这里需要获取当前登录用户的ID进行比较
+  return route.params.userId === 'me' || route.params.userId === getCurrentUserId()
+})
+
+const hasContactInfo = computed(() => {
+  if (!userProfile.value) return false
+  return userProfile.value.phone || userProfile.value.wechatId || 
+         userProfile.value.telegram || userProfile.value.twitter || userProfile.value.website
+})
+
+// 获取当前用户ID
+const getCurrentUserId = () => {
+  // 这里应该从认证状态中获取当前用户ID
+  const token = localStorage.getItem('auth_token')
+  if (token) {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]))
+      return payload.user_id?.toString()
+    } catch (error) {
+      return null
+    }
+  }
+  return null
+}
+
+// 格式化日期
+const formatDate = (dateString) => {
+  return new Date(dateString).toLocaleDateString('zh-CN')
+}
+
+const formatJoinDate = (dateString) => {
+  return `加入于 ${new Date(dateString).getFullYear()}年${new Date(dateString).getMonth() + 1}月`
+}
+
+// 获取用户资料
+const fetchUserProfile = async (userId) => {
+  try {
+    loading.value = true
+    const response = await userAPI.getPublicProfile(userId)
+
+    if (response.status === 'success') {
+      userProfile.value = response.data.user
+      strategies.value = response.data.strategies || []
+      followingList.value = response.data.following || []
+      recentActivities.value = response.data.activities || []
+      isFollowing.value = response.data.isFollowing || false
+    } else {
+      userProfile.value = null
+    }
+  } catch (error) {
+    console.error('获取用户资料失败:', error)
+    userProfile.value = null
+  } finally {
+    loading.value = false
+  }
+}
+
+// 切换关注状态
+const toggleFollow = async () => {
+  if (!userProfile.value) return
+
+  followLoading.value = true
+  try {
+    const response = await userAPI.toggleFollow(userProfile.value.id)
+
+    if (response.status === 'success') {
+      isFollowing.value = !isFollowing.value
+      // 更新关注者数量
+      if (isFollowing.value) {
+        userProfile.value.stats.followers++
+      } else {
+        userProfile.value.stats.followers--
+      }
+
+      notification.success(
+        isFollowing.value ? '关注成功' : '取消关注成功',
+        '操作成功'
+      )
+    } else {
+      notification.error(response.message || '操作失败', '错误')
+    }
+  } catch (error) {
+    notification.error(error.message || '操作失败', '错误')
+  } finally {
+    followLoading.value = false
+  }
+}
+
+// 打开粉丝列表弹窗
+const openFollowersModal = () => {
+  showFollowersModal.value = true
+}
+
+// 打开关注列表弹窗
+const openFollowingModal = () => {
+  showFollowingModal.value = true
+}
+
+// 组件挂载时获取数据
+onMounted(() => {
+  const userId = route.params.userId || 'me'
+  fetchUserProfile(userId)
+})
+</script>

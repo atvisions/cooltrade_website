@@ -1,149 +1,406 @@
 <template>
-  <div>
+  <div class="max-w-7xl mx-auto">
+    <!-- 页面标题 -->
     <div class="mb-8">
-      <h2 class="text-xl font-semibold text-gray-900">风险偏好</h2>
-      <p class="text-gray-600 mt-1">管理您的风险承受能力和交易偏好设置</p>
+      <h2 class="text-2xl font-bold text-gray-900 tracking-tight">风险偏好管理</h2>
+      <p class="text-gray-500 mt-2 text-sm">精准控制您的投资策略与风险参数</p>
     </div>
 
-    <!-- 当前风险等级显示 -->
-    <div class="bg-white rounded-2xl border-2 border-gray-200 p-8 mb-6">
+    <!-- 当前风险等级卡片 - 商务风格 -->
+    <div class="bg-gradient-to-br from-slate-50 to-gray-50 rounded-xl border border-gray-200 p-6 mb-8 shadow-sm">
       <div class="flex items-center justify-between">
-        <div class="flex items-center space-x-6">
-          <div class="text-5xl">
+        <div class="flex items-center space-x-5 flex-1">
+          <div class="w-16 h-16 rounded-xl bg-white shadow-sm flex items-center justify-center text-3xl border border-gray-100">
             {{ getCurrentRiskIcon() }}
           </div>
-          <div>
-            <div class="text-sm text-gray-500 mb-1">当前风险等级</div>
-            <h3 class="text-2xl font-bold text-gray-900 mb-2">{{ getCurrentRiskType() }}</h3>
-            <p class="text-gray-600 text-sm">{{ getCurrentRiskDescription() }}</p>
-            <p class="text-xs text-gray-400 mt-2">最后更新: {{ riskAssessmentDate || '未设置' }}</p>
+          <div class="flex-1">
+            <div class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-1">当前风险等级</div>
+            <h3 class="text-xl font-bold text-gray-900 mb-1">{{ getCurrentRiskType() }}</h3>
+            <p class="text-sm text-gray-600 max-w-md">{{ getCurrentRiskDescription() }}</p>
+            <div class="flex items-center mt-2 space-x-4">
+              <p class="text-xs text-gray-400 flex items-center">
+                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                最后评估: {{ riskAssessmentDate || '未设置' }}
+              </p>
+              <button
+                @click="goToRiskAssessment"
+                class="text-xs text-gray-500 hover:text-gray-700 underline decoration-dotted underline-offset-2 flex items-center"
+              >
+                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                </svg>
+                重新评估
+              </button>
+            </div>
           </div>
         </div>
-        <button
-          @click="goToRiskAssessment"
-          class="px-6 py-3 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-all duration-200 font-medium shadow-sm hover:shadow-md flex-shrink-0"
-        >
-          重新评估
-        </button>
+      </div>
+      <!-- 提示信息 -->
+      <div class="mt-4 pt-4 border-t border-gray-200">
+        <p class="text-xs text-gray-500 flex items-start">
+          <svg class="w-4 h-4 mr-1.5 text-gray-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span>您可以直接调整下方的交易参数来精确控制策略。建议每3-6个月重新评估一次风险等级，以适应您的投资经验和市场环境变化。</span>
+        </p>
       </div>
     </div>
 
-    <!-- 交易偏好设置 -->
-    <div class="bg-white rounded-2xl border border-gray-200 p-8">
-      <h3 class="text-lg font-semibold text-gray-900 mb-2">交易偏好设置</h3>
-      <p class="text-gray-600 mb-8 text-sm">根据您的风险等级，调整具体的交易参数</p>
-
-      <div class="space-y-8">
-        <!-- 最大单笔投资比例 -->
-        <div>
-          <div class="flex items-center justify-between mb-3">
-            <label class="text-sm font-medium text-gray-900">最大单笔投资比例</label>
-            <span class="text-lg font-bold text-blue-600">{{ tradingPreferences.maxSingleInvestment }}%</span>
+    <!-- 交易参数设置 - 商务卡片布局 -->
+    <div class="bg-white rounded-xl border border-gray-200 shadow-sm">
+      <!-- 标题栏 -->
+      <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+        <div class="flex items-center justify-between">
+          <div>
+            <h3 class="text-lg font-bold text-gray-900">交易参数配置</h3>
+            <p class="text-xs text-gray-500 mt-0.5">根据风险等级调整具体交易参数，支持滑块拖动或手动输入</p>
           </div>
-          <input
-            v-model.number="tradingPreferences.maxSingleInvestment"
-            type="range"
-            min="1"
-            max="50"
-            class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-          />
-          <div class="flex justify-between text-xs text-gray-500 mt-2">
-            <span>保守 1%</span>
-            <span>激进 50%</span>
-          </div>
+          <button
+            @click="restoreRecommendedSettings"
+            class="px-4 py-2 text-xs font-medium text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors duration-200 flex items-center space-x-1.5"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+            </svg>
+            <span>恢复推荐</span>
+          </button>
         </div>
+      </div>
 
-        <!-- 止损比例 -->
-        <div>
-          <div class="flex items-center justify-between mb-3">
-            <label class="text-sm font-medium text-gray-900">止损比例</label>
-            <span class="text-lg font-bold text-red-600">{{ tradingPreferences.stopLoss }}%</span>
-          </div>
-          <input
-            v-model.number="tradingPreferences.stopLoss"
-            type="range"
-            min="1"
-            max="30"
-            class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-red"
-          />
-          <div class="flex justify-between text-xs text-gray-500 mt-2">
-            <span>严格 1%</span>
-            <span>宽松 30%</span>
-          </div>
-        </div>
-
-        <!-- 止盈比例 -->
-        <div>
-          <div class="flex items-center justify-between mb-3">
-            <label class="text-sm font-medium text-gray-900">止盈比例</label>
-            <span class="text-lg font-bold text-green-600">{{ tradingPreferences.takeProfit }}%</span>
-          </div>
-          <input
-            v-model.number="tradingPreferences.takeProfit"
-            type="range"
-            min="5"
-            max="100"
-            class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-green"
-          />
-          <div class="flex justify-between text-xs text-gray-500 mt-2">
-            <span>保守 5%</span>
-            <span>激进 100%</span>
-          </div>
-        </div>
-
-        <!-- 交易频率 - 方块样式 -->
-        <div>
-          <label class="block text-sm font-medium text-gray-900 mb-4">交易频率偏好</label>
-          <div class="grid grid-cols-2 gap-3">
-            <button
-              v-for="freq in frequencyOptions"
-              :key="freq.value"
-              @click="tradingPreferences.frequency = freq.value"
-              :class="[
-                'p-4 rounded-xl border-2 transition-all duration-200 text-left',
-                tradingPreferences.frequency === freq.value
-                  ? 'border-blue-600 bg-blue-50'
-                  : 'border-gray-200 hover:border-gray-300 bg-white'
-              ]"
-            >
-              <div class="flex items-start space-x-3">
-                <div :class="[
-                  'w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5',
-                  tradingPreferences.frequency === freq.value
-                    ? 'border-blue-600 bg-blue-600'
-                    : 'border-gray-300'
-                ]">
-                  <svg v-if="tradingPreferences.frequency === freq.value" class="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 12 12">
-                    <path d="M10 3L4.5 8.5L2 6"/>
+      <!-- 参数网格 -->
+      <div class="p-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- 最大单笔投资比例 -->
+          <div class="bg-white rounded-lg border border-gray-200 p-5 hover:border-gray-300 transition-colors">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex-1">
+                <label class="text-sm font-semibold text-gray-900 flex items-center">
+                  <svg class="w-4 h-4 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
                   </svg>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <div :class="[
-                    'font-semibold text-sm mb-1',
-                    tradingPreferences.frequency === freq.value ? 'text-blue-900' : 'text-gray-900'
-                  ]">
-                    {{ freq.label }}
-                  </div>
-                  <div :class="[
-                    'text-xs',
-                    tradingPreferences.frequency === freq.value ? 'text-blue-700' : 'text-gray-500'
-                  ]">
-                    {{ freq.description }}
-                  </div>
-                </div>
+                  单笔投资比例
+                </label>
+                <p class="text-xs text-gray-500 mt-1 ml-6">单次交易占总资金的最大比例</p>
               </div>
-            </button>
+              <div class="flex items-center space-x-2">
+                <input
+                  v-model.number="tradingPreferences.maxSingleInvestment"
+                  type="number"
+                  min="1"
+                  max="50"
+                  class="w-16 px-2 py-1 text-sm font-bold text-gray-900 bg-gray-50 border border-gray-300 rounded text-right focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                />
+                <span class="text-sm font-medium text-gray-600">%</span>
+              </div>
+            </div>
+            <input
+              v-model.number="tradingPreferences.maxSingleInvestment"
+              type="range"
+              min="1"
+              max="50"
+              class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-gray"
+            />
+            <div class="flex justify-between text-xs text-gray-400 mt-2">
+              <span>1%</span>
+              <span>50%</span>
+            </div>
+          </div>
+
+          <!-- 止损比例 -->
+          <div class="bg-white rounded-lg border border-gray-200 p-5 hover:border-gray-300 transition-colors">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex-1">
+                <label class="text-sm font-semibold text-gray-900 flex items-center">
+                  <svg class="w-4 h-4 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/>
+                  </svg>
+                  止损比例
+                </label>
+                <p class="text-xs text-gray-500 mt-1 ml-6">触发自动止损的亏损阈值</p>
+              </div>
+              <div class="flex items-center space-x-2">
+                <input
+                  v-model.number="tradingPreferences.stopLoss"
+                  type="number"
+                  min="1"
+                  max="30"
+                  class="w-16 px-2 py-1 text-sm font-bold text-gray-900 bg-gray-50 border border-gray-300 rounded text-right focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                />
+                <span class="text-sm font-medium text-gray-600">%</span>
+              </div>
+            </div>
+            <input
+              v-model.number="tradingPreferences.stopLoss"
+              type="range"
+              min="1"
+              max="30"
+              class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-gray"
+            />
+            <div class="flex justify-between text-xs text-gray-400 mt-2">
+              <span>1%</span>
+              <span>30%</span>
+            </div>
+          </div>
+
+          <!-- 止盈比例 -->
+          <div class="bg-white rounded-lg border border-gray-200 p-5 hover:border-gray-300 transition-colors">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex-1">
+                <label class="text-sm font-semibold text-gray-900 flex items-center">
+                  <svg class="w-4 h-4 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                  </svg>
+                  止盈比例
+                </label>
+                <p class="text-xs text-gray-500 mt-1 ml-6">触发自动止盈的盈利目标</p>
+              </div>
+              <div class="flex items-center space-x-2">
+                <input
+                  v-model.number="tradingPreferences.takeProfit"
+                  type="number"
+                  min="5"
+                  max="100"
+                  class="w-16 px-2 py-1 text-sm font-bold text-gray-900 bg-gray-50 border border-gray-300 rounded text-right focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                />
+                <span class="text-sm font-medium text-gray-600">%</span>
+              </div>
+            </div>
+            <input
+              v-model.number="tradingPreferences.takeProfit"
+              type="range"
+              min="5"
+              max="100"
+              class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-gray"
+            />
+            <div class="flex justify-between text-xs text-gray-400 mt-2">
+              <span>5%</span>
+              <span>100%</span>
+            </div>
+          </div>
+
+          <!-- 最大持仓数量 -->
+          <div class="bg-white rounded-lg border border-gray-200 p-5 hover:border-gray-300 transition-colors">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex-1">
+                <label class="text-sm font-semibold text-gray-900 flex items-center">
+                  <svg class="w-4 h-4 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                  </svg>
+                  最大持仓数量
+                </label>
+                <p class="text-xs text-gray-500 mt-1 ml-6">同时持有的币种数量上限</p>
+              </div>
+              <div class="flex items-center space-x-2">
+                <input
+                  v-model.number="tradingPreferences.maxTotalPositions"
+                  type="number"
+                  min="1"
+                  max="10"
+                  class="w-16 px-2 py-1 text-sm font-bold text-gray-900 bg-gray-50 border border-gray-300 rounded text-right focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                />
+                <span class="text-sm font-medium text-gray-600">个</span>
+              </div>
+            </div>
+            <input
+              v-model.number="tradingPreferences.maxTotalPositions"
+              type="range"
+              min="1"
+              max="10"
+              class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-gray"
+            />
+            <div class="flex justify-between text-xs text-gray-400 mt-2">
+              <span>1个</span>
+              <span>10个</span>
+            </div>
+          </div>
+
+          <!-- 最小建仓金额 -->
+          <div class="bg-white rounded-lg border border-gray-200 p-5 hover:border-gray-300 transition-colors">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex-1">
+                <label class="text-sm font-semibold text-gray-900 flex items-center">
+                  <svg class="w-4 h-4 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  最小建仓金额
+                </label>
+                <p class="text-xs text-gray-500 mt-1 ml-6">单次交易的最小金额要求</p>
+              </div>
+              <div class="flex items-center space-x-2">
+                <input
+                  v-model.number="tradingPreferences.minPositionSize"
+                  type="number"
+                  min="50"
+                  max="1000"
+                  step="50"
+                  class="w-20 px-2 py-1 text-sm font-bold text-gray-900 bg-gray-50 border border-gray-300 rounded text-right focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                />
+                <span class="text-xs font-medium text-gray-600">USDT</span>
+              </div>
+            </div>
+            <input
+              v-model.number="tradingPreferences.minPositionSize"
+              type="range"
+              min="50"
+              max="1000"
+              step="50"
+              class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-gray"
+            />
+            <div class="flex justify-between text-xs text-gray-400 mt-2">
+              <span>50</span>
+              <span>1000</span>
+            </div>
+          </div>
+
+          <!-- 滑点容忍度 -->
+          <div class="bg-white rounded-lg border border-gray-200 p-5 hover:border-gray-300 transition-colors">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex-1">
+                <label class="text-sm font-semibold text-gray-900 flex items-center">
+                  <svg class="w-4 h-4 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
+                  </svg>
+                  滑点容忍度
+                </label>
+                <p class="text-xs text-gray-500 mt-1 ml-6">可接受的价格滑动范围</p>
+              </div>
+              <div class="flex items-center space-x-2">
+                <input
+                  v-model.number="tradingPreferences.slippageTolerance"
+                  type="number"
+                  min="0.5"
+                  max="3"
+                  step="0.5"
+                  class="w-16 px-2 py-1 text-sm font-bold text-gray-900 bg-gray-50 border border-gray-300 rounded text-right focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                />
+                <span class="text-sm font-medium text-gray-600">%</span>
+              </div>
+            </div>
+            <input
+              v-model.number="tradingPreferences.slippageTolerance"
+              type="range"
+              min="0.5"
+              max="3"
+              step="0.5"
+              class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-gray"
+            />
+            <div class="flex justify-between text-xs text-gray-400 mt-2">
+              <span>0.5%</span>
+              <span>3%</span>
+            </div>
+          </div>
+
+          <!-- 每日最大交易次数 -->
+          <div class="bg-white rounded-lg border border-gray-200 p-5 hover:border-gray-300 transition-colors">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex-1">
+                <label class="text-sm font-semibold text-gray-900 flex items-center">
+                  <svg class="w-4 h-4 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                  </svg>
+                  每日交易次数
+                </label>
+                <p class="text-xs text-gray-500 mt-1 ml-6">每日允许的最大交易次数</p>
+              </div>
+              <div class="flex items-center space-x-2">
+                <input
+                  v-model.number="tradingPreferences.maxDailyTrades"
+                  type="number"
+                  min="1"
+                  max="20"
+                  class="w-16 px-2 py-1 text-sm font-bold text-gray-900 bg-gray-50 border border-gray-300 rounded text-right focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                />
+                <span class="text-sm font-medium text-gray-600">次</span>
+              </div>
+            </div>
+            <input
+              v-model.number="tradingPreferences.maxDailyTrades"
+              type="range"
+              min="1"
+              max="20"
+              class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-gray"
+            />
+            <div class="flex justify-between text-xs text-gray-400 mt-2">
+              <span>1次</span>
+              <span>20次</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 交易频率 - 全宽，添加上边距 -->
+        <div class="lg:col-span-2 mt-2">
+          <div class="bg-white rounded-lg border border-gray-200 p-5">
+            <label class="text-sm font-semibold text-gray-900 flex items-center mb-4">
+              <svg class="w-4 h-4 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+              </svg>
+              交易频率偏好
+            </label>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <button
+                v-for="freq in frequencyOptions"
+                :key="freq.value"
+                @click="tradingPreferences.frequency = freq.value"
+                :class="[
+                  'p-4 rounded-lg border-2 transition-all duration-200 text-left hover:shadow-sm',
+                  tradingPreferences.frequency === freq.value
+                    ? 'border-gray-900 bg-gray-900 shadow-md'
+                    : 'border-gray-200 hover:border-gray-300 bg-white'
+                ]"
+              >
+                <div class="flex items-start space-x-2.5">
+                  <div :class="[
+                    'w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5',
+                    tradingPreferences.frequency === freq.value
+                      ? 'border-white bg-white'
+                      : 'border-gray-300'
+                  ]">
+                    <div v-if="tradingPreferences.frequency === freq.value" class="w-2 h-2 rounded-full bg-gray-900"></div>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <div :class="[
+                      'font-semibold text-sm mb-0.5',
+                      tradingPreferences.frequency === freq.value ? 'text-white' : 'text-gray-900'
+                    ]">
+                      {{ freq.label }}
+                    </div>
+                    <div :class="[
+                      'text-xs',
+                      tradingPreferences.frequency === freq.value ? 'text-gray-200' : 'text-gray-500'
+                    ]">
+                      {{ freq.description }}
+                    </div>
+                  </div>
+                </div>
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="mt-8 flex justify-end">
+      <!-- 底部操作栏 - 添加外边距 -->
+      <div class="mt-6 pt-6 px-6 pb-6 border-t border-gray-100 flex items-center justify-between">
+        <div class="text-xs text-gray-500">
+          <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          参数调整后将立即应用于您的交易策略
+        </div>
         <button
           @click="saveTradingPreferences"
           :disabled="tradingPreferencesLoading"
-          class="px-8 py-3 bg-gray-900 text-white rounded-xl hover:bg-gray-800 transition-all duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed font-medium shadow-sm hover:shadow-md"
+          class="px-6 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-lg hover:bg-gray-800 transition-all duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-sm hover:shadow flex items-center space-x-2"
         >
-          {{ tradingPreferencesLoading ? '保存中...' : '保存设置' }}
+          <svg v-if="!tradingPreferencesLoading" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+          </svg>
+          <svg v-else class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span>{{ tradingPreferencesLoading ? '保存中' : '保存设置' }}</span>
         </button>
       </div>
     </div>
@@ -163,6 +420,7 @@ const tradingPreferencesLoading = inject('tradingPreferencesLoading')
 const getCurrentRiskIcon = inject('getCurrentRiskIcon')
 const getCurrentRiskType = inject('getCurrentRiskType')
 const getCurrentRiskDescription = inject('getCurrentRiskDescription')
+const restoreRecommendedSettings = inject('restoreRecommendedSettings')
 const saveTradingPreferences = inject('saveTradingPreferences')
 
 // 交易频率选项
@@ -196,66 +454,48 @@ const goToRiskAssessment = () => {
 </script>
 
 <style scoped>
-/* 蓝色滑块 - 投资比例 */
-.slider::-webkit-slider-thumb {
+/* 商务风格滑块 - 统一灰色 */
+.slider-gray::-webkit-slider-thumb {
   appearance: none;
-  height: 20px;
-  width: 20px;
+  height: 16px;
+  width: 16px;
   border-radius: 50%;
-  background: #3b82f6;
+  background: #1f2937;
   cursor: pointer;
-  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+  border: 3px solid white;
+  box-shadow: 0 2px 8px rgba(31, 41, 55, 0.3), 0 0 0 1px rgba(31, 41, 55, 0.1);
+  transition: all 0.2s;
 }
 
-.slider::-moz-range-thumb {
-  height: 20px;
-  width: 20px;
-  border-radius: 50%;
-  background: #3b82f6;
-  cursor: pointer;
-  border: none;
-  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+.slider-gray::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  background: #111827;
+  box-shadow: 0 4px 12px rgba(31, 41, 55, 0.4), 0 0 0 1px rgba(31, 41, 55, 0.15);
 }
 
-/* 红色滑块 - 止损 */
-.slider-red::-webkit-slider-thumb {
-  appearance: none;
-  height: 20px;
-  width: 20px;
+.slider-gray::-moz-range-thumb {
+  height: 16px;
+  width: 16px;
   border-radius: 50%;
-  background: #ef4444;
+  background: #1f2937;
   cursor: pointer;
-  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+  border: 3px solid white;
+  box-shadow: 0 2px 8px rgba(31, 41, 55, 0.3), 0 0 0 1px rgba(31, 41, 55, 0.1);
 }
 
-.slider-red::-moz-range-thumb {
-  height: 20px;
-  width: 20px;
-  border-radius: 50%;
-  background: #ef4444;
-  cursor: pointer;
-  border: none;
-  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+/* 输入框聚焦效果 */
+input[type="number"]:focus {
+  outline: none;
 }
 
-/* 绿色滑块 - 止盈 */
-.slider-green::-webkit-slider-thumb {
-  appearance: none;
-  height: 20px;
-  width: 20px;
-  border-radius: 50%;
-  background: #10b981;
-  cursor: pointer;
-  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+/* 数字输入框去除箭头 */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 
-.slider-green::-moz-range-thumb {
-  height: 20px;
-  width: 20px;
-  border-radius: 50%;
-  background: #10b981;
-  cursor: pointer;
-  border: none;
-  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+input[type="number"] {
+  -moz-appearance: textfield;
 }
 </style>

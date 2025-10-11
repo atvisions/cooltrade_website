@@ -1,7 +1,7 @@
 // API 配置和工具函数
 
 // API 基础URL
-const API_BASE_URL = 'http://localhost:8000/api'
+export const API_BASE_URL = 'http://localhost:8000/api'
 
 // API 端点
 export const API_ENDPOINTS = {

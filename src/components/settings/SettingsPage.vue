@@ -52,19 +52,34 @@
         </main>
       </div>
     </div>
+
+    <!-- 参数对比弹窗 -->
+    <ParamsComparisonModal
+      :show="showComparisonModal"
+      :currentParams="tradingPreferences"
+      :recommendedParams="recommendedParams"
+      :oldRiskType="oldRiskType"
+      :newRiskType="getCurrentRiskType()"
+      @close="closeComparisonModal"
+      @applied="handleParamsApplied"
+      @kept="handleParamsKept"
+    />
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, provide, markRaw } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, computed, onMounted, provide, markRaw, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import Header from '../common/Header.vue'
 import UserSidebar from '../common/UserSidebar.vue'
+import ParamsComparisonModal from './ParamsComparisonModal.vue'
 import notification from '../../utils/notification.js'
-import { userAPI } from '../../utils/api.js'
+import { userAPI, apiRequest } from '../../utils/api.js'
 import { useUserStore } from '../../utils/userStore.js'
 
 const route = useRoute()
+const router = useRouter()
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
 // 导入子组件
 import ProfileTab from './tabs/ProfileTab.vue'
@@ -84,6 +99,14 @@ import {
 
 // 当前激活的标签页 - 支持 URL 参数
 const activeTab = ref(route.query.tab || localStorage.getItem('settings_active_tab') || 'profile')
+
+// 监听路由变化，支持从其他页面跳转时切换标签
+watch(() => route.query.tab, (newTab) => {
+  if (newTab) {
+    activeTab.value = newTab
+    localStorage.setItem('settings_active_tab', newTab)
+  }
+})
 
 // 设置活跃标签页并保存到localStorage
 const setActiveTab = (tabId) => {
@@ -205,6 +228,7 @@ const accountPrivacy = ref({
 const riskQuestions = ref([
   {
     question: "您的投资经验如何？",
+    type: 'single',
     options: [
       { text: "新手，刚开始投资", value: 1 },
       { text: "有一些经验，投资1-3年", value: 2 },
@@ -214,6 +238,7 @@ const riskQuestions = ref([
   },
   {
     question: "您能承受多大的投资损失？",
+    type: 'single',
     options: [
       { text: "不能承受任何损失", value: 1 },
       { text: "可以承受5%以内的损失", value: 2 },
@@ -223,27 +248,104 @@ const riskQuestions = ref([
   },
   {
     question: "您的投资目标是什么？",
+    type: 'single',
     options: [
       { text: "保值，避免通胀", value: 1 },
       { text: "稳健增长，年化5-10%", value: 2 },
       { text: "积极增长，年化10-20%", value: 3 },
       { text: "高收益，愿意承担高风险", value: 4 }
     ]
+  },
+  {
+    question: "您的投资期限是多久？",
+    type: 'single',
+    key: 'investmentHorizon',
+    options: [
+      { text: "短期（3个月内）", value: 'short', description: '快进快出，追求短期收益' },
+      { text: "中期（3-12个月）", value: 'medium', description: '中期持有，平衡风险收益' },
+      { text: "长期（1年以上）", value: 'long', description: '长期投资，看好项目发展' }
+    ]
+  },
+  {
+    question: "您更关注哪类项目？（可多选）",
+    type: 'multiple',
+    key: 'preferredCategories',
+    options: [
+      { text: "DeFi", value: 'DeFi', icon: '💰', description: '去中心化金融' },
+      { text: "Layer1/Layer2", value: 'Layer1', icon: '⛓️', description: '公链和扩容方案' },
+      { text: "NFT", value: 'NFT', icon: '🎨', description: '数字艺术和收藏品' },
+      { text: "GameFi", value: 'GameFi', icon: '🎮', description: '链游和元宇宙' },
+      { text: "AI", value: 'AI', icon: '🤖', description: 'AI相关项目' },
+      { text: "Meme", value: 'Meme', icon: '🐕', description: 'Meme币和社区币' }
+    ]
+  },
+  {
+    question: "您偏好的市值规模？",
+    type: 'single',
+    key: 'marketCapPreference',
+    options: [
+      { text: "大盘币", value: 'large', description: '市值>100亿，稳定但收益有限' },
+      { text: "中盘币", value: 'medium', description: '市值10-100亿，平衡风险收益' },
+      { text: "小盘币", value: 'small', description: '市值<10亿，高风险高收益' },
+      { text: "混合配置", value: 'mixed', description: '大中小盘合理配置' }
+    ]
   }
 ])
 
-const riskAnswers = ref([null, null, null])
+const riskAnswers = ref([null, null, null, null, [], null])
 const riskAssessmentDate = ref(null)
+// 存储从后端加载的风险类型（优先使用这个，而不是从答案计算）
+const savedRiskProfile = ref(null)
+
+// 参数对比弹窗相关
+const showComparisonModal = ref(false)
+const recommendedParams = ref({})
+const oldRiskType = ref('')
 
 // 交易偏好设置
 const tradingPreferences = ref({
-  maxSingleInvestment: 10,
-  stopLoss: 5,
-  takeProfit: 15,
-  frequency: 'moderate'
+  maxSingleInvestment: 10,      // 单币种最大仓位 (%)
+  maxTotalPositions: 5,          // 最大持仓数量
+  minPositionSize: 100,          // 最小建仓金额 (USDT)
+  stopLoss: 5,                   // 止损比例 (%)
+  takeProfit: 15,                // 止盈比例 (%)
+  slippageTolerance: 1,          // 滑点容忍度 (%)
+  maxDailyTrades: 10,            // 每日最大交易次数
+  frequency: 'moderate'          // 交易频率
 })
 
 const tradingPreferencesLoading = ref(false)
+
+// 根据风险类型的推荐值和限制范围
+const riskBasedLimits = {
+  conservative: {
+    maxSingleInvestment: { min: 1, max: 10, recommended: 5 },
+    maxTotalPositions: { min: 1, max: 3, recommended: 2 },
+    minPositionSize: { min: 100, max: 1000, recommended: 500 },
+    stopLoss: { min: 1, max: 5, recommended: 3 },
+    takeProfit: { min: 5, max: 15, recommended: 10 },
+    slippageTolerance: { min: 0.5, max: 1, recommended: 0.5 },
+    maxDailyTrades: { min: 1, max: 5, recommended: 2 }
+  },
+  moderate: {
+    maxSingleInvestment: { min: 5, max: 20, recommended: 10 },
+    maxTotalPositions: { min: 2, max: 5, recommended: 3 },
+    minPositionSize: { min: 100, max: 1000, recommended: 300 },
+    stopLoss: { min: 3, max: 10, recommended: 5 },
+    takeProfit: { min: 10, max: 30, recommended: 15 },
+    slippageTolerance: { min: 0.5, max: 2, recommended: 1 },
+    maxDailyTrades: { min: 2, max: 10, recommended: 5 }
+  },
+  aggressive: {
+    maxSingleInvestment: { min: 10, max: 50, recommended: 25 },
+    maxTotalPositions: { min: 3, max: 10, recommended: 5 },
+    minPositionSize: { min: 50, max: 1000, recommended: 100 },
+    stopLoss: { min: 5, max: 30, recommended: 15 },
+    takeProfit: { min: 20, max: 100, recommended: 50 },
+    slippageTolerance: { min: 1, max: 3, recommended: 2 },
+    maxDailyTrades: { min: 5, max: 20, recommended: 10 }
+  }
+}
 
 // 安全设置相关数据
 const passwordForm = ref({
@@ -583,6 +685,16 @@ const getCurrentRiskColor = () => {
 }
 
 const getCurrentRiskIcon = () => {
+  // 优先使用保存的风险类型
+  if (savedRiskProfile.value) {
+    const type = savedRiskProfile.value.type
+    if (type === '保守型') return '🛡️'
+    if (type === '稳健型') return '⚖️'
+    if (type === '积极型') return '📈'
+    if (type === '激进型') return '🚀'
+  }
+
+  // 如果没有保存的类型，从答案计算
   const score = riskAnswers.value.reduce((sum, answer) => sum + (answer || 0), 0)
   if (score <= 4) return '🛡️'
   if (score <= 8) return '⚖️'
@@ -591,6 +703,12 @@ const getCurrentRiskIcon = () => {
 }
 
 const getCurrentRiskType = () => {
+  // 优先使用保存的风险类型
+  if (savedRiskProfile.value && savedRiskProfile.value.type) {
+    return savedRiskProfile.value.type
+  }
+
+  // 如果没有保存的类型，从答案计算
   const score = riskAnswers.value.reduce((sum, answer) => sum + (answer || 0), 0)
   if (score <= 4) return '保守型'
   if (score <= 8) return '稳健型'
@@ -599,6 +717,12 @@ const getCurrentRiskType = () => {
 }
 
 const getCurrentRiskDescription = () => {
+  // 优先使用保存的风险描述
+  if (savedRiskProfile.value && savedRiskProfile.value.description) {
+    return savedRiskProfile.value.description
+  }
+
+  // 如果没有保存的描述，从答案计算
   const score = riskAnswers.value.reduce((sum, answer) => sum + (answer || 0), 0)
   if (score <= 4) return '注重资本保值，偏好低风险投资'
   if (score <= 8) return '追求稳健收益，可承受适度风险'
@@ -607,10 +731,78 @@ const getCurrentRiskDescription = () => {
 }
 
 const resetAssessment = () => {
-  riskAnswers.value = [null, null, null]
+  riskAnswers.value = [null, null, null, null, [], null]
   riskAssessmentDate.value = null
+  savedRiskProfile.value = null
   localStorage.removeItem('risk_answers')
   localStorage.removeItem('risk_assessment_date')
+}
+
+// 获取当前风险等级
+const getCurrentRiskLevel = () => {
+  if (savedRiskProfile.value && savedRiskProfile.value.level) {
+    return savedRiskProfile.value.level
+  }
+  // 如果没有保存的，从答案计算
+  const score = riskAnswers.value.slice(0, 3).reduce((sum, answer) => sum + (answer || 0), 0)
+  if (score <= 4) return 'conservative'
+  if (score <= 8) return 'moderate'
+  return 'aggressive'
+}
+
+// 获取参数的推荐值
+const getRecommendedValue = (paramName) => {
+  const riskLevel = getCurrentRiskLevel()
+  return riskBasedLimits[riskLevel]?.[paramName]?.recommended || tradingPreferences.value[paramName]
+}
+
+// 获取参数的限制范围
+const getParamLimits = (paramName) => {
+  const riskLevel = getCurrentRiskLevel()
+  return riskBasedLimits[riskLevel]?.[paramName] || { min: 0, max: 100, recommended: 50 }
+}
+
+// 验证参数是否在合理范围内
+const validateParam = (paramName, value) => {
+  const limits = getParamLimits(paramName)
+  if (value < limits.min || value > limits.max) {
+    return {
+      valid: false,
+      level: 'error',
+      message: `建议范围：${limits.min}-${limits.max}`
+    }
+  }
+  if (Math.abs(value - limits.recommended) > (limits.max - limits.min) * 0.3) {
+    return {
+      valid: true,
+      level: 'warning',
+      message: `推荐值：${limits.recommended}`
+    }
+  }
+  return {
+    valid: true,
+    level: 'success',
+    message: '参数合理'
+  }
+}
+
+// 恢复推荐设置
+const restoreRecommendedSettings = () => {
+  const riskLevel = getCurrentRiskLevel()
+  const limits = riskBasedLimits[riskLevel]
+
+  tradingPreferences.value = {
+    maxSingleInvestment: limits.maxSingleInvestment.recommended,
+    maxTotalPositions: limits.maxTotalPositions.recommended,
+    minPositionSize: limits.minPositionSize.recommended,
+    stopLoss: limits.stopLoss.recommended,
+    takeProfit: limits.takeProfit.recommended,
+    slippageTolerance: limits.slippageTolerance.recommended,
+    maxDailyTrades: limits.maxDailyTrades.recommended,
+    frequency: riskLevel === 'conservative' ? 'conservative' : riskLevel === 'aggressive' ? 'aggressive' : 'moderate'
+  }
+
+  notification.success('已恢复推荐设置', '成功')
 }
 
 // 从后端加载风险评估数据
@@ -623,6 +815,15 @@ const loadRiskAssessment = async () => {
     if (response.status === 'success' && response.data.has_assessment) {
       const profile = response.data.risk_profile
 
+      // 保存风险类型信息（这是最重要的）
+      savedRiskProfile.value = {
+        level: profile.level,
+        type: profile.type,
+        description: profile.description,
+        investmentPreferences: profile.investment_preferences || {},
+        assessmentData: profile.assessment_data || {}  // 保存完整的 assessment_data
+      }
+
       // 如果有评估数据，更新日期
       if (profile.updated_at) {
         riskAssessmentDate.value = new Date(profile.updated_at).toLocaleDateString('zh-CN')
@@ -633,10 +834,20 @@ const loadRiskAssessment = async () => {
         // 尝试从assessment_data中恢复答案
         const savedAnswers = profile.assessment_data.answers
         if (Array.isArray(savedAnswers)) {
-          riskAnswers.value = savedAnswers.map(a => a.answer || a.value || null)
+          // 初始化答案数组
+          riskAnswers.value = [null, null, null, null, [], null]
+
+          // 恢复每个答案
+          savedAnswers.forEach((item, index) => {
+            if (index < riskAnswers.value.length) {
+              riskAnswers.value[index] = item.answer || item.value || (index === 4 ? [] : null)
+            }
+          })
         }
       }
     }
+
+    return response  // 返回响应数据供调用者使用
   } catch (error) {
     console.error('加载风险评估失败:', error)
     // 如果API加载失败，尝试从localStorage加载
@@ -653,13 +864,35 @@ const loadRiskAssessment = async () => {
     if (savedRiskDate) {
       riskAssessmentDate.value = savedRiskDate
     }
+
+    return null  // 返回 null 表示加载失败
   }
 }
 
+// 监听路由变化，检查是否需要显示对比弹窗
+watch(() => route.query.showComparison, async (showComparison) => {
+  if (showComparison === 'true') {
+    // 等待数据加载完成
+    const response = await loadRiskAssessment()
+
+    // 从 savedRiskProfile 中获取推荐参数
+    if (response && response.status === 'success' && savedRiskProfile.value) {
+      const assessmentData = savedRiskProfile.value.assessmentData || {}
+      const recommended = assessmentData.recommended_params || {}
+
+      if (recommended.max_position_size || recommended.stop_loss_threshold) {
+        recommendedParams.value = recommended
+        oldRiskType.value = savedRiskProfile.value?.type || getCurrentRiskType()
+        showComparisonModal.value = true
+      }
+    }
+  }
+}, { immediate: true })
+
 const calculateRiskProfile = async () => {
   try {
-    // 计算风险等级
-    const totalScore = riskAnswers.value.reduce((sum, answer) => sum + (answer || 0), 0)
+    // 计算风险等级（只用前3个问题的分数）
+    const totalScore = riskAnswers.value.slice(0, 3).reduce((sum, answer) => sum + (answer || 0), 0)
     let riskLevel = 'moderate'
     let riskType = '稳健型'
     let riskDescription = '追求稳健收益，可承受适度风险'
@@ -678,18 +911,27 @@ const calculateRiskProfile = async () => {
       riskDescription = '追求最高收益，愿意承担高风险'
     }
 
+    // 提取投资偏好数据
+    const investmentPreferences = {
+      investmentHorizon: riskAnswers.value[3] || 'medium',  // 投资期限
+      preferredCategories: riskAnswers.value[4] || [],      // 偏好类别（数组）
+      marketCapPreference: riskAnswers.value[5] || 'mixed'  // 市值偏好
+    }
+
     // 准备提交数据
     const assessmentData = {
       answers: riskAnswers.value.map((answer, index) => ({
         questionIndex: index,
         answer: answer,
-        question: riskQuestions.value[index].question
+        question: riskQuestions.value[index].question,
+        key: riskQuestions.value[index].key || null
       })),
       risk_profile: {
         level: riskLevel,
         type: riskType,
         description: riskDescription
-      }
+      },
+      investment_preferences: investmentPreferences
     }
 
     // 提交到后端API
@@ -704,6 +946,13 @@ const calculateRiskProfile = async () => {
     if (response.status === 'success') {
       const now = new Date().toLocaleDateString()
       riskAssessmentDate.value = now
+
+      // 更新保存的风险类型
+      savedRiskProfile.value = {
+        level: riskLevel,
+        type: riskType,
+        description: riskDescription
+      }
 
       // 同时保存到localStorage作为备份
       localStorage.setItem('risk_answers', JSON.stringify(riskAnswers.value))
@@ -906,6 +1155,11 @@ provide('getCurrentRiskColor', getCurrentRiskColor)
 provide('getCurrentRiskIcon', getCurrentRiskIcon)
 provide('getCurrentRiskType', getCurrentRiskType)
 provide('getCurrentRiskDescription', getCurrentRiskDescription)
+provide('getCurrentRiskLevel', getCurrentRiskLevel)
+provide('getRecommendedValue', getRecommendedValue)
+provide('getParamLimits', getParamLimits)
+provide('validateParam', validateParam)
+provide('restoreRecommendedSettings', restoreRecommendedSettings)
 provide('resetAssessment', resetAssessment)
 provide('calculateRiskProfile', calculateRiskProfile)
 provide('saveTradingPreferences', saveTradingPreferences)
@@ -915,6 +1169,43 @@ provide('sendEmailVerificationCode', sendEmailVerificationCode)
 provide('handleEmailChangeSubmit', handleEmailChangeSubmit)
 provide('resendEmailVerificationCode', resendEmailVerificationCode)
 provide('resetEmailChange', resetEmailChange)
+
+// 参数对比弹窗相关函数
+const closeComparisonModal = () => {
+  showComparisonModal.value = false
+
+  // 清除 URL 中的 showComparison 参数
+  if (route.query.showComparison) {
+    const query = { ...route.query }
+    delete query.showComparison
+    router.replace({ query })
+  }
+}
+
+const handleParamsApplied = async (appliedParams) => {
+  // 更新交易偏好数据
+  if (appliedParams.stop_loss_threshold !== undefined) {
+    tradingPreferences.value.stopLoss = Math.round(appliedParams.stop_loss_threshold * 100)
+  }
+  if (appliedParams.max_position_size !== undefined) {
+    tradingPreferences.value.maxSingleInvestment = Math.round(appliedParams.max_position_size * 100)
+  }
+
+  // 重新加载风险画像
+  await loadRiskAssessment()
+
+  // 关闭弹窗
+  closeComparisonModal()
+
+  notification.success('推荐参数已应用', '成功')
+}
+
+const handleParamsKept = () => {
+  // 关闭弹窗
+  closeComparisonModal()
+
+  notification.info('已保留当前参数', '提示')
+}
 
 // 初始化数据
 onMounted(async () => {

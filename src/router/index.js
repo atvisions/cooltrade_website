@@ -7,6 +7,7 @@ import UserProfile from '../components/profile/UserProfile.vue'
 import SettingsPage from '../components/settings/SettingsPage.vue'
 import HomePage from '../components/home/HomePage.vue'
 import MarketPage from '../components/market/MarketPage.vue'
+import RecommendPage from '../components/recommend/RecommendPage.vue'
 import ExplorePage from '../components/explore/ExplorePage.vue'
 import StrategiesPage from '../components/strategies/StrategiesPage.vue'
 import FavoritesPage from '../components/user/FavoritesPage.vue'
@@ -29,6 +30,12 @@ const routes = [
     path: '/market',
     name: 'Market',
     component: MarketPage,
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/recommend',
+    name: 'Recommend',
+    component: RecommendPage,
     meta: { requiresAuth: false }
   },
   {

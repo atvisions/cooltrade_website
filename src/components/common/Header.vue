@@ -32,6 +32,13 @@
               市场
             </router-link>
             <router-link
+              to="/recommend"
+              class="px-4 py-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-medium"
+              :class="{ 'text-blue-600 bg-blue-50': $route.path === '/recommend' }"
+            >
+              推荐
+            </router-link>
+            <router-link
               to="/explore"
               class="px-4 py-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-medium"
               :class="{ 'text-blue-600 bg-blue-50': $route.path === '/explore' }"
@@ -211,6 +218,14 @@
             @click="showMobileMenu = false"
           >
             市场
+          </router-link>
+          <router-link
+            to="/recommend"
+            class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors"
+            :class="{ 'text-blue-600 bg-blue-50 font-semibold': $route.path === '/recommend' }"
+            @click="showMobileMenu = false"
+          >
+            推荐
           </router-link>
           <router-link
             to="/explore"

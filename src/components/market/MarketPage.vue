@@ -4,7 +4,7 @@
     <Header />
 
     <!-- Market Overview Stats - Premium Design -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-4">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
 
         <!-- 1️⃣ 恐慌贪婪指数 - Gauge Chart -->
@@ -271,9 +271,9 @@
     </div>
 
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-12">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
       <!-- Tabs and Filters -->
-      <div class="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
+      <div class="bg-white rounded-xl shadow-sm border border-gray-100">
         <!-- Top Tabs -->
         <div class="border-b border-gray-200">
           <div class="px-6 py-4">
@@ -352,188 +352,275 @@
             </div>
 
             <!-- Filter Button -->
-            <div class="relative">
-              <button
-                @click.stop="showFilterPanel = !showFilterPanel"
-                :class="[
-                  'flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all border',
-                  activeFiltersCount > 0 ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
-                ]"
-              >
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
-                </svg>
-                筛选
-                <span v-if="activeFiltersCount > 0" class="ml-1 px-1.5 py-0.5 text-xs bg-white text-gray-900 rounded-full font-semibold">{{ activeFiltersCount }}</span>
-              </button>
+            <button
+              @click.stop="showFilterPanel = !showFilterPanel"
+              :class="[
+                'flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all border',
+                activeFiltersCount > 0 ? 'bg-gray-900 text-white border-gray-900' : 'bg-white text-gray-700 border-gray-200 hover:border-gray-300'
+              ]"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+              </svg>
+              筛选
+              <span v-if="activeFiltersCount > 0" class="ml-1 px-1.5 py-0.5 text-xs bg-white text-gray-900 rounded-full font-semibold">{{ activeFiltersCount }}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
-              <!-- Filter Panel -->
-              <div
-                v-if="showFilterPanel"
-                class="absolute top-full right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-100 z-50 w-[420px]"
-                @click.stop
-              >
-                <div class="p-6">
-                  <!-- Header -->
-                  <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-lg font-semibold text-gray-900">筛选器</h3>
-                    <button @click="showFilterPanel = false" class="text-gray-400 hover:text-gray-600 transition-colors">
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-                      </svg>
-                    </button>
-                  </div>
+    <!-- Filter Sidebar Panel -->
+    <Transition
+      enter-active-class="transition-opacity duration-300"
+      leave-active-class="transition-opacity duration-300"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <div
+        v-if="showFilterPanel"
+        class="fixed inset-0 z-50"
+        @click="showFilterPanel = false"
+      >
+        <!-- Backdrop -->
+        <div class="absolute inset-0 bg-black bg-opacity-30"></div>
+      </div>
+    </Transition>
 
-                  <div class="space-y-5 max-h-[500px] overflow-y-auto pr-2">
-                    <!-- Networks -->
-                    <div>
-                      <label class="block text-sm font-medium text-gray-900 mb-2">网络</label>
-                      <select
-                        v-model="selectedChain"
-                        class="w-full px-4 py-2.5 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all"
-                      >
-                        <option value="">所有网络</option>
-                        <option v-for="chain in allChains" :key="chain.value" :value="chain.value">
-                          {{ chain.label }} ({{ chain.count }})
-                        </option>
-                      </select>
-                    </div>
+    <!-- Sidebar with slide animation -->
+    <Transition
+      enter-active-class="transition-transform duration-300 ease-out"
+      leave-active-class="transition-transform duration-300 ease-in"
+      enter-from-class="translate-x-full"
+      enter-to-class="translate-x-0"
+      leave-from-class="translate-x-0"
+      leave-to-class="translate-x-full"
+    >
+      <div
+        v-if="showFilterPanel"
+        class="fixed top-0 right-0 h-full w-[340px] bg-white shadow-2xl flex flex-col z-50"
+        @click.stop
+      >
+        <!-- Header -->
+        <div class="flex items-center justify-between px-4 py-3.5 border-b border-gray-200 flex-shrink-0">
+          <h3 class="text-base font-semibold text-gray-900">高级筛选</h3>
+          <button @click="showFilterPanel = false" class="text-gray-400 hover:text-gray-600 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
 
-                    <!-- Category -->
-                    <div>
-                      <label class="block text-sm font-medium text-gray-900 mb-2">分类</label>
-                      <select
-                        v-model="selectedCategory"
-                        class="w-full px-4 py-2.5 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all"
-                      >
-                        <option value="">所有分类</option>
-                        <option value="layer1">Layer 1</option>
-                        <option value="defi">DeFi</option>
-                        <option value="nft">NFT</option>
-                        <option value="meme">Meme</option>
-                        <option value="ai">AI</option>
-                        <option value="gaming">Gaming</option>
-                      </select>
-                    </div>
+        <!-- Scrollable Content -->
+        <div class="flex-1 overflow-y-auto overflow-x-hidden px-4 py-4">
+          <div class="space-y-4">
+            <!-- Market Sentiment -->
+            <div>
+              <label class="block text-xs font-medium text-gray-900 mb-2">市场情绪</label>
+              <div class="grid grid-cols-3 gap-1.5">
+                <button
+                  @click="filterMarketSentiment = filterMarketSentiment === 'bullish' ? '' : 'bullish'"
+                  :class="[
+                    'flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg text-xs font-medium transition-all border-2',
+                    filterMarketSentiment === 'bullish'
+                      ? 'bg-green-50 border-green-500 text-green-700'
+                      : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+                  ]"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                  </svg>
+                  <span>看多</span>
+                </button>
+                <button
+                  @click="filterMarketSentiment = filterMarketSentiment === 'neutral' ? '' : 'neutral'"
+                  :class="[
+                    'flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg text-xs font-medium transition-all border-2',
+                    filterMarketSentiment === 'neutral'
+                      ? 'bg-gray-50 border-gray-500 text-gray-700'
+                      : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+                  ]"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14"></path>
+                  </svg>
+                  <span>中性</span>
+                </button>
+                <button
+                  @click="filterMarketSentiment = filterMarketSentiment === 'bearish' ? '' : 'bearish'"
+                  :class="[
+                    'flex flex-col items-center gap-1.5 px-2 py-2 rounded-lg text-xs font-medium transition-all border-2',
+                    filterMarketSentiment === 'bearish'
+                      ? 'bg-red-50 border-red-500 text-red-700'
+                      : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+                  ]"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"></path>
+                  </svg>
+                  <span>看空</span>
+                </button>
+              </div>
+              <p class="mt-1.5 text-xs text-gray-500">基于资金费率和多空比综合判断</p>
+            </div>
 
-                    <!-- Exchange -->
-                    <div>
-                      <label class="block text-sm font-medium text-gray-900 mb-2">交易所</label>
-                      <select
-                        v-model="selectedExchange"
-                        class="w-full px-4 py-2.5 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all"
-                      >
-                        <option value="">所有交易所</option>
-                        <option v-for="exchange in allExchanges.filter(e => e.value)" :key="exchange.value" :value="exchange.value">
-                          {{ exchange.label }} ({{ exchange.count }})
-                        </option>
-                      </select>
-                    </div>
+            <!-- Exchange -->
+            <div>
+              <label class="block text-xs font-medium text-gray-900 mb-2">交易所</label>
+              <div class="grid grid-cols-3 gap-1.5">
+                <button
+                  @click="selectedExchange = ''"
+                  :class="[
+                    'px-2 py-1.5 rounded-lg text-xs font-medium transition-all border',
+                    selectedExchange === ''
+                      ? 'bg-gray-900 border-gray-900 text-white'
+                      : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+                  ]"
+                >
+                  全部
+                </button>
+                <button
+                  v-for="exchange in allExchanges.filter(e => e.value).slice(0, 8)"
+                  :key="exchange.value"
+                  @click="selectedExchange = selectedExchange === exchange.value ? '' : exchange.value"
+                  :class="[
+                    'flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-xs font-medium transition-all border',
+                    selectedExchange === exchange.value
+                      ? 'bg-gray-900 border-gray-900 text-white'
+                      : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+                  ]"
+                >
+                  <img v-if="exchange.logo" :src="exchange.logo" :alt="exchange.label" class="w-4 h-4 rounded-full" />
+                  <span>{{ exchange.label }}</span>
+                </button>
+              </div>
+            </div>
 
-                    <!-- Market Cap -->
-                    <div>
-                      <label class="block text-sm font-medium text-gray-900 mb-2">市值</label>
-                      <div class="flex items-center gap-2">
-                        <div class="flex-1 relative">
-                          <input
-                            v-model="filterMarketCapMin"
-                            type="text"
-                            placeholder="最小值"
-                            class="w-full pl-3 pr-8 py-2.5 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all"
-                          />
-                          <span class="absolute right-3 top-2.5 text-sm text-gray-400">$</span>
-                        </div>
-                        <span class="text-gray-300">-</span>
-                        <div class="flex-1 relative">
-                          <input
-                            v-model="filterMarketCapMax"
-                            type="text"
-                            placeholder="最大值"
-                            class="w-full pl-3 pr-8 py-2.5 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all"
-                          />
-                          <span class="absolute right-3 top-2.5 text-sm text-gray-400">$</span>
-                        </div>
-                      </div>
-                    </div>
+            <!-- Category -->
+            <div>
+              <label class="block text-xs font-medium text-gray-900 mb-2">分类</label>
+              <div class="grid grid-cols-3 gap-1.5">
+                <button
+                  @click="selectedCategory = ''"
+                  :class="[
+                    'px-2 py-1.5 rounded-lg text-xs font-medium transition-all border',
+                    selectedCategory === ''
+                      ? 'bg-gray-900 border-gray-900 text-white'
+                      : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+                  ]"
+                >
+                  全部
+                </button>
+                <button
+                  v-for="cat in [
+                    { value: 'layer1', label: 'Layer 1' },
+                    { value: 'defi', label: 'DeFi' },
+                    { value: 'nft', label: 'NFT' },
+                    { value: 'meme', label: 'Meme' },
+                    { value: 'ai', label: 'AI' },
+                    { value: 'gaming', label: 'Gaming' }
+                  ]"
+                  :key="cat.value"
+                  @click="selectedCategory = selectedCategory === cat.value ? '' : cat.value"
+                  :class="[
+                    'px-2 py-1.5 rounded-lg text-xs font-medium transition-all border',
+                    selectedCategory === cat.value
+                      ? 'bg-gray-900 border-gray-900 text-white'
+                      : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
+                  ]"
+                >
+                  {{ cat.label }}
+                </button>
+              </div>
+            </div>
 
-                    <!-- Price Change (24h) -->
-                    <div>
-                      <label class="block text-sm font-medium text-gray-900 mb-2">24h涨跌幅</label>
-                      <div class="flex items-center gap-2">
-                        <div class="flex-1 relative">
-                          <input
-                            v-model="filterPriceChangeMin"
-                            type="text"
-                            placeholder="最小值"
-                            class="w-full pl-3 pr-8 py-2.5 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all"
-                          />
-                          <span class="absolute right-3 top-2.5 text-sm text-gray-400">%</span>
-                        </div>
-                        <span class="text-gray-300">-</span>
-                        <div class="flex-1 relative">
-                          <input
-                            v-model="filterPriceChangeMax"
-                            type="text"
-                            placeholder="最大值"
-                            class="w-full pl-3 pr-8 py-2.5 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all"
-                          />
-                          <span class="absolute right-3 top-2.5 text-sm text-gray-400">%</span>
-                        </div>
-                      </div>
-                    </div>
+            <!-- Market Cap -->
+            <div>
+              <label class="block text-xs font-medium text-gray-900 mb-2">市值范围</label>
+              <div class="flex items-center gap-1.5">
+                <input
+                  v-model="filterMarketCapMin"
+                  type="text"
+                  placeholder="最小值"
+                  class="w-0 flex-1 min-w-0 px-2 py-1.5 text-xs bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-transparent transition-all"
+                />
+                <span class="text-gray-400 text-xs flex-shrink-0">-</span>
+                <input
+                  v-model="filterMarketCapMax"
+                  type="text"
+                  placeholder="最大值"
+                  class="w-0 flex-1 min-w-0 px-2 py-1.5 text-xs bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-transparent transition-all"
+                />
+              </div>
+            </div>
 
-                    <!-- Volume (24h) -->
-                    <div>
-                      <label class="block text-sm font-medium text-gray-900 mb-2">24h交易量</label>
-                      <div class="flex items-center gap-2">
-                        <div class="flex-1 relative">
-                          <input
-                            v-model="filterVolumeMin"
-                            type="text"
-                            placeholder="最小值"
-                            class="w-full pl-3 pr-8 py-2.5 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all"
-                          />
-                          <span class="absolute right-3 top-2.5 text-sm text-gray-400">$</span>
-                        </div>
-                        <span class="text-gray-300">-</span>
-                        <div class="flex-1 relative">
-                          <input
-                            v-model="filterVolumeMax"
-                            type="text"
-                            placeholder="最大值"
-                            class="w-full pl-3 pr-8 py-2.5 text-sm bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-all"
-                          />
-                          <span class="absolute right-3 top-2.5 text-sm text-gray-400">$</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+            <!-- Price Change (24h) -->
+            <div>
+              <label class="block text-xs font-medium text-gray-900 mb-2">24h涨跌幅</label>
+              <div class="flex items-center gap-1.5">
+                <input
+                  v-model="filterPriceChangeMin"
+                  type="text"
+                  placeholder="最小值"
+                  class="w-0 flex-1 min-w-0 px-2 py-1.5 text-xs bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-transparent transition-all"
+                />
+                <span class="text-gray-400 text-xs flex-shrink-0">-</span>
+                <input
+                  v-model="filterPriceChangeMax"
+                  type="text"
+                  placeholder="最大值"
+                  class="w-0 flex-1 min-w-0 px-2 py-1.5 text-xs bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-transparent transition-all"
+                />
+              </div>
+            </div>
 
-                  <!-- Actions -->
-                  <div class="flex items-center gap-3 pt-5 mt-5 border-t border-gray-100">
-                    <button
-                      @click="resetFilters"
-                      class="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-700 hover:text-gray-900 transition-colors"
-                    >
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                      </svg>
-                      重置
-                    </button>
-                    <button
-                      @click="applyFilters"
-                      class="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors"
-                    >
-                      应用筛选
-                    </button>
-                  </div>
-                </div>
+            <!-- Volume (24h) -->
+            <div>
+              <label class="block text-xs font-medium text-gray-900 mb-2">24h成交量</label>
+              <div class="flex items-center gap-1.5">
+                <input
+                  v-model="filterVolumeMin"
+                  type="text"
+                  placeholder="最小值"
+                  class="w-0 flex-1 min-w-0 px-2 py-1.5 text-xs bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-transparent transition-all"
+                />
+                <span class="text-gray-400 text-xs flex-shrink-0">-</span>
+                <input
+                  v-model="filterVolumeMax"
+                  type="text"
+                  placeholder="最大值"
+                  class="w-0 flex-1 min-w-0 px-2 py-1.5 text-xs bg-white border border-gray-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-gray-900 focus:border-transparent transition-all"
+                />
               </div>
             </div>
           </div>
         </div>
-      </div>
 
+        <!-- Footer Actions -->
+        <div class="flex items-center gap-2 px-4 py-3.5 border-t border-gray-200 bg-gray-50 flex-shrink-0">
+          <button
+            @click="resetFilters"
+            class="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium text-gray-700 hover:text-gray-900 hover:bg-white rounded-lg border border-gray-200 transition-colors"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+            </svg>
+            重置
+          </button>
+          <button
+            @click="applyFilters"
+            class="flex-1 px-4 py-2 text-xs font-medium text-white bg-gray-900 rounded-lg hover:bg-gray-800 transition-colors"
+          >
+            应用筛选
+          </button>
+        </div>
+      </div>
+    </Transition>
+
+    <!-- Main Content Area -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
       <!-- Loading State -->
       <div v-if="loading" class="flex justify-center items-center py-12">
         <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
@@ -554,53 +641,88 @@
                   #
                 </th>
                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 min-w-[200px]">
-                  Name
+                  名称
                 </th>
                 <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" @click="sortBy('current_price')">
-                  Price
+                  <div class="flex items-center justify-end gap-1">
+                    价格
+                    <div class="flex flex-col -space-y-1.5">
+                      <svg class="w-3 h-3" :class="sortField === 'current_price' && sortDirection === 'asc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                        <polyline points="4,10 8,6 12,10" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                      <svg class="w-3 h-3" :class="sortField === 'current_price' && sortDirection === 'desc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                        <polyline points="4,6 8,10 12,6" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </div>
+                  </div>
                 </th>
                 <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" @click="sortBy('price_change_percentage_24h')">
-                  24h %
+                  <div class="flex items-center justify-end gap-1">
+                    24h涨跌
+                    <div class="flex flex-col -space-y-1.5">
+                      <svg class="w-3 h-3" :class="sortField === 'price_change_percentage_24h' && sortDirection === 'asc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                        <polyline points="4,10 8,6 12,10" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                      <svg class="w-3 h-3" :class="sortField === 'price_change_percentage_24h' && sortDirection === 'desc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                        <polyline points="4,6 8,10 12,6" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </div>
+                  </div>
                 </th>
                 <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" @click="sortBy('market_cap')">
                   <div class="flex items-center justify-end gap-1">
-                    Market Cap
-                    <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
+                    市值
+                    <div class="flex flex-col -space-y-1.5">
+                      <svg class="w-3 h-3" :class="sortField === 'market_cap' && sortDirection === 'asc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                        <polyline points="4,10 8,6 12,10" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                      <svg class="w-3 h-3" :class="sortField === 'market_cap' && sortDirection === 'desc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                        <polyline points="4,6 8,10 12,6" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </div>
                   </div>
                 </th>
                 <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" @click="sortBy('total_volume')">
                   <div class="flex items-center justify-end gap-1">
-                    Volume(24h)
-                    <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
+                    24h成交量
+                    <div class="flex flex-col -space-y-1.5">
+                      <svg class="w-3 h-3" :class="sortField === 'total_volume' && sortDirection === 'asc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                        <polyline points="4,10 8,6 12,10" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                      <svg class="w-3 h-3" :class="sortField === 'total_volume' && sortDirection === 'desc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                        <polyline points="4,6 8,10 12,6" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </div>
                   </div>
                 </th>
                 <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" @click="sortBy('avg_funding_rate')">
                   <div class="flex items-center justify-end gap-1">
-                    Funding Rate
-                    <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
+                    资金费率
+                    <div class="flex flex-col -space-y-1.5">
+                      <svg class="w-3 h-3" :class="sortField === 'avg_funding_rate' && sortDirection === 'asc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                        <polyline points="4,10 8,6 12,10" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                      <svg class="w-3 h-3" :class="sortField === 'avg_funding_rate' && sortDirection === 'desc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                        <polyline points="4,6 8,10 12,6" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </div>
                   </div>
                 </th>
                 <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" @click="sortBy('total_open_interest')">
                   <div class="flex items-center justify-end gap-1">
-                    Open Interest
-                    <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
+                    未平仓量
+                    <div class="flex flex-col -space-y-1.5">
+                      <svg class="w-3 h-3" :class="sortField === 'total_open_interest' && sortDirection === 'asc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                        <polyline points="4,10 8,6 12,10" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                      <svg class="w-3 h-3" :class="sortField === 'total_open_interest' && sortDirection === 'desc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                        <polyline points="4,6 8,10 12,6" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </div>
                   </div>
                 </th>
-                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" @click="sortBy('avg_long_short_ratio')">
-                  <div class="flex items-center justify-end gap-1">
-                    Long/Short
-                    <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                  </div>
+                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500">
+                  市场情绪
                 </th>
                 <th class="px-4 py-3 text-center text-xs font-medium text-gray-500">
                   收藏
@@ -618,12 +740,26 @@
                     <div v-else class="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center">
                       <span class="text-xs font-bold text-gray-500">{{ token.symbol.substring(0, 1) }}</span>
                     </div>
-                    <div class="flex items-center gap-2">
-                      <span class="text-sm font-semibold text-gray-900">{{ token.name }}</span>
-                      <span class="text-xs text-gray-500 uppercase">{{ token.symbol }}</span>
-                      <span v-if="token.category" class="px-2 py-0.5 text-xs font-medium text-blue-700 bg-blue-100 rounded">
-                        {{ getCategoryLabel(token.category) }}
-                      </span>
+                    <div class="flex flex-col gap-1">
+                      <div class="flex items-center gap-2">
+                        <span class="text-sm font-semibold text-gray-900">{{ token.name }}</span>
+                        <span class="text-xs text-gray-500 uppercase">{{ token.symbol }}</span>
+                        <span v-if="token.category" class="px-2 py-0.5 text-xs font-medium text-blue-700 bg-blue-100 rounded">
+                          {{ getCategoryLabel(token.category) }}
+                        </span>
+                      </div>
+                      <!-- 交易所图标行 -->
+                      <div v-if="token.exchanges && token.exchanges.length > 0" class="flex items-center gap-1">
+                        <img
+                          v-for="exchange in token.exchanges.slice(0, 4)"
+                          :key="exchange"
+                          :src="getExchangeLogo(exchange)"
+                          :alt="exchange"
+                          :title="getExchangeConfig(exchange).name"
+                          class="w-4 h-4 rounded opacity-60 hover:opacity-100 transition-opacity"
+                        />
+                        <span v-if="token.exchanges.length > 4" class="text-xs text-gray-400">+{{ token.exchanges.length - 4 }}</span>
+                      </div>
                     </div>
                   </div>
                 </td>
@@ -653,11 +789,11 @@
                   </div>
                   <span v-else class="text-gray-400">-</span>
                 </td>
-                <td class="px-4 py-3 text-right text-sm font-medium">
-                  <span v-if="token.long_short_ratio_formatted" :class="getLongShortColor(token.avg_long_short_ratio)">
-                    {{ token.long_short_ratio_formatted }}
-                  </span>
-                  <span v-else class="text-gray-400">-</span>
+                <td class="px-4 py-3 text-center">
+                  <div v-if="token.avg_funding_rate !== null || token.avg_long_short_ratio !== null" class="inline-flex items-center justify-center px-3 py-1 rounded text-xs font-medium" :class="getMarketSentimentStyle(token).class">
+                    {{ getMarketSentimentStyle(token).label }}
+                  </div>
+                  <span v-else class="text-gray-400 text-xs">-</span>
                 </td>
                 <td class="px-4 py-3 text-center">
                   <button
@@ -699,26 +835,48 @@
           </table>
         </div>
 
-        <!-- Pagination -->
-        <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex items-center justify-between">
-          <div class="text-sm text-gray-700">
-            显示 {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, totalTokens) }} / 共 {{ totalTokens }} 个代币
+        <!-- Pagination / Load More -->
+        <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
+          <!-- 加载更多模式（热门和Top100） -->
+          <div v-if="useLoadMoreMode" class="flex items-center justify-between">
+            <div class="text-sm text-gray-700">
+              已显示 {{ tokens.length }} / 共 {{ totalTokens }} 个代币
+            </div>
+            <div
+              v-if="hasMore"
+              @click="loadMore"
+              class="text-sm text-blue-600 hover:text-blue-700 cursor-pointer"
+              :class="{ 'opacity-50 cursor-not-allowed': loading }"
+            >
+              <span v-if="loading">加载中...</span>
+              <span v-else>加载更多...</span>
+            </div>
+            <div v-else class="text-sm text-gray-500">
+              已加载全部数据
+            </div>
           </div>
-          <div class="flex gap-2">
-            <button
-              @click="currentPage--"
-              :disabled="currentPage === 1"
-              class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              上一页
-            </button>
-            <button
-              @click="currentPage++"
-              :disabled="currentPage >= totalPages"
-              class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              下一页
-            </button>
+
+          <!-- 传统分页模式（其他tab） -->
+          <div v-else class="flex items-center justify-between">
+            <div class="text-sm text-gray-700">
+              显示 {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, totalTokens) }} / 共 {{ totalTokens }} 个代币
+            </div>
+            <div class="flex gap-2">
+              <button
+                @click="currentPage--"
+                :disabled="currentPage === 1"
+                class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                上一页
+              </button>
+              <button
+                @click="currentPage++"
+                :disabled="currentPage >= totalPages"
+                class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                下一页
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -776,6 +934,7 @@ const selectedChain = ref('')  // 网络筛选
 const selectedCategory = ref('')  // 分类筛选（Layer1, DeFi等）
 const currentPage = ref(1)
 const pageSize = ref(20)
+const hasMore = ref(true)  // 是否还有更多数据
 const sortField = ref('market_cap_rank')
 const sortDirection = ref('asc')
 const loading = ref(false)
@@ -796,11 +955,11 @@ const filterPriceChangeMin = ref('')
 const filterPriceChangeMax = ref('')
 const filterVolumeMin = ref('')
 const filterVolumeMax = ref('')
+const filterMarketSentiment = ref('')  // 市场情绪：bullish(看多), bearish(看空), neutral(中性)
 
 // 标签页配置
 const tabs = [
   { label: 'Top', value: 'top100' },
-  { label: '推荐', value: 'ai' },
   { label: '热门', value: 'hot' },
   { label: '收藏', value: 'favorites' }
 ]
@@ -822,7 +981,9 @@ const allExchanges = ref([])
 // 加载网络列表
 const loadChainFilters = async () => {
   try {
-    const response = await apiRequest('http://localhost:8000/api/market/tokens/chains/')
+    // 根据当前tab加载对应的网络统计
+    const url = `http://localhost:8000/api/market/tokens/chains/?tab=${selectedTab.value}`
+    const response = await apiRequest(url)
 
     // 保存所有网络
     allChains.value = response.map(c => {
@@ -892,11 +1053,32 @@ const activeFiltersCount = computed(() => {
   if (filterMarketCapMin.value || filterMarketCapMax.value) count++
   if (filterPriceChangeMin.value || filterPriceChangeMax.value) count++
   if (filterVolumeMin.value || filterVolumeMax.value) count++
+  if (filterMarketSentiment.value) count++
   return count
 })
 
 // 计算属性
-const paginatedTokens = computed(() => tokens.value)
+const paginatedTokens = computed(() => {
+  let filtered = tokens.value
+
+  // 如果有市场情绪筛选，在前端进行过滤
+  if (filterMarketSentiment.value) {
+    filtered = filtered.filter(token => {
+      const sentiment = getMarketSentimentStyle(token)
+
+      if (filterMarketSentiment.value === 'bullish') {
+        return sentiment.label === '看多'
+      } else if (filterMarketSentiment.value === 'bearish') {
+        return sentiment.label === '看空'
+      } else if (filterMarketSentiment.value === 'neutral') {
+        return sentiment.label === '中性'
+      }
+      return true
+    })
+  }
+
+  return filtered
+})
 
 const totalPages = computed(() => {
   return Math.ceil(totalTokens.value / pageSize.value)
@@ -931,9 +1113,16 @@ const sortBy = (field) => {
     sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
   } else {
     sortField.value = field
-    sortDirection.value = 'asc'
+    sortDirection.value = 'desc'  // 默认降序
   }
-  loadTokensList()
+
+  // 对于"加载更多"模式，重置页码并重新加载
+  if (useLoadMoreMode.value) {
+    currentPage.value = 1
+    loadTokensList(false)
+  } else {
+    loadTokensList(false)
+  }
 }
 
 // 恐慌贪婪指数 - 文字颜色
@@ -971,14 +1160,6 @@ const getFundingRateColor = (value) => {
   return 'text-gray-600'
 }
 
-const getLongShortColor = (value) => {
-  const numValue = parseFloat(value)
-  if (isNaN(numValue)) return 'text-gray-600'
-  if (numValue > 1.2) return 'text-green-600'  // 多头占优
-  if (numValue < 0.8) return 'text-red-600'  // 空头占优
-  return 'text-gray-600'
-}
-
 const getChangeColor = (value) => {
   const numValue = parseFloat(value)
   if (numValue > 0) return 'text-green-600'
@@ -999,6 +1180,69 @@ const getCategoryLabel = (category) => {
   return labels[category] || category
 }
 
+// 获取交易所Logo
+const getExchangeLogo = (exchangeName) => {
+  const config = getExchangeConfig(exchangeName)
+  return config.logo || '/dex/default.png'
+}
+
+// 计算市场情绪
+const getMarketSentimentStyle = (token) => {
+  const fundingRate = parseFloat(token.avg_funding_rate)
+  const longShortRatio = parseFloat(token.avg_long_short_ratio)
+
+  // 如果两个指标都没有，返回中性
+  if (isNaN(fundingRate) && isNaN(longShortRatio)) {
+    return {
+      label: '中性',
+      class: 'bg-gray-50 text-gray-600 border border-gray-200'
+    }
+  }
+
+  // 计算情绪分数（-1到1之间）
+  let sentimentScore = 0
+  let scoreCount = 0
+
+  // 资金费率贡献（正值表示多头强势，负值表示空头强势）
+  if (!isNaN(fundingRate)) {
+    if (fundingRate > 0.01) sentimentScore += 1  // 强多头
+    else if (fundingRate > 0) sentimentScore += 0.5  // 弱多头
+    else if (fundingRate < -0.01) sentimentScore -= 1  // 强空头
+    else if (fundingRate < 0) sentimentScore -= 0.5  // 弱空头
+    scoreCount++
+  }
+
+  // 多空比贡献（>1表示多头多，<1表示空头多）
+  if (!isNaN(longShortRatio)) {
+    if (longShortRatio > 1.2) sentimentScore += 1  // 强多头
+    else if (longShortRatio > 1) sentimentScore += 0.5  // 弱多头
+    else if (longShortRatio < 0.8) sentimentScore -= 1  // 强空头
+    else if (longShortRatio < 1) sentimentScore -= 0.5  // 弱空头
+    scoreCount++
+  }
+
+  // 计算平均分数
+  const avgScore = scoreCount > 0 ? sentimentScore / scoreCount : 0
+
+  // 根据分数返回情绪（简约商务风格）
+  if (avgScore > 0.5) {
+    return {
+      label: '看多',
+      class: 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+    }
+  } else if (avgScore < -0.5) {
+    return {
+      label: '看空',
+      class: 'bg-rose-50 text-rose-700 border border-rose-200'
+    }
+  } else {
+    return {
+      label: '中性',
+      class: 'bg-gray-50 text-gray-600 border border-gray-200'
+    }
+  }
+}
+
 // 重置筛选器
 const resetFilters = () => {
   selectedChain.value = ''
@@ -1010,11 +1254,13 @@ const resetFilters = () => {
   filterPriceChangeMax.value = ''
   filterVolumeMin.value = ''
   filterVolumeMax.value = ''
+  filterMarketSentiment.value = ''
 }
 
 // 应用筛选器
 const applyFilters = () => {
   showFilterPanel.value = false
+  currentPage.value = 1  // 重置到第一页
   loadTokensList()
 }
 
@@ -1140,8 +1386,13 @@ const loadMarketStats = async () => {
   }
 }
 
+// 判断是否使用"加载更多"模式
+const useLoadMoreMode = computed(() => {
+  return selectedTab.value === 'hot' || selectedTab.value === 'top100'
+})
+
 // 加载代币列表
-const loadTokensList = async () => {
+const loadTokensList = async (append = false) => {
   loading.value = true
   error.value = null
 
@@ -1180,9 +1431,12 @@ const loadTokensList = async () => {
         endpoint = 'http://localhost:8000/api/market/tokens/'
     }
 
+    // 对于"加载更多"模式，使用25条每页
+    const currentPageSize = useLoadMoreMode.value ? 25 : pageSize.value
+
     const params = new URLSearchParams({
       page: currentPage.value,
-      page_size: pageSize.value,
+      page_size: currentPageSize,
     })
 
     if (searchQuery.value) {
@@ -1201,7 +1455,34 @@ const loadTokensList = async () => {
       params.append('category', selectedCategory.value)
     }
 
-    if (sortField.value && selectedTab.value === 'top100') {
+    // 注意：市场情绪筛选在前端进行（通过 paginatedTokens 计算属性）
+
+    // 添加市值范围筛选
+    if (filterMarketCapMin.value) {
+      params.append('market_cap_min', filterMarketCapMin.value)
+    }
+    if (filterMarketCapMax.value) {
+      params.append('market_cap_max', filterMarketCapMax.value)
+    }
+
+    // 添加价格变化范围筛选
+    if (filterPriceChangeMin.value) {
+      params.append('price_change_min', filterPriceChangeMin.value)
+    }
+    if (filterPriceChangeMax.value) {
+      params.append('price_change_max', filterPriceChangeMax.value)
+    }
+
+    // 添加成交量范围筛选
+    if (filterVolumeMin.value) {
+      params.append('volume_min', filterVolumeMin.value)
+    }
+    if (filterVolumeMax.value) {
+      params.append('volume_max', filterVolumeMax.value)
+    }
+
+    // 添加排序参数（支持 top100 和 hot）
+    if (sortField.value && (selectedTab.value === 'top100' || selectedTab.value === 'hot')) {
       const orderingField = sortDirection.value === 'desc' ? `-${sortField.value}` : sortField.value
       params.append('ordering', orderingField)
     }
@@ -1223,19 +1504,40 @@ const loadTokensList = async () => {
     }
 
     // 处理不同的响应格式
+    let newTokens = []
+    let total = 0
+
     if (response.status === 'success') {
       // 新接口格式
-      tokens.value = response.data || response.recommended_tokens || []
-      totalTokens.value = response.count || tokens.value.length
+      newTokens = response.data || response.recommended_tokens || []
+      total = response.count || newTokens.length
     } else if (Array.isArray(response)) {
-      tokens.value = response
-      totalTokens.value = response.length
+      newTokens = response
+      total = response.length
     } else if (response.results) {
-      tokens.value = response.results
-      totalTokens.value = response.count
+      newTokens = response.results
+      total = response.count
+    }
+
+    // 对于"加载更多"模式
+    if (useLoadMoreMode.value) {
+      if (append) {
+        // 追加数据
+        tokens.value = [...tokens.value, ...newTokens]
+      } else {
+        // 重新加载
+        tokens.value = newTokens
+      }
+
+      // 检查是否还有更多数据
+      // 热门和Top100限制为100条
+      const maxItems = 100
+      hasMore.value = tokens.value.length < Math.min(total, maxItems) && newTokens.length > 0
+      totalTokens.value = Math.min(total, maxItems)
     } else {
-      tokens.value = []
-      totalTokens.value = 0
+      // 传统分页模式
+      tokens.value = newTokens
+      totalTokens.value = total
     }
   } catch (err) {
     console.error('加载代币列表失败:', err)
@@ -1245,14 +1547,29 @@ const loadTokensList = async () => {
   }
 }
 
+// 加载更多
+const loadMore = async () => {
+  if (!hasMore.value || loading.value) return
+  currentPage.value++
+  await loadTokensList(true)  // append = true
+}
+
 // 监听筛选条件变化
 watch([searchQuery, selectedTab, selectedExchange, selectedChain, selectedCategory], () => {
   currentPage.value = 1
-  loadTokensList()
+  loadTokensList(false)  // 重新加载，不追加
 })
 
+// 监听tab变化，重新加载网络列表
+watch(selectedTab, () => {
+  loadChainFilters()
+})
+
+// 对于非"加载更多"模式，监听页码变化
 watch(currentPage, () => {
-  loadTokensList()
+  if (!useLoadMoreMode.value) {
+    loadTokensList(false)
+  }
 })
 
 // 组件挂载时加载数据

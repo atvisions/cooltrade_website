@@ -12,13 +12,13 @@
       </div>
 
       <!-- 当前风险等级显示 -->
-      <div v-if="hasExistingAssessment" class="bg-white rounded-2xl shadow-sm border-2 border-gray-200 p-8 mb-8">
+      <div v-if="hasExistingAssessment && !showAssessment" class="bg-white rounded-2xl shadow-sm border-2 border-gray-200 p-8 mb-8">
         <div class="flex items-center justify-between">
-          <div class="flex items-center space-x-6">
+          <div class="flex items-center space-x-6 flex-1">
             <div class="text-5xl">
               {{ currentRiskProfile.icon }}
             </div>
-            <div>
+            <div class="flex-1">
               <div class="text-sm text-gray-500 mb-1">当前风险等级</div>
               <h3 class="text-2xl font-bold text-gray-900 mb-2">{{ currentRiskProfile.type }}</h3>
               <p class="text-gray-600 text-sm">{{ currentRiskProfile.description }}</p>
@@ -31,6 +31,18 @@
           >
             重新评估
           </button>
+        </div>
+        <!-- 重新评估说明 -->
+        <div class="mt-6 pt-6 border-t border-gray-200">
+          <div class="flex items-start space-x-2 text-sm text-gray-600">
+            <svg class="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <p>
+              <span class="font-medium text-gray-900">重新评估说明：</span>
+              重新评估将更新您的风险等级，但<span class="font-semibold text-gray-900">不会覆盖您已调整的交易参数</span>（如止损、止盈等）。您的个性化配置将被保留。
+            </p>
+          </div>
         </div>
       </div>
 
@@ -61,7 +73,9 @@
 
             <!-- 选项列表 -->
             <div class="space-y-4 mb-10">
+              <!-- 单选题 -->
               <label
+                v-if="questions[currentQuestion - 1].type === 'single'"
                 v-for="(option, index) in questions[currentQuestion - 1].options"
                 :key="index"
                 :class="[
@@ -79,7 +93,37 @@
                   class="mt-1 mr-4 text-blue-600 focus:ring-blue-500 w-4 h-4"
                 />
                 <div class="flex-1">
-                  <div class="font-semibold text-gray-900 text-base">{{ option.text }}</div>
+                  <div class="flex items-center gap-2">
+                    <span v-if="option.icon" class="text-xl">{{ option.icon }}</span>
+                    <span class="font-semibold text-gray-900 text-base">{{ option.text }}</span>
+                  </div>
+                  <div class="text-sm text-gray-600 mt-1.5">{{ option.description }}</div>
+                </div>
+              </label>
+
+              <!-- 多选题 -->
+              <label
+                v-if="questions[currentQuestion - 1].type === 'multiple'"
+                v-for="(option, index) in questions[currentQuestion - 1].options"
+                :key="index"
+                :class="[
+                  'flex items-start p-5 border-2 rounded-xl cursor-pointer transition-all duration-200',
+                  selectedOptions.includes(index)
+                    ? 'border-blue-500 bg-gradient-to-r from-blue-50 to-purple-50 shadow-sm'
+                    : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+                ]"
+              >
+                <input
+                  type="checkbox"
+                  :value="index"
+                  v-model="selectedOptions"
+                  class="mt-1 mr-4 text-blue-600 focus:ring-blue-500 w-4 h-4 rounded"
+                />
+                <div class="flex-1">
+                  <div class="flex items-center gap-2">
+                    <span v-if="option.icon" class="text-xl">{{ option.icon }}</span>
+                    <span class="font-semibold text-gray-900 text-base">{{ option.text }}</span>
+                  </div>
                   <div class="text-sm text-gray-600 mt-1.5">{{ option.description }}</div>
                 </div>
               </label>
@@ -101,10 +145,10 @@
               </button>
               <button
                 @click="nextQuestion"
-                :disabled="selectedOption === null"
+                :disabled="!isCurrentQuestionAnswered"
                 :class="[
                   'px-8 py-3 rounded-xl font-semibold transition-all duration-200',
-                  selectedOption === null
+                  !isCurrentQuestionAnswered
                     ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                     : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700 shadow-sm hover:shadow-md'
                 ]"
@@ -209,53 +253,73 @@ const currentRiskProfile = ref({})
 // 问卷数据
 const questions = ref([
   {
-    title: "您的投资资金规模是？",
-    description: "请选择您计划用于加密货币交易的资金规模",
+    title: "您的投资经验如何？",
+    description: "请选择最符合您情况的投资经验水平",
+    type: 'single',
     options: [
-      { text: "1万以下", description: "适合小额试水，风险可控", weight: { conservative: 2 } },
-      { text: "1-10万", description: "中等资金规模，可适度配置", weight: { moderate: 1 } },
-      { text: "10-50万", description: "较大资金规模，需要专业管理", weight: { moderate: 1 } },
-      { text: "50万以上", description: "大额资金，追求稳定增值", weight: { aggressive: 1 } }
+      { text: "新手，刚开始投资", description: "刚接触加密货币投资", value: 1 },
+      { text: "有一些经验，投资1-3年", description: "有一定投资经验", value: 2 },
+      { text: "经验丰富，投资3-5年", description: "较为熟悉市场规律", value: 3 },
+      { text: "专业投资者，5年以上经验", description: "资深投资者", value: 4 }
     ]
   },
   {
-    title: "您的加密货币交易经验如何？",
-    description: "请选择最符合您情况的交易经验水平",
-    options: [
-      { text: "新手（<6个月）", description: "刚接触加密货币交易", weight: { conservative: 2 } },
-      { text: "初级（6个月-2年）", description: "有一定交易经验", weight: { moderate: 1 } },
-      { text: "中级（2-5年）", description: "较为熟悉市场规律", weight: { moderate: 1 } },
-      { text: "高级（>5年）", description: "资深交易者", weight: { aggressive: 1 } }
-    ]
-  },
-  {
-    title: "您能承受的最大损失是多少？",
+    title: "您能承受多大的投资损失？",
     description: "请选择您心理上能够接受的最大亏损比例",
+    type: 'single',
     options: [
-      { text: "最多5%", description: "非常保守，优先保本", weight: { conservative: 3 } },
-      { text: "10-20%", description: "适度风险，稳健增长", weight: { moderate: 2 } },
-      { text: "30-50%", description: "中高风险，追求收益", weight: { aggressive: 2 } },
-      { text: "50%以上", description: "高风险高收益", weight: { aggressive: 3 } }
+      { text: "不能承受任何损失", description: "非常保守，优先保本", value: 1 },
+      { text: "可以承受5%以内的损失", description: "适度风险，稳健增长", value: 2 },
+      { text: "可以承受10-20%的损失", description: "中高风险，追求收益", value: 3 },
+      { text: "可以承受20%以上的损失", description: "高风险高收益", value: 4 }
     ]
   },
   {
-    title: "您期望的年化收益率是？",
+    title: "您的投资目标是什么？",
     description: "请选择您对投资收益的期望水平",
+    type: 'single',
     options: [
-      { text: "10-20%", description: "稳健收益，风险较低", weight: { conservative: 2 } },
-      { text: "30-50%", description: "平衡收益与风险", weight: { moderate: 2 } },
-      { text: "100%+", description: "高收益，承担相应风险", weight: { aggressive: 2 } },
-      { text: "追求最大收益", description: "激进策略，最大化收益", weight: { aggressive: 3 } }
+      { text: "保值，避免通胀", description: "稳健收益，风险较低", value: 1 },
+      { text: "稳健增长，年化5-10%", description: "平衡收益与风险", value: 2 },
+      { text: "积极增长，年化10-20%", description: "高收益，承担相应风险", value: 3 },
+      { text: "高收益，愿意承担高风险", description: "激进策略，最大化收益", value: 4 }
     ]
   },
   {
-    title: "您偏好的交易频率是？",
-    description: "请选择您希望的交易操作频率",
+    title: "您的投资期限是多久？",
+    description: "请选择您计划持有投资的时间长度",
+    type: 'single',
+    key: 'investmentHorizon',
     options: [
-      { text: "长期持有（月级别）", description: "买入持有，长期投资", weight: { conservative: 2 } },
-      { text: "中期波段（周级别）", description: "波段操作，中期持有", weight: { moderate: 2 } },
-      { text: "短期交易（日级别）", description: "短线交易，快进快出", weight: { aggressive: 2 } },
-      { text: "高频交易（小时级别）", description: "高频操作，追求短期收益", weight: { aggressive: 3 } }
+      { text: "短期（3个月内）", description: "快进快出，追求短期收益", value: 'short' },
+      { text: "中期（3-12个月）", description: "中期持有，平衡风险收益", value: 'medium' },
+      { text: "长期（1年以上）", description: "长期投资，看好项目发展", value: 'long' }
+    ]
+  },
+  {
+    title: "您更关注哪类项目？",
+    description: "请选择您感兴趣的项目类别（可多选）",
+    type: 'multiple',
+    key: 'preferredCategories',
+    options: [
+      { text: "DeFi", description: "去中心化金融", value: 'DeFi', icon: '💰' },
+      { text: "Layer1/Layer2", description: "公链和扩容方案", value: 'Layer1', icon: '⛓️' },
+      { text: "NFT", description: "数字艺术和收藏品", value: 'NFT', icon: '🎨' },
+      { text: "GameFi", description: "链游和元宇宙", value: 'GameFi', icon: '🎮' },
+      { text: "AI", description: "AI相关项目", value: 'AI', icon: '🤖' },
+      { text: "Meme", description: "Meme币和社区币", value: 'Meme', icon: '🐕' }
+    ]
+  },
+  {
+    title: "您偏好的市值规模？",
+    description: "请选择您偏好投资的项目市值规模",
+    type: 'single',
+    key: 'marketCapPreference',
+    options: [
+      { text: "大盘币", description: "市值>100亿，稳定但收益有限", value: 'large' },
+      { text: "中盘币", description: "市值10-100亿，平衡风险收益", value: 'medium' },
+      { text: "小盘币", description: "市值<10亿，高风险高收益", value: 'small' },
+      { text: "混合配置", description: "大中小盘合理配置", value: 'mixed' }
     ]
   }
 ])
@@ -263,22 +327,38 @@ const questions = ref([
 const currentQuestion = ref(1)
 const totalQuestions = computed(() => questions.value.length)
 const selectedOption = ref(null)
-const answers = ref([])
+const selectedOptions = ref([]) // 用于多选题
+const answers = ref([null, null, null, null, [], null]) // 初始化答案数组
+
+// 检查当前问题是否已回答
+const isCurrentQuestionAnswered = computed(() => {
+  const question = questions.value[currentQuestion.value - 1]
+  if (question.type === 'multiple') {
+    return selectedOptions.value.length > 0
+  } else {
+    return selectedOption.value !== null
+  }
+})
 
 // 下一题
 const nextQuestion = () => {
-  if (selectedOption.value === null) return
-  
+  const question = questions.value[currentQuestion.value - 1]
+
   // 保存答案
-  answers.value[currentQuestion.value - 1] = {
-    questionIndex: currentQuestion.value - 1,
-    optionIndex: selectedOption.value,
-    weight: questions.value[currentQuestion.value - 1].options[selectedOption.value].weight
+  if (question.type === 'multiple') {
+    // 多选题：保存选中的值数组
+    answers.value[currentQuestion.value - 1] = selectedOptions.value.map(index =>
+      question.options[index].value
+    )
+  } else {
+    // 单选题：保存选中选项的值
+    answers.value[currentQuestion.value - 1] = question.options[selectedOption.value].value
   }
-  
+
   if (currentQuestion.value < totalQuestions.value) {
     currentQuestion.value++
-    selectedOption.value = answers.value[currentQuestion.value - 1]?.optionIndex ?? null
+    // 恢复下一题的答案
+    loadQuestionAnswer()
   } else {
     currentQuestion.value++
     calculateRiskProfile()
@@ -289,7 +369,45 @@ const nextQuestion = () => {
 const previousQuestion = () => {
   if (currentQuestion.value > 1) {
     currentQuestion.value--
-    selectedOption.value = answers.value[currentQuestion.value - 1]?.optionIndex ?? null
+    // 恢复上一题的答案
+    loadQuestionAnswer()
+  }
+}
+
+// 加载当前问题的已保存答案
+const loadQuestionAnswer = () => {
+  const question = questions.value[currentQuestion.value - 1]
+  const savedAnswer = answers.value[currentQuestion.value - 1]
+
+  if (question.type === 'multiple') {
+    // 多选题：恢复选中的索引数组
+    if (Array.isArray(savedAnswer) && savedAnswer.length > 0) {
+      selectedOptions.value = question.options
+        .map((opt, index) => savedAnswer.includes(opt.value) ? index : -1)
+        .filter(index => index !== -1)
+    } else {
+      selectedOptions.value = []
+    }
+    selectedOption.value = null
+  } else {
+    // 单选题：恢复选中的索引
+    if (savedAnswer !== null && savedAnswer !== undefined) {
+      const optionIndex = question.options.findIndex(opt => opt.value === savedAnswer)
+      selectedOption.value = optionIndex !== -1 ? optionIndex : null
+    } else {
+      selectedOption.value = null
+    }
+    selectedOptions.value = []
+  }
+}
+
+// 切换多选选项
+const toggleMultipleOption = (index) => {
+  const idx = selectedOptions.value.indexOf(index)
+  if (idx > -1) {
+    selectedOptions.value.splice(idx, 1)
+  } else {
+    selectedOptions.value.push(index)
   }
 }
 
@@ -298,24 +416,25 @@ const riskProfile = ref({})
 
 // 计算风险等级
 const calculateRiskProfile = () => {
-  const scores = { conservative: 0, moderate: 0, aggressive: 0 }
-  
-  answers.value.forEach(answer => {
-    Object.entries(answer.weight).forEach(([type, weight]) => {
-      scores[type] += weight
-    })
-  })
-  
+  // 计算风险等级（只用前3个问题的分数）
+  const totalScore = answers.value.slice(0, 3).reduce((sum, answer) => {
+    return sum + (typeof answer === 'number' ? answer : 0)
+  }, 0)
+
   let profileType = 'moderate'
-  if (scores.conservative >= 8) {
+
+  if (totalScore <= 4) {
     profileType = 'conservative'
-  } else if (scores.aggressive >= 8) {
+  } else if (totalScore <= 8) {
+    profileType = 'moderate'
+  } else {
     profileType = 'aggressive'
   }
-  
+
   const profiles = {
     conservative: {
       type: '保守型',
+      level: 'conservative',
       icon: '🛡️',
       color: 'bg-green-500',
       description: '您偏好稳健的投资策略，注重资金安全和稳定收益',
@@ -324,6 +443,7 @@ const calculateRiskProfile = () => {
     },
     moderate: {
       type: '稳健型',
+      level: 'moderate',
       icon: '⚖️',
       color: 'bg-blue-500',
       description: '您追求收益与风险的平衡，适合中等风险策略',
@@ -332,6 +452,7 @@ const calculateRiskProfile = () => {
     },
     aggressive: {
       type: '激进型',
+      level: 'aggressive',
       icon: '🚀',
       color: 'bg-red-500',
       description: '您愿意承担较高风险以获取更高收益',
@@ -339,9 +460,8 @@ const calculateRiskProfile = () => {
       positionSize: '60-90%'
     }
   }
-  
+
   riskProfile.value = profiles[profileType]
-  riskProfile.value.level = profileType
 }
 
 // 加载现有评估
@@ -409,7 +529,8 @@ const startReassessment = () => {
   showAssessment.value = true
   currentQuestion.value = 1
   selectedOption.value = null
-  answers.value = []
+  selectedOptions.value = []
+  answers.value = [null, null, null, null, [], null]
 }
 
 // 完成评估
@@ -422,17 +543,27 @@ const completeAssessment = async () => {
       return
     }
 
-    // 准备提交数据，确保格式符合后端要求
+    // 提取投资偏好数据
+    const investmentPreferences = {
+      investmentHorizon: answers.value[3] || 'medium',
+      preferredCategories: answers.value[4] || [],
+      marketCapPreference: answers.value[5] || 'mixed'
+    }
+
+    // 准备提交数据
     const assessmentData = {
-      answers: answers.value,
+      answers: answers.value.map((answer, index) => ({
+        questionIndex: index,
+        answer: answer,
+        question: questions.value[index].title,
+        key: questions.value[index].key || null
+      })),
       risk_profile: {
         level: riskProfile.value.level,
         type: riskProfile.value.type,
-        description: riskProfile.value.description,
-        icon: riskProfile.value.icon,
-        strategies: riskProfile.value.strategies,
-        positionSize: riskProfile.value.positionSize
-      }
+        description: riskProfile.value.description
+      },
+      investment_preferences: investmentPreferences
     }
 
     console.log('提交风险评估数据:', assessmentData)
@@ -455,8 +586,16 @@ const completeAssessment = async () => {
       assessmentDate.value = new Date().toLocaleDateString('zh-CN')
       showAssessment.value = false
 
-      // 跳转到仪表板
-      router.push('/dashboard')
+      // 检查是否是首次评估
+      const isFirstAssessment = response.data?.risk_profile?.assessment_data?.is_first_assessment
+
+      if (isFirstAssessment) {
+        // 首次评估：直接跳转到设置页面
+        router.push('/settings?tab=risk')
+      } else {
+        // 重新评估：跳转到设置页面并显示对比弹窗
+        router.push('/settings?tab=risk&showComparison=true')
+      }
     } else {
       notification.error(response.message || '保存失败', '错误')
     }

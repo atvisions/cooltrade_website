@@ -133,7 +133,7 @@ const addNotification = (notification) => {
     progress: 100,
     ...notification
   }
-  
+
   notifications.value.push(newNotification)
   
   // 自动移除

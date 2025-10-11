@@ -127,7 +127,8 @@ import {
   BellIcon,
   ChartBarIcon,
   SparklesIcon,
-  StarIcon
+  StarIcon,
+  HeartIcon
 } from '@heroicons/vue/24/outline'
 
 const route = useRoute()
@@ -180,6 +181,13 @@ const menuItems = ref([
     name: '交易中心',
     path: '/trading',
     icon: ChartBarIcon,
+    badge: null
+  },
+  {
+    id: 'favorites',
+    name: '我的收藏',
+    path: '/favorites',
+    icon: HeartIcon,
     badge: null
   },
   {

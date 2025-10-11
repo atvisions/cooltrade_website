@@ -32,12 +32,12 @@ export const showNotification = (options) => {
     ...options,
     timestamp: Date.now()
   }
-  
+
   // 触发全局事件
   window.dispatchEvent(new CustomEvent('show-notification', {
     detail: notification
   }))
-  
+
   return notification
 }
 
@@ -217,6 +217,39 @@ export const showPermissionError = () => {
   )
 }
 
+/**
+ * 快捷方法 - 收藏成功
+ */
+export const showFavoriteSuccess = (tokenName) => {
+  return showSuccess(
+    `${tokenName} 已添加到收藏`,
+    '收藏成功',
+    { duration: 3000 }
+  )
+}
+
+/**
+ * 快捷方法 - 取消收藏成功
+ */
+export const showUnfavoriteSuccess = (tokenName) => {
+  return showSuccess(
+    `${tokenName} 已从收藏中移除`,
+    '取消收藏',
+    { duration: 3000 }
+  )
+}
+
+/**
+ * 快捷方法 - 需要登录
+ */
+export const showLoginRequired = () => {
+  return showWarning(
+    '请先登录后再进行此操作',
+    '需要登录',
+    { duration: 4000 }
+  )
+}
+
 // 默认导出
 export default {
   show: showNotification,
@@ -225,7 +258,7 @@ export default {
   warning: showWarning,
   info: showInfo,
   loading: showLoading,
-  
+
   // 快捷方法
   rechargeSuccess: showRechargeSuccess,
   paymentSuccess: showPaymentSuccess,
@@ -236,5 +269,8 @@ export default {
   operationSuccess: showOperationSuccess,
   networkError: showNetworkError,
   serverError: showServerError,
-  permissionError: showPermissionError
+  permissionError: showPermissionError,
+  favoriteSuccess: showFavoriteSuccess,
+  unfavoriteSuccess: showUnfavoriteSuccess,
+  loginRequired: showLoginRequired
 }

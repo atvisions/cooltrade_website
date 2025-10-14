@@ -59,6 +59,9 @@
       <TokenBasicInfo
         :token="tokenData.token"
         :is-in-watchlist="tokenData.is_in_watchlist"
+        :is-favorite-processing="isFavoriteProcessing"
+        :realtime-price="realtimePrice"
+        :exchanges="tokenData.exchanges"
         @toggle-watchlist="toggleWatchlist"
         @trade="handleTrade"
       />
@@ -75,17 +78,52 @@
             :current-price="tokenData.token.current_price"
             :technical-signals="tokenData.market_analysis?.technical_signals"
             :market-condition="tokenData.market_analysis?.condition_label"
+            @price-update="realtimePrice = $event"
           />
 
-          <!-- Technical Analysis Tabs -->
+          <!-- Technical Indicators -->
           <TechnicalAnalysisTabs
             :technical-indicator="tokenData.technical_indicator"
             :technical-signals="tokenData.market_analysis?.technical_signals"
             :exchanges="tokenData.exchanges"
             :token="tokenData.token"
-            :strategies="tokenData.recommended_strategies"
-            :market-condition="tokenData.market_analysis?.condition_label"
           />
+
+          <!-- On-Chain Indicators -->
+          <div class="bg-white rounded-xl overflow-hidden border border-gray-200">
+            <div class="border-b border-gray-100 px-6 py-4">
+              <h2 class="text-lg font-semibold text-gray-900 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                </svg>
+                链上数据
+              </h2>
+            </div>
+            <div class="p-6">
+              <OnChainIndicators :indicators="tokenData.technical_indicator" />
+            </div>
+          </div>
+
+          <!-- Strategy Feed -->
+          <div class="bg-white rounded-xl overflow-hidden border border-gray-200">
+            <div class="border-b border-gray-100 px-6 py-4">
+              <div class="flex items-center justify-between">
+                <h2 class="text-lg font-semibold text-gray-900 flex items-center">
+                  <svg class="w-5 h-5 mr-2 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                  </svg>
+                  策略单
+                </h2>
+                <span class="text-xs text-gray-500">用户共享策略</span>
+              </div>
+            </div>
+            <div class="p-6">
+              <AIStrategiesGrid
+                :strategies="tokenData.recommended_strategies"
+                :market-condition="tokenData.market_analysis?.condition_label"
+              />
+            </div>
+          </div>
 
         </div>
 
@@ -113,6 +151,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { apiRequest, API_BASE_URL } from '../../utils/api.js'
+import { showFavoriteSuccess, showUnfavoriteSuccess, showError, showSuccess, showInfo } from '../../utils/notification.js'
 
 // Import common components
 import Header from '../common/Header.vue'
@@ -121,21 +160,23 @@ import Header from '../common/Header.vue'
 import TokenBasicInfo from './detail/TokenBasicInfo.vue'
 import TradingChart from './detail/TradingChart.vue'
 import TechnicalAnalysisTabs from './detail/TechnicalAnalysisTabs.vue'
+import OnChainIndicators from './detail/OnChainIndicators.vue'
+import AIStrategiesGrid from './detail/AIStrategiesGrid.vue'
 import BotTradingPanel from './detail/BotTradingPanel.vue'
 
 const route = useRoute()
-
-// Simple toast notification function (replace with your preferred notification library)
-const showToast = (message, type = 'success') => {
-  // For now, use console.log. You can replace this with your notification system
-  console.log(`[${type.toUpperCase()}] ${message}`)
-  // TODO: Integrate with your notification system
-}
 
 // State
 const loading = ref(true)
 const error = ref(null)
 const tokenData = ref(null)
+
+// 防止重复点击收藏
+const isFavoriteProcessing = ref(false)
+const lastFavoriteTime = ref(0)
+
+// K线实时价格（用于更新基本信息显示）
+const realtimePrice = ref(null)
 
 // Load data
 const loadData = async () => {
@@ -163,28 +204,50 @@ const loadData = async () => {
 const toggleWatchlist = async () => {
   if (!tokenData.value) return
 
+  // 防止重复点击
+  if (isFavoriteProcessing.value) {
+    return
+  }
+
+  // 检查冷却期（防止快速连续点击）
+  const cooldownPeriod = 1000 // 1秒冷却期
+  const now = Date.now()
+  if (now - lastFavoriteTime.value < cooldownPeriod) {
+    return
+  }
+
   try {
     const token = tokenData.value.token
 
-    if (tokenData.value.is_in_watchlist) {
-      // Remove from watchlist
-      await apiRequest(`${API_BASE_URL}/market/watchlist/${token.symbol}/`, {
-        method: 'DELETE'
-      })
-      tokenData.value.is_in_watchlist = false
-      showToast('已从关注列表移除', 'success')
+    // 标记为处理中
+    isFavoriteProcessing.value = true
+
+    // 使用后端的 toggle_favorite 接口
+    const response = await apiRequest(`${API_BASE_URL}/market/tokens/${token.symbol}/toggle_favorite/`, {
+      method: 'POST'
+    })
+
+    if (response.status === 'success') {
+      tokenData.value.is_in_watchlist = response.is_favorited
+
+      // 使用全局通知组件
+      if (response.is_favorited) {
+        showFavoriteSuccess(token.symbol)
+      } else {
+        showUnfavoriteSuccess(token.symbol)
+      }
     } else {
-      // Add to watchlist
-      await apiRequest(`${API_BASE_URL}/market/watchlist/`, {
-        method: 'POST',
-        body: JSON.stringify({ symbol: token.symbol })
-      })
-      tokenData.value.is_in_watchlist = true
-      showToast('已添加到关注列表', 'success')
+      throw new Error(response.message || '操作失败')
     }
   } catch (err) {
     console.error('Error toggling watchlist:', err)
-    showToast(err.message || '操作失败', 'error')
+    showError(err.message || '操作失败')
+  } finally {
+    // 移除处理中标记
+    isFavoriteProcessing.value = false
+
+    // 记录最后操作时间
+    lastFavoriteTime.value = Date.now()
   }
 }
 
@@ -220,19 +283,19 @@ const handleTrade = (exchange = 'binance') => {
 // Handle create bot
 const handleCreateBot = (botConfig) => {
   console.log('Creating bot:', botConfig)
-  showToast('Bot created successfully', 'success')
+  showSuccess('Bot 创建成功', 'Bot 创建')
 }
 
 // Handle start bot
 const handleStartBot = (botId) => {
   console.log('Starting bot:', botId)
-  showToast('Bot started', 'success')
+  showSuccess('Bot 已启动', 'Bot 启动')
 }
 
 // Handle stop bot
 const handleStopBot = (botId) => {
   console.log('Stopping bot:', botId)
-  showToast('Bot stopped', 'info')
+  showInfo('Bot 已停止', 'Bot 停止')
 
   // For now, just open trade with recommended parameters
   handleTrade()

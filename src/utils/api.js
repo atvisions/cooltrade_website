@@ -55,6 +55,13 @@ export async function apiRequest(url, options = {}) {
     defaultOptions.headers.Authorization = `Token ${token}`
   }
 
+  // 处理查询参数
+  let finalUrl = url
+  if (options.params) {
+    const queryParams = new URLSearchParams(options.params).toString()
+    finalUrl = `${url}?${queryParams}`
+  }
+
   const config = {
     ...defaultOptions,
     ...options,
@@ -64,9 +71,12 @@ export async function apiRequest(url, options = {}) {
     },
   }
 
+  // 移除params，因为已经添加到URL中
+  delete config.params
+
   try {
-    const response = await fetch(url, config)
-    
+    const response = await fetch(finalUrl, config)
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
       throw new Error(errorData.message || `HTTP error! status: ${response.status}`)

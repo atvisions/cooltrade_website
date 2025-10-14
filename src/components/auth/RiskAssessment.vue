@@ -40,7 +40,7 @@
             </svg>
             <p>
               <span class="font-medium text-gray-900">重新评估说明：</span>
-              重新评估将更新您的风险等级，但<span class="font-semibold text-gray-900">不会覆盖您已调整的交易参数</span>（如止损、止盈等）。您的个性化配置将被保留。
+              重新评估将更新您的风险等级，<span class="font-semibold text-red-600">会自动应用新的交易参数</span>（如止损、止盈等）。您的个性化配置将被覆盖。
             </p>
           </div>
         </div>
@@ -199,7 +199,7 @@
               </p>
 
               <!-- 推荐信息 - 网格布局 -->
-              <div class="grid grid-cols-2 gap-6">
+              <div class="grid grid-cols-2 gap-6 mb-6">
                 <div class="text-center">
                   <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-blue-50 mb-3">
                     <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -217,6 +217,76 @@
                   </div>
                   <div class="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-2">建议仓位</div>
                   <div class="font-semibold text-gray-900">{{ riskProfile.positionSize }}</div>
+                </div>
+              </div>
+
+              <!-- 参数变化对比（仅重新评估时显示） -->
+              <div v-if="hasExistingAssessment && previewParamComparison" class="p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border-2 border-blue-200">
+                <div class="flex items-center gap-2 mb-4">
+                  <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+                  </svg>
+                  <h4 class="font-semibold text-gray-900 text-lg">参数变化对比</h4>
+                </div>
+                <div class="space-y-4">
+                  <div class="bg-white rounded-lg p-4">
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium text-gray-600">风险等级</span>
+                      <div class="flex items-center gap-3">
+                        <span class="text-sm text-gray-500">{{ previewParamComparison.oldRiskLevel }}</span>
+                        <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                        </svg>
+                        <span class="text-base font-bold text-blue-600">{{ previewParamComparison.newRiskLevel }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="bg-white rounded-lg p-4">
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium text-gray-600">风险分数</span>
+                      <div class="flex items-center gap-3">
+                        <span class="text-sm text-gray-500">{{ previewParamComparison.oldRiskScore }}/10</span>
+                        <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                        </svg>
+                        <span class="text-base font-bold text-blue-600">{{ previewParamComparison.newRiskScore }}/10</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="bg-white rounded-lg p-4">
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium text-gray-600">最大仓位</span>
+                      <div class="flex items-center gap-3">
+                        <span class="text-sm text-gray-500">{{ (previewParamComparison.oldMaxPosition * 100).toFixed(0) }}%</span>
+                        <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                        </svg>
+                        <span class="text-base font-bold text-blue-600">{{ (previewParamComparison.newMaxPosition * 100).toFixed(0) }}%</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="bg-white rounded-lg p-4">
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium text-gray-600">止损阈值</span>
+                      <div class="flex items-center gap-3">
+                        <span class="text-sm text-gray-500">{{ (previewParamComparison.oldStopLoss * 100).toFixed(0) }}%</span>
+                        <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+                        </svg>
+                        <span class="text-base font-bold text-blue-600">{{ (previewParamComparison.newStopLoss * 100).toFixed(0) }}%</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <div class="flex items-start gap-2">
+                    <svg class="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                    <p class="text-xs text-yellow-800">
+                      <span class="font-semibold">注意：</span>点击"保存设置并继续"后，新的交易参数将自动应用，您之前的个性化配置将被覆盖。
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -249,6 +319,9 @@ const hasExistingAssessment = ref(false)
 const showAssessment = ref(false)
 const assessmentDate = ref('')
 const currentRiskProfile = ref({})
+const paramComparison = ref(null)  // 保存后的参数对比数据
+const previewParamComparison = ref(null)  // 预览的参数对比数据（保存前）
+const existingRiskProfile = ref(null)  // 保存现有的风险画像数据
 
 // 问卷数据
 const questions = ref([
@@ -462,6 +535,32 @@ const calculateRiskProfile = () => {
   }
 
   riskProfile.value = profiles[profileType]
+
+  // 如果是重新评估，生成参数对比预览
+  if (hasExistingAssessment.value && existingRiskProfile.value) {
+    const newRiskScore = Math.min(10, Math.max(1, Math.round(totalScore / 3)))
+
+    // 计算新的推荐参数
+    const newMaxPosition = profileType === 'conservative' ? 0.3 : profileType === 'moderate' ? 0.5 : 0.7
+    const newStopLoss = profileType === 'conservative' ? 0.05 : profileType === 'moderate' ? 0.1 : 0.15
+
+    const riskLevelMap = {
+      'conservative': '保守型',
+      'moderate': '稳健型',
+      'aggressive': '激进型'
+    }
+
+    previewParamComparison.value = {
+      oldRiskLevel: riskLevelMap[existingRiskProfile.value.risk_level] || existingRiskProfile.value.risk_level,
+      newRiskLevel: profiles[profileType].type,
+      oldRiskScore: existingRiskProfile.value.risk_score,
+      newRiskScore: newRiskScore,
+      oldMaxPosition: parseFloat(existingRiskProfile.value.max_position_size),
+      newMaxPosition: newMaxPosition,
+      oldStopLoss: parseFloat(existingRiskProfile.value.stop_loss_threshold),
+      newStopLoss: newStopLoss
+    }
+  }
 }
 
 // 加载现有评估
@@ -480,6 +579,14 @@ const loadExistingAssessment = async () => {
     if (response.status === 'success' && response.data.has_assessment) {
       hasExistingAssessment.value = true
       const profile = response.data.risk_profile
+
+      // 保存现有的风险画像数据（用于对比）
+      existingRiskProfile.value = {
+        risk_level: profile.risk_level,
+        risk_score: profile.risk_score,
+        max_position_size: profile.max_position_size,
+        stop_loss_threshold: profile.stop_loss_threshold
+      }
 
       // 转换后端数据格式为前端格式
       const riskLevelMap = {
@@ -531,6 +638,7 @@ const startReassessment = () => {
   selectedOption.value = null
   selectedOptions.value = []
   answers.value = [null, null, null, null, [], null]
+  paramComparison.value = null  // 清空参数对比
 }
 
 // 完成评估
@@ -578,24 +686,12 @@ const completeAssessment = async () => {
     )
 
     if (response.status === 'success') {
-      notification.success('风险偏好设置已保存', '保存成功')
+      notification.success('风险偏好设置已保存，交易参数已自动更新', '保存成功')
 
-      // 更新显示状态
-      hasExistingAssessment.value = true
-      currentRiskProfile.value = riskProfile.value
-      assessmentDate.value = new Date().toLocaleDateString('zh-CN')
-      showAssessment.value = false
-
-      // 检查是否是首次评估
-      const isFirstAssessment = response.data?.risk_profile?.assessment_data?.is_first_assessment
-
-      if (isFirstAssessment) {
-        // 首次评估：直接跳转到设置页面
-        router.push('/settings?tab=risk')
-      } else {
-        // 重新评估：跳转到设置页面并显示对比弹窗
-        router.push('/settings?tab=risk&showComparison=true')
-      }
+      // 直接跳转到市场推荐页面
+      setTimeout(() => {
+        router.push('/market?tab=recommended')
+      }, 1000)
     } else {
       notification.error(response.message || '保存失败', '错误')
     }

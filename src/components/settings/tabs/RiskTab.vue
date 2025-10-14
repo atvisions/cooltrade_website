@@ -6,7 +6,7 @@
       <p class="text-gray-500 mt-2 text-sm">精准控制您的投资策略与风险参数</p>
     </div>
 
-    <!-- 当前风险等级卡片 - 商务风格 -->
+    <!-- 当前风险等级卡片 -->
     <div class="bg-gradient-to-br from-slate-50 to-gray-50 rounded-xl border border-gray-200 p-6 mb-8 shadow-sm">
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-5 flex-1">
@@ -48,7 +48,7 @@
       </div>
     </div>
 
-    <!-- 交易参数设置 - 商务卡片布局 -->
+    <!-- 交易参数设置 -->
     <div class="bg-white rounded-xl border border-gray-200 shadow-sm">
       <!-- 标题栏 -->
       <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
@@ -72,77 +72,6 @@
       <!-- 参数网格 -->
       <div class="p-6">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <!-- 最大单笔投资比例 -->
-          <div class="bg-white rounded-lg border border-gray-200 p-5 hover:border-gray-300 transition-colors">
-            <div class="flex items-start justify-between mb-4">
-              <div class="flex-1">
-                <label class="text-sm font-semibold text-gray-900 flex items-center">
-                  <svg class="w-4 h-4 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-                  </svg>
-                  单笔投资比例
-                </label>
-                <p class="text-xs text-gray-500 mt-1 ml-6">单次交易占总资金的最大比例</p>
-              </div>
-              <div class="flex items-center space-x-2">
-                <input
-                  v-model.number="tradingPreferences.maxSingleInvestment"
-                  type="number"
-                  min="1"
-                  max="50"
-                  class="w-16 px-2 py-1 text-sm font-bold text-gray-900 bg-gray-50 border border-gray-300 rounded text-right focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                />
-                <span class="text-sm font-medium text-gray-600">%</span>
-              </div>
-            </div>
-            <input
-              v-model.number="tradingPreferences.maxSingleInvestment"
-              type="range"
-              min="1"
-              max="50"
-              class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-gray"
-            />
-            <div class="flex justify-between text-xs text-gray-400 mt-2">
-              <span>1%</span>
-              <span>50%</span>
-            </div>
-          </div>
-
-          <!-- 止损比例 -->
-          <div class="bg-white rounded-lg border border-gray-200 p-5 hover:border-gray-300 transition-colors">
-            <div class="flex items-start justify-between mb-4">
-              <div class="flex-1">
-                <label class="text-sm font-semibold text-gray-900 flex items-center">
-                  <svg class="w-4 h-4 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/>
-                  </svg>
-                  止损比例
-                </label>
-                <p class="text-xs text-gray-500 mt-1 ml-6">触发自动止损的亏损阈值</p>
-              </div>
-              <div class="flex items-center space-x-2">
-                <input
-                  v-model.number="tradingPreferences.stopLoss"
-                  type="number"
-                  min="1"
-                  max="30"
-                  class="w-16 px-2 py-1 text-sm font-bold text-gray-900 bg-gray-50 border border-gray-300 rounded text-right focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                />
-                <span class="text-sm font-medium text-gray-600">%</span>
-              </div>
-            </div>
-            <input
-              v-model.number="tradingPreferences.stopLoss"
-              type="range"
-              min="1"
-              max="30"
-              class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-gray"
-            />
-            <div class="flex justify-between text-xs text-gray-400 mt-2">
-              <span>1%</span>
-              <span>30%</span>
-            </div>
-          </div>
 
           <!-- 止盈比例 -->
           <div class="bg-white rounded-lg border border-gray-200 p-5 hover:border-gray-300 transition-colors">
@@ -380,7 +309,7 @@
         </div>
       </div>
 
-      <!-- 底部操作栏 - 添加外边距 -->
+      <!-- 底部操作栏 -->
       <div class="mt-6 pt-6 px-6 pb-6 border-t border-gray-100 flex items-center justify-between">
         <div class="text-xs text-gray-500">
           <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">

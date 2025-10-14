@@ -281,7 +281,7 @@
               <button
                 v-for="tab in tabs"
                 :key="tab.value"
-                @click="selectedTab = tab.value"
+                @click="switchTab(tab.value)"
                 :class="[
                   'flex items-center gap-2 px-4 py-2 text-sm font-medium whitespace-nowrap transition-all rounded-lg',
                   selectedTab === tab.value
@@ -292,6 +292,7 @@
                 <!-- 线框图标 -->
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
                   <path v-if="tab.value === 'top100'" stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
+                  <path v-else-if="tab.value === 'recommended'" stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                   <path v-else-if="tab.value === 'ai'" stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
                   <path v-else-if="tab.value === 'hot'" stroke-linecap="round" stroke-linejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path>
                   <path v-else-if="tab.value === 'favorites'" stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
@@ -304,9 +305,28 @@
 
         <!-- Filter Row -->
         <div class="flex items-center justify-between px-6 py-4 bg-gray-50">
-          <!-- Left: Chain Filters -->
-          <div class="flex items-center gap-2 overflow-x-auto" @click.stop>
-            <div class="flex items-center gap-2">
+          <!-- Left: Personalized Recommendation Info (推荐Tab) or Chain Filters (其他Tab) -->
+          <div class="flex items-center gap-3 overflow-x-auto" @click.stop>
+            <!-- 个性化推荐信息（仅在推荐Tab且有用户画像时显示） -->
+            <div v-if="selectedTab === 'recommended' && userProfile" class="flex items-center gap-2 flex-shrink-0">
+              <span class="text-xs font-medium text-gray-600">个性化推荐：</span>
+              <span class="text-xs text-gray-700">风险偏好 <span class="font-semibold text-gray-900">{{ userProfile.risk_level }}</span></span>
+              <span v-if="userProfile.risk_score" class="text-gray-300">|</span>
+              <span v-if="userProfile.risk_score" class="text-xs text-gray-700">
+                风险分数 <span class="font-semibold text-blue-600">{{ userProfile.risk_score }}/10</span>
+              </span>
+              <span v-if="userProfile.preferred_categories && userProfile.preferred_categories.length > 0" class="text-gray-300">|</span>
+              <span v-if="userProfile.preferred_categories && userProfile.preferred_categories.length > 0" class="text-xs text-gray-700">
+                偏好类别 <span class="font-semibold text-gray-900">{{ userProfile.preferred_categories.join(', ') }}</span>
+              </span>
+              <span v-if="userProfile.market_cap_preference" class="text-gray-300">|</span>
+              <span v-if="userProfile.market_cap_preference" class="text-xs text-gray-700">
+                市值偏好 <span class="font-semibold text-gray-900">{{ getMarketCapLabel(userProfile.market_cap_preference) }}</span>
+              </span>
+            </div>
+
+            <!-- 网络筛选器（非推荐Tab或推荐Tab无用户画像时显示） -->
+            <div v-if="selectedTab !== 'recommended' || !userProfile" class="flex items-center gap-2">
               <button
                 v-for="filter in chainFilters"
                 :key="filter.value"
@@ -336,10 +356,10 @@
             </div>
           </div>
 
-          <!-- Right: Search and Filter Button -->
+          <!-- Right: Search, Settings (推荐Tab), and Filter Button -->
           <div class="flex items-center gap-3" @click.stop>
-            <!-- Search -->
-            <div class="relative">
+            <!-- Search (非推荐Tab时显示) -->
+            <div v-if="selectedTab !== 'recommended'" class="relative">
               <input
                 v-model="searchQuery"
                 type="text"
@@ -351,8 +371,33 @@
               </svg>
             </div>
 
-            <!-- Filter Button -->
+            <!-- Re-assessment Button (仅在推荐Tab且有用户画像时显示) -->
             <button
+              v-if="selectedTab === 'recommended' && userProfile"
+              @click.stop="goToRiskAssessment"
+              class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-all"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+              </svg>
+              重新评估
+            </button>
+
+            <!-- Complete Assessment Button (仅在推荐Tab且无用户画像时显示) -->
+            <button
+              v-if="selectedTab === 'recommended' && !userProfile && !loading"
+              @click.stop="goToRiskAssessment"
+              class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-all"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+              </svg>
+              完成评估
+            </button>
+
+            <!-- Filter Button (非推荐Tab时显示) -->
+            <button
+              v-if="selectedTab !== 'recommended'"
               @click.stop="showFilterPanel = !showFilterPanel"
               :class="[
                 'flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all border',
@@ -721,6 +766,49 @@
                     </div>
                   </div>
                 </th>
+                <th v-if="selectedTab === 'hot'" class="px-4 py-3 text-right text-xs font-medium text-gray-500">
+                  <div class="flex items-center justify-end gap-1">
+                    <span class="cursor-pointer hover:text-gray-700" @click="sortBy('hot_score')">热度</span>
+                    <div class="relative group">
+                      <svg class="w-3.5 h-3.5 text-gray-400 hover:text-blue-500 cursor-help" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                      </svg>
+                      <div class="absolute right-0 top-full mt-1 w-64 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                        <div class="font-semibold mb-1">热度计算公式：</div>
+                        <div class="mb-2">热度 = 交易量 × (涨跌幅)² ÷ 10亿</div>
+                        <div class="text-gray-300">
+                          交易量越大、波动越大，热度越高。<br/>
+                          热度值反映了市场对该代币的关注度。
+                        </div>
+                      </div>
+                    </div>
+                    <div class="flex flex-col -space-y-1.5 cursor-pointer" @click="sortBy('hot_score')">
+                      <svg class="w-3 h-3" :class="sortField === 'hot_score' && sortDirection === 'asc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                        <polyline points="4,10 8,6 12,10" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                      <svg class="w-3 h-3" :class="sortField === 'hot_score' && sortDirection === 'desc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                        <polyline points="4,6 8,10 12,6" stroke-linecap="round" stroke-linejoin="round"/>
+                      </svg>
+                    </div>
+                  </div>
+                </th>
+                <th v-if="selectedTab === 'recommended'" class="px-4 py-3 text-right text-xs font-medium text-gray-500">
+                  <div class="flex items-center justify-end gap-1">
+                    <span>推荐分数</span>
+                    <div class="relative group">
+                      <svg class="w-3.5 h-3.5 text-gray-400 hover:text-blue-500 cursor-help" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                      </svg>
+                      <div class="absolute right-0 top-full mt-1 w-64 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                        <div class="font-semibold mb-1">推荐分数计算：</div>
+                        <div class="mb-2">总分100分 = 风险匹配(30) + 类别匹配(25) + 市值匹配(20) + 流动性(15) + 数据完整度(10)</div>
+                        <div class="text-gray-300">
+                          分数越高，代币越符合您的风险偏好和投资需求。
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </th>
                 <th class="px-4 py-3 text-center text-xs font-medium text-gray-500">
                   市场情绪
                 </th>
@@ -730,7 +818,12 @@
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-100">
-              <tr v-for="(token, index) in paginatedTokens" :key="token.id" class="hover:bg-gray-50 transition-colors cursor-pointer">
+              <tr
+                v-for="(token, index) in paginatedTokens"
+                :key="token.id"
+                @click="navigateToTokenDetail(token.symbol)"
+                class="hover:bg-gray-50 transition-colors cursor-pointer"
+              >
                 <td class="px-4 py-3 text-sm text-gray-500">
                   {{ token.market_cap_rank || (currentPage - 1) * pageSize + index + 1 }}
                 </td>
@@ -747,18 +840,6 @@
                         <span v-if="token.category" class="px-2 py-0.5 text-xs font-medium text-blue-700 bg-blue-100 rounded">
                           {{ getCategoryLabel(token.category) }}
                         </span>
-                      </div>
-                      <!-- 交易所图标行 -->
-                      <div v-if="token.exchanges && token.exchanges.length > 0" class="flex items-center gap-1">
-                        <img
-                          v-for="exchange in token.exchanges.slice(0, 4)"
-                          :key="exchange"
-                          :src="getExchangeLogo(exchange)"
-                          :alt="exchange"
-                          :title="getExchangeConfig(exchange).name"
-                          class="w-4 h-4 rounded opacity-60 hover:opacity-100 transition-opacity"
-                        />
-                        <span v-if="token.exchanges.length > 4" class="text-xs text-gray-400">+{{ token.exchanges.length - 4 }}</span>
                       </div>
                     </div>
                   </div>
@@ -786,6 +867,21 @@
                 <td class="px-4 py-3 text-right">
                   <div v-if="token.open_interest_formatted" class="text-sm text-gray-900">
                     {{ token.open_interest_formatted }}
+                  </div>
+                  <span v-else class="text-gray-400">-</span>
+                </td>
+                <td v-if="selectedTab === 'hot'" class="px-4 py-3 text-right" :title="`热度 = 交易量 × 波动² / 10亿\n交易量越大、波动越大，热度越高`">
+                  <div v-if="token.hot_score_formatted" class="text-sm font-medium text-gray-900">
+                    {{ token.hot_score_formatted }}
+                  </div>
+                  <span v-else class="text-gray-400">-</span>
+                </td>
+                <td v-if="selectedTab === 'recommended'" class="px-4 py-3 text-right">
+                  <div v-if="token.recommendation_score !== undefined" class="flex items-center justify-end gap-2">
+                    <div class="text-sm font-bold" :class="getRecommendationScoreColor(token.recommendation_score)">
+                      {{ token.recommendation_score }}
+                    </div>
+                    <div class="text-xs text-gray-400">/100</div>
                   </div>
                   <span v-else class="text-gray-400">-</span>
                 </td>
@@ -921,22 +1017,54 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import Header from '../common/Header.vue'
 import { apiRequest } from '../../utils/api.js'
 import { getChainConfig, getExchangeConfig } from '../../utils/chainConfig.js'
 import { showFavoriteSuccess, showUnfavoriteSuccess, showLoginRequired, showError } from '../../utils/notification.js'
 
+const router = useRouter()
+
 // 响应式数据
 const searchQuery = ref('')
-const selectedTab = ref('top100')  // 默认显示Top100
+// 从 localStorage 或 URL 参数读取上次选择的 tab，默认为 'top100'
+const getInitialTab = () => {
+  // 优先从 URL 参数读取
+  const urlParams = new URLSearchParams(window.location.search)
+  const tabFromUrl = urlParams.get('tab')
+  if (tabFromUrl && ['top100', 'recommended', 'hot', 'favorites', 'ai'].includes(tabFromUrl)) {
+    return tabFromUrl
+  }
+  // 其次从 localStorage 读取
+  const savedTab = localStorage.getItem('market_selected_tab')
+  if (savedTab && ['top100', 'recommended', 'hot', 'favorites', 'ai'].includes(savedTab)) {
+    return savedTab
+  }
+  return 'top100'
+}
+const selectedTab = ref(getInitialTab())
 const selectedExchange = ref('')
 const selectedChain = ref('')  // 网络筛选
 const selectedCategory = ref('')  // 分类筛选（Layer1, DeFi等）
 const currentPage = ref(1)
 const pageSize = ref(20)
 const hasMore = ref(true)  // 是否还有更多数据
-const sortField = ref('market_cap_rank')
-const sortDirection = ref('asc')
+
+// 根据初始 Tab 设置默认排序
+const getInitialSort = () => {
+  const tab = getInitialTab()
+  if (tab === 'top100') {
+    return { field: 'market_cap_rank', direction: 'asc' }
+  } else if (tab === 'hot') {
+    return { field: 'hot_score', direction: 'desc' }
+  } else if (tab === 'recommended') {
+    return { field: 'market_cap_rank', direction: 'asc' }
+  }
+  return { field: 'market_cap_rank', direction: 'asc' }
+}
+const initialSort = getInitialSort()
+const sortField = ref(initialSort.field)
+const sortDirection = ref(initialSort.direction)
 const loading = ref(false)
 const error = ref(null)
 const tokens = ref([])
@@ -947,6 +1075,7 @@ const statsLoading = ref(true)  // 市场统计数据加载状态
 let moreButtonRef = null  // More按钮的引用
 const moreDropdownTop = ref(0)  // More下拉菜单的top位置
 const moreDropdownLeft = ref(0)  // More下拉菜单的left位置
+const userProfile = ref(null)  // 用户画像信息
 
 // 筛选器字段
 const filterMarketCapMin = ref('')
@@ -960,6 +1089,7 @@ const filterMarketSentiment = ref('')  // 市场情绪：bullish(看多), bearis
 // 标签页配置
 const tabs = [
   { label: 'Top', value: 'top100' },
+  { label: '推荐', value: 'recommended' },
   { label: '热门', value: 'hot' },
   { label: '收藏', value: 'favorites' }
 ]
@@ -1085,6 +1215,11 @@ const totalPages = computed(() => {
 })
 
 // 方法
+// Navigate to token detail page
+const navigateToTokenDetail = (symbol) => {
+  router.push(`/market/${symbol}`)
+}
+
 const formatNumber = (num) => {
   if (num >= 1e12) {
     return (num / 1e12).toFixed(2) + 'T'
@@ -1167,6 +1302,14 @@ const getChangeColor = (value) => {
   return 'text-gray-600'
 }
 
+// 推荐分数颜色
+const getRecommendationScoreColor = (score) => {
+  if (score >= 80) return 'text-green-600'
+  if (score >= 60) return 'text-blue-600'
+  if (score >= 40) return 'text-yellow-600'
+  return 'text-gray-600'
+}
+
 const getCategoryLabel = (category) => {
   const labels = {
     'layer1': 'L1',
@@ -1183,7 +1326,7 @@ const getCategoryLabel = (category) => {
 // 获取交易所Logo
 const getExchangeLogo = (exchangeName) => {
   const config = getExchangeConfig(exchangeName)
-  return config.logo || '/dex/default.png'
+  return config.logo || null
 }
 
 // 计算市场情绪
@@ -1409,6 +1552,10 @@ const loadTokensList = async (append = false) => {
       case 'top100':
         endpoint = 'http://localhost:8000/api/market/tokens/top100/'
         break
+      case 'recommended':
+        // 使用个性化推荐接口（基于用户画像）
+        endpoint = 'http://localhost:8000/api/market/tokens/personalized_recommendations/'
+        break
       case 'hot':
         endpoint = 'http://localhost:8000/api/market/tokens/hot/'
         break
@@ -1431,54 +1578,62 @@ const loadTokensList = async (append = false) => {
         endpoint = 'http://localhost:8000/api/market/tokens/'
     }
 
-    // 对于"加载更多"模式，使用25条每页
-    const currentPageSize = useLoadMoreMode.value ? 25 : pageSize.value
+    // 对于"加载更多"模式，使用25条每页；推荐Tab固定10条
+    let currentPageSize
+    if (selectedTab.value === 'recommended') {
+      currentPageSize = 10  // 推荐固定10条
+    } else {
+      currentPageSize = useLoadMoreMode.value ? 25 : pageSize.value
+    }
 
     const params = new URLSearchParams({
       page: currentPage.value,
       page_size: currentPageSize,
     })
 
-    if (searchQuery.value) {
-      params.append('search', searchQuery.value)
-    }
+    // 推荐Tab不使用搜索和筛选参数
+    if (selectedTab.value !== 'recommended') {
+      if (searchQuery.value) {
+        params.append('search', searchQuery.value)
+      }
 
-    if (selectedExchange.value) {
-      params.append('exchange', selectedExchange.value)
-    }
+      if (selectedExchange.value) {
+        params.append('exchange', selectedExchange.value)
+      }
 
-    if (selectedChain.value && selectedChain.value !== 'more') {
-      params.append('chain', selectedChain.value)
-    }
+      if (selectedChain.value && selectedChain.value !== 'more') {
+        params.append('chain', selectedChain.value)
+      }
 
-    if (selectedCategory.value && selectedCategory.value !== 'more') {
-      params.append('category', selectedCategory.value)
-    }
+      if (selectedCategory.value && selectedCategory.value !== 'more') {
+        params.append('category', selectedCategory.value)
+      }
 
-    // 注意：市场情绪筛选在前端进行（通过 paginatedTokens 计算属性）
+      // 注意：市场情绪筛选在前端进行（通过 paginatedTokens 计算属性）
 
-    // 添加市值范围筛选
-    if (filterMarketCapMin.value) {
-      params.append('market_cap_min', filterMarketCapMin.value)
-    }
-    if (filterMarketCapMax.value) {
-      params.append('market_cap_max', filterMarketCapMax.value)
-    }
+      // 添加市值范围筛选
+      if (filterMarketCapMin.value) {
+        params.append('market_cap_min', filterMarketCapMin.value)
+      }
+      if (filterMarketCapMax.value) {
+        params.append('market_cap_max', filterMarketCapMax.value)
+      }
 
-    // 添加价格变化范围筛选
-    if (filterPriceChangeMin.value) {
-      params.append('price_change_min', filterPriceChangeMin.value)
-    }
-    if (filterPriceChangeMax.value) {
-      params.append('price_change_max', filterPriceChangeMax.value)
-    }
+      // 添加价格变化范围筛选
+      if (filterPriceChangeMin.value) {
+        params.append('price_change_min', filterPriceChangeMin.value)
+      }
+      if (filterPriceChangeMax.value) {
+        params.append('price_change_max', filterPriceChangeMax.value)
+      }
 
-    // 添加成交量范围筛选
-    if (filterVolumeMin.value) {
-      params.append('volume_min', filterVolumeMin.value)
-    }
-    if (filterVolumeMax.value) {
-      params.append('volume_max', filterVolumeMax.value)
+      // 添加成交量范围筛选
+      if (filterVolumeMin.value) {
+        params.append('volume_min', filterVolumeMin.value)
+      }
+      if (filterVolumeMax.value) {
+        params.append('volume_max', filterVolumeMax.value)
+      }
     }
 
     // 添加排序参数（支持 top100 和 hot）
@@ -1500,7 +1655,21 @@ const loadTokensList = async (append = false) => {
     } else {
       // 其他使用GET请求
       const url = endpoint.includes('?') ? `${endpoint}&${params.toString()}` : `${endpoint}?${params.toString()}`
-      response = await apiRequest(url)
+
+      try {
+        response = await apiRequest(url)
+      } catch (err) {
+        // 如果个性化推荐失败（未登录或未完成风险评估），降级到简单推荐
+        if (selectedTab.value === 'recommended' && (err.message?.includes('401') || err.message?.includes('400'))) {
+          console.log('降级到简单推荐接口')
+          const fallbackUrl = 'http://localhost:8000/api/market/tokens/recommended/?limit=10'
+          response = await apiRequest(fallbackUrl)
+          // 清空用户画像
+          userProfile.value = null
+        } else {
+          throw err
+        }
+      }
     }
 
     // 处理不同的响应格式
@@ -1508,9 +1677,26 @@ const loadTokensList = async (append = false) => {
     let total = 0
 
     if (response.status === 'success') {
-      // 新接口格式
-      newTokens = response.data || response.recommended_tokens || []
-      total = response.count || newTokens.length
+      // 个性化推荐接口格式（带 explanation）
+      if (response.recommendations) {
+        newTokens = response.recommendations.map(item => {
+          // 将推荐分数合并到token对象中
+          return {
+            ...item.token,
+            recommendation_score: item.explanation?.recommendation_score,
+            recommendation_reasons: item.explanation?.reasons
+          }
+        })
+        total = response.count || newTokens.length
+        // 保存用户画像信息
+        if (response.user_profile) {
+          userProfile.value = response.user_profile
+        }
+      } else {
+        // 其他新接口格式
+        newTokens = response.data || response.recommended_tokens || []
+        total = response.count || newTokens.length
+      }
     } else if (Array.isArray(response)) {
       newTokens = response
       total = response.length
@@ -1547,10 +1733,48 @@ const loadTokensList = async (append = false) => {
   }
 }
 
-// 加载更多
+// 切换 Tab（持久化到 localStorage 和 URL）
+const switchTab = (tabValue) => {
+  selectedTab.value = tabValue
+
+  // 清空用户画像信息（切换 tab 时）
+  if (tabValue !== 'recommended') {
+    userProfile.value = null
+  }
+
+  // 根据不同的 Tab 设置默认排序
+  if (tabValue === 'top100') {
+    // Top100 默认按市值排名升序（市值从大到小）
+    sortField.value = 'market_cap_rank'
+    sortDirection.value = 'asc'
+  } else if (tabValue === 'hot') {
+    // 热门 默认按热度降序（热度从高到低）
+    sortField.value = 'hot_score'
+    sortDirection.value = 'desc'
+  } else if (tabValue === 'recommended') {
+    // 推荐 默认按市值排名升序
+    sortField.value = 'market_cap_rank'
+    sortDirection.value = 'asc'
+  }
+  // 其他 Tab 保持当前排序不变
+
+  // 保存到 localStorage
+  localStorage.setItem('market_selected_tab', tabValue)
+
+  // 更新 URL 参数（不刷新页面）
+  const url = new URL(window.location.href)
+  url.searchParams.set('tab', tabValue)
+  window.history.pushState({}, '', url)
+}
+
+// 加载更多（无刷新追加数据）
 const loadMore = async () => {
   if (!hasMore.value || loading.value) return
+
+  // 增加页码
   currentPage.value++
+
+  // 追加数据，不清空现有列表
   await loadTokensList(true)  // append = true
 }
 
@@ -1571,6 +1795,32 @@ watch(currentPage, () => {
     loadTokensList(false)
   }
 })
+
+// 获取市值偏好标签
+const getMarketCapLabel = (preference) => {
+  const labels = {
+    'large': '大盘',
+    'medium': '中盘',
+    'small': '小盘',
+    'mixed': '混合'
+  }
+  return labels[preference] || preference
+}
+
+// 获取投资期限标签
+const getInvestmentHorizonLabel = (horizon) => {
+  const labels = {
+    'short': '短期',
+    'medium': '中期',
+    'long': '长期'
+  }
+  return labels[horizon] || horizon
+}
+
+// 跳转到风险评估页面
+const goToRiskAssessment = () => {
+  window.location.href = '/risk-assessment'
+}
 
 // 组件挂载时加载数据
 onMounted(() => {

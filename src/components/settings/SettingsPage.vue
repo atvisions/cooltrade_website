@@ -296,6 +296,8 @@ const riskAnswers = ref([null, null, null, null, [], null])
 const riskAssessmentDate = ref(null)
 // 存储从后端加载的风险类型（优先使用这个，而不是从答案计算）
 const savedRiskProfile = ref(null)
+const riskScore = ref(0)
+const riskLevel = ref('moderate')
 
 // 参数对比弹窗相关
 const showComparisonModal = ref(false)
@@ -416,6 +418,8 @@ provide('accountPrivacy', accountPrivacy)
 provide('riskQuestions', riskQuestions)
 provide('riskAnswers', riskAnswers)
 provide('riskAssessmentDate', riskAssessmentDate)
+provide('riskScore', riskScore)
+provide('riskLevel', riskLevel)
 provide('tradingPreferences', tradingPreferences)
 provide('tradingPreferencesLoading', tradingPreferencesLoading)
 provide('passwordForm', passwordForm)
@@ -823,6 +827,10 @@ const loadRiskAssessment = async () => {
         investmentPreferences: profile.investment_preferences || {},
         assessmentData: profile.assessment_data || {}  // 保存完整的 assessment_data
       }
+
+      // 设置风险等级和分数
+      riskLevel.value = profile.risk_level || profile.level || 'moderate'
+      riskScore.value = profile.risk_score || 0
 
       // 如果有评估数据，更新日期
       if (profile.updated_at) {

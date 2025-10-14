@@ -27,23 +27,9 @@
             <router-link
               to="/market"
               class="px-4 py-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-medium"
-              :class="{ 'text-blue-600 bg-blue-50': $route.path === '/market' }"
+              :class="{ 'text-blue-600 bg-blue-50': $route.path.startsWith('/market') }"
             >
               市场
-            </router-link>
-            <router-link
-              to="/recommend"
-              class="px-4 py-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-medium"
-              :class="{ 'text-blue-600 bg-blue-50': $route.path === '/recommend' }"
-            >
-              推荐
-            </router-link>
-            <router-link
-              to="/explore"
-              class="px-4 py-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-medium"
-              :class="{ 'text-blue-600 bg-blue-50': $route.path === '/explore' }"
-            >
-              探索
             </router-link>
             <router-link
               to="/strategies"
@@ -214,26 +200,10 @@
           <router-link
             to="/market"
             class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors"
-            :class="{ 'text-blue-600 bg-blue-50 font-semibold': $route.path === '/market' }"
+            :class="{ 'text-blue-600 bg-blue-50 font-semibold': $route.path.startsWith('/market') }"
             @click="showMobileMenu = false"
           >
             市场
-          </router-link>
-          <router-link
-            to="/recommend"
-            class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors"
-            :class="{ 'text-blue-600 bg-blue-50 font-semibold': $route.path === '/recommend' }"
-            @click="showMobileMenu = false"
-          >
-            推荐
-          </router-link>
-          <router-link
-            to="/explore"
-            class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors"
-            :class="{ 'text-blue-600 bg-blue-50 font-semibold': $route.path === '/explore' }"
-            @click="showMobileMenu = false"
-          >
-            探索
           </router-link>
           <router-link
             to="/strategies"

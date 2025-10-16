@@ -35,6 +35,15 @@ export const API_ENDPOINTS = {
   INVITATION_INFO: `${API_BASE_URL}/auth/invitation-info/`,
   USER_RANKING: `${API_BASE_URL}/auth/invitation-info/ranking/`,
 
+  // AI 策略相关
+  AI_STRATEGY_SEARCH_TOKEN: `${API_BASE_URL}/market/ai-strategy/search-token/`,
+  AI_STRATEGY_GENERATE: `${API_BASE_URL}/market/ai-strategy/generate/`,
+  AI_STRATEGY_LIST: `${API_BASE_URL}/market/ai-strategy/list/`,
+  AI_STRATEGY_DETAIL: `${API_BASE_URL}/market/ai-strategy/`,
+  AI_STRATEGY_APPLY: `${API_BASE_URL}/market/ai-strategy/apply/`,
+  AI_STRATEGY_SHARE: `${API_BASE_URL}/market/ai-strategy/share/`,
+  AI_STRATEGY_LIKE: `${API_BASE_URL}/market/ai-strategy/like/`,
+
   // 其他端点可以在这里添加
 }
 

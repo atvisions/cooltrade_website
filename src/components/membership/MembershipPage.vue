@@ -214,7 +214,7 @@ const expiryDate = ref('2024-12-31')
 
 // 功能对比
 const features = ref([
-  { name: 'AI策略生成', free: '3次/月', pro: '无限次', vip: '无限次' },
+  { name: '策略生成', free: '3次/月', pro: '无限次', vip: '无限次' },
   { name: '策略数量', free: '3个', pro: '20个', vip: '无限' },
   { name: '自动交易', free: '✗', pro: '✓', vip: '✓' },
   { name: '策略分享', free: '✗', pro: '✓', vip: '✓' },
@@ -237,7 +237,7 @@ const plans = ref([
     yearlyPrice: null,
     popular: false,
     features: [
-      'AI策略生成 3次/月',
+      '策略生成 3次/月',
       '最多3个策略',
       '基础数据分析',
       '社区交流'
@@ -252,7 +252,7 @@ const plans = ref([
     yearlyPrice: 999,
     popular: true,
     features: [
-      'AI策略生成无限次',
+      '策略生成无限次',
       '最多20个策略',
       '自动交易功能',
       '策略分享收益',

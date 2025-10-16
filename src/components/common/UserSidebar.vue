@@ -177,6 +177,13 @@ const menuItems = ref([
     badge: null
   },
   {
+    id: 'ai-strategy',
+    name: '策略生成器',
+    path: '/ai-strategy',
+    icon: SparklesIcon,
+    badge: null
+  },
+  {
     id: 'trading',
     name: '交易中心',
     path: '/trading',

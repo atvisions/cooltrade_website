@@ -20,8 +20,14 @@
       </div>
     </div>
 
+    <!-- Loading 状态 -->
+    <div v-if="isLoading" class="bg-white rounded-xl border border-gray-200 p-12 text-center">
+      <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+      <p class="text-gray-600">加载策略中...</p>
+    </div>
+
     <!-- 策略列表 -->
-    <div class="space-y-6">
+    <div v-else class="space-y-6">
       <div
         v-for="strategy in filteredStrategies"
         :key="strategy.id"
@@ -122,83 +128,92 @@
     <div v-if="filteredStrategies.length === 0" class="bg-white rounded-2xl border border-gray-200 p-12 text-center">
       <div class="text-6xl mb-4">📊</div>
       <h3 class="text-xl font-semibold text-gray-900 mb-2">暂无策略</h3>
-      <p class="text-gray-600 mb-6">去AI策略生成器创建您的第一个策略吧</p>
+      <p class="text-gray-600 mb-6">去策略生成器创建您的第一个策略吧</p>
       <button
         @click="goToAI"
         class="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 font-medium"
       >
-        AI生成策略
+        生成策略
       </button>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { apiRequest, API_ENDPOINTS } from '../../../utils/api'
 
 const router = useRouter()
 
 // 筛选器
 const activeFilter = ref('all')
 const filters = ref([
-  { id: 'all', name: '全部', count: 5 },
-  { id: 'running', name: '运行中', count: 3 },
-  { id: 'paused', name: '已暂停', count: 1 },
-  { id: 'draft', name: '草稿', count: 1 }
+  { id: 'all', name: '全部', count: 0 },
+  { id: 'running', name: '运行中', count: 0 },
+  { id: 'paused', name: '已暂停', count: 0 },
+  { id: 'draft', name: '草稿', count: 0 }
 ])
 
-// 策略数据（模拟）
-const strategies = ref([
-  {
-    id: 1,
-    name: 'BTC网格交易策略',
-    description: '适合震荡市场的BTC网格交易策略，自动低买高卖',
-    source: 'ai',
-    sourceDetail: 'Coze AI生成',
-    status: 'running',
-    autoTrade: true,
-    myReturn: 456.78,
-    myReturnPercent: 12.3,
-    todayTrades: 5,
-    currentPositions: 1,
-    runningDays: 15,
-    canShare: true,
-    isShared: false
-  },
-  {
-    id: 2,
-    name: 'ETH趋势跟踪策略',
-    description: '基于移动平均线的ETH趋势跟踪策略',
-    source: 'subscribed',
-    sourceDetail: '订阅自 CryptoMaster',
-    status: 'paused',
-    autoTrade: false,
-    myReturn: 789.12,
-    myReturnPercent: 23.4,
-    todayTrades: 0,
-    currentPositions: 0,
-    runningDays: 30,
-    canShare: false,
-    isShared: false
-  },
-  {
-    id: 3,
-    name: 'DCA定投策略',
-    description: '定期定额投资策略，降低市场波动风险',
-    source: 'custom',
-    sourceDetail: '自己创建',
-    status: 'running',
-    autoTrade: true,
-    myReturn: 234.56,
-    myReturnPercent: 8.9,
-    todayTrades: 2,
-    currentPositions: 0,
-    runningDays: 45,
-    canShare: true,
-    isShared: false
+// 策略数据
+const strategies = ref([])
+const isLoading = ref(false)
+
+// 加载策略列表
+const loadStrategies = async () => {
+  isLoading.value = true
+  try {
+    // 加载 AI 生成的策略（只加载已保存的）
+    const aiResponse = await apiRequest(`${API_ENDPOINTS.AI_STRATEGY_LIST}?saved_only=true`)
+
+    if (aiResponse.status === 'success' && aiResponse.data) {
+      // 转换 AI 生成的策略数据格式
+      const aiStrategies = aiResponse.data.map(strategy => ({
+        id: strategy.id,
+        name: strategy.title || `${strategy.token_symbol} 策略`,
+        description: strategy.summary || '基于 AI 分析生成的交易策略',
+        source: 'ai',
+        sourceDetail: 'AI 生成',
+        status: strategy.is_applied ? 'running' : 'draft',
+        autoTrade: strategy.is_applied,
+        myReturn: 0,  // TODO: 从交易记录计算
+        myReturnPercent: 0,
+        todayTrades: 0,
+        currentPositions: 0,
+        runningDays: calculateRunningDays(strategy.created_at),
+        canShare: !strategy.visibility || strategy.visibility === 'private',
+        isShared: strategy.visibility === 'public',
+        // 保留原始数据
+        rawData: strategy
+      }))
+
+      strategies.value = aiStrategies
+
+      // 更新筛选器计数
+      updateFilterCounts()
+    }
+  } catch (error) {
+    console.error('加载策略失败:', error)
+  } finally {
+    isLoading.value = false
   }
-])
+}
+
+// 计算运行天数
+const calculateRunningDays = (createdAt) => {
+  const created = new Date(createdAt)
+  const now = new Date()
+  const diff = now - created
+  return Math.floor(diff / (1000 * 60 * 60 * 24))
+}
+
+// 更新筛选器计数
+const updateFilterCounts = () => {
+  filters.value[0].count = strategies.value.length
+  filters.value[1].count = strategies.value.filter(s => s.status === 'running').length
+  filters.value[2].count = strategies.value.filter(s => s.status === 'paused').length
+  filters.value[3].count = strategies.value.filter(s => s.status === 'draft').length
+}
 
 // 过滤策略
 const filteredStrategies = computed(() => {
@@ -228,24 +243,52 @@ const getStatusLabel = (status) => {
   return labels[status] || status
 }
 
-const startStrategy = (id) => {
+const startStrategy = async (id) => {
   const strategy = strategies.value.find(s => s.id === id)
-  if (strategy) {
-    strategy.status = 'running'
-    console.log('启动策略:', id)
+  if (!strategy) return
+
+  try {
+    // 应用策略到交易系统
+    const response = await apiRequest(API_ENDPOINTS.AI_STRATEGY_APPLY, {
+      method: 'POST',
+      body: JSON.stringify({ strategy_id: id })
+    })
+
+    if (response.status === 'success') {
+      strategy.status = 'running'
+      strategy.autoTrade = true
+      console.log('启动策略:', id)
+      alert('策略已启动并应用到交易系统')
+    }
+  } catch (error) {
+    console.error('启动策略失败:', error)
+    alert('启动策略失败，请稍后重试')
   }
 }
 
-const pauseStrategy = (id) => {
+const pauseStrategy = async (id) => {
   const strategy = strategies.value.find(s => s.id === id)
-  if (strategy) {
+  if (!strategy) return
+
+  try {
+    // TODO: 实现暂停策略的 API
     strategy.status = 'paused'
+    strategy.autoTrade = false
     console.log('暂停策略:', id)
+    alert('策略已暂停')
+  } catch (error) {
+    console.error('暂停策略失败:', error)
+    alert('暂停策略失败，请稍后重试')
   }
 }
 
 const goToAI = () => {
   router.push('/ai-strategy')
 }
+
+// 页面加载
+onMounted(() => {
+  loadStrategies()
+})
 </script>
 

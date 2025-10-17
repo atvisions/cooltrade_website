@@ -191,13 +191,6 @@ const menuItems = ref([
     badge: null
   },
   {
-    id: 'favorites',
-    name: '我的收藏',
-    path: '/favorites',
-    icon: HeartIcon,
-    badge: null
-  },
-  {
     id: 'membership',
     name: '会员中心',
     path: '/membership',

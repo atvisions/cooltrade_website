@@ -120,15 +120,44 @@
                       </div>
                     </div>
 
-                    <!-- 网格交易标签 -->
-                    <div class="flex items-center gap-2 ml-3 px-3 py-1.5 bg-white rounded-lg border border-blue-200 flex-shrink-0">
-                      <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-3zM14 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1v-3z"/>
-                      </svg>
-                      <span class="text-sm font-medium text-gray-700">网格交易</span>
-                      <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                      </svg>
+                    <!-- 策略选择下拉 -->
+                    <div class="relative ml-3 flex-shrink-0">
+                      <button
+                        @click="showStrategyDropdown = !showStrategyDropdown"
+                        @blur="handleStrategyBlur"
+                        class="flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg border border-blue-200 hover:border-blue-300 transition-all"
+                      >
+                        <span class="text-xl">{{ getStrategyIcon(formData.strategy_method) }}</span>
+                        <span class="text-sm font-medium text-gray-700">{{ getStrategyLabel(formData.strategy_method) }}</span>
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                      </button>
+
+                      <!-- 策略下拉菜单 -->
+                      <div
+                        v-if="showStrategyDropdown"
+                        class="absolute z-[100] right-0 mt-2 w-64 bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden"
+                      >
+                        <div
+                          v-for="method in strategyMethods"
+                          :key="method.value"
+                          @mousedown="selectStrategyMethod(method.value)"
+                          class="px-4 py-3 hover:bg-blue-50 cursor-pointer transition-colors border-b border-gray-100 last:border-b-0"
+                          :class="{ 'bg-blue-50': formData.strategy_method === method.value }"
+                        >
+                          <div class="flex items-center gap-3">
+                            <span class="text-2xl">{{ method.icon }}</span>
+                            <div class="flex-1">
+                              <div class="text-sm font-semibold text-gray-900">{{ method.label }}</div>
+                              <div class="text-xs text-gray-500 mt-0.5">{{ method.description }}</div>
+                            </div>
+                            <svg v-if="formData.strategy_method === method.value" class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
                     </div>
 
                     <button
@@ -153,15 +182,44 @@
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                     </svg>
 
-                    <!-- 网格交易标签 - 在搜索框内 -->
-                    <div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-                      <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-3zM14 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1v-3z"/>
-                      </svg>
-                      <span class="text-sm font-medium text-gray-700">网格交易</span>
-                      <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                      </svg>
+                    <!-- 策略选择下拉 - 在搜索框内 -->
+                    <div class="absolute right-3 top-1/2 -translate-y-1/2">
+                      <button
+                        @click="showStrategyDropdown = !showStrategyDropdown"
+                        @blur="handleStrategyBlur"
+                        class="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 hover:border-blue-300 transition-all"
+                      >
+                        <span class="text-base">{{ getStrategyIcon(formData.strategy_method) }}</span>
+                        <span class="text-sm font-medium text-gray-700">{{ getStrategyLabel(formData.strategy_method) }}</span>
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                        </svg>
+                      </button>
+
+                      <!-- 策略下拉菜单 -->
+                      <div
+                        v-if="showStrategyDropdown"
+                        class="absolute z-[100] right-0 mt-2 w-64 bg-white border border-gray-200 rounded-xl shadow-2xl overflow-hidden"
+                      >
+                        <div
+                          v-for="method in strategyMethods"
+                          :key="method.value"
+                          @mousedown="selectStrategyMethod(method.value)"
+                          class="px-4 py-3 hover:bg-blue-50 cursor-pointer transition-colors border-b border-gray-100 last:border-b-0"
+                          :class="{ 'bg-blue-50': formData.strategy_method === method.value }"
+                        >
+                          <div class="flex items-center gap-3">
+                            <span class="text-2xl">{{ method.icon }}</span>
+                            <div class="flex-1">
+                              <div class="text-sm font-semibold text-gray-900">{{ method.label }}</div>
+                              <div class="text-xs text-gray-500 mt-0.5">{{ method.description }}</div>
+                            </div>
+                            <svg v-if="formData.strategy_method === method.value" class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -297,33 +355,45 @@
                 </div>
               </div>
 
-              <!-- 当前价格（仅网格交易显示） -->
-              <div v-if="generatedStrategy.additional_parameters?.grid_config" class="p-6 border-b border-gray-200">
+              <!-- 当前市场价格（整合版） -->
+              <div class="p-6 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
                 <div class="flex items-center gap-2 mb-4">
-                  <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
                   </svg>
                   <h3 class="text-lg font-bold text-gray-900">当前市场价格</h3>
                 </div>
-                <div class="bg-gradient-to-br from-blue-50 to-white rounded-xl p-6 border-2 border-blue-200 shadow-sm">
+                <div class="bg-white rounded-2xl p-6 border border-gray-200">
+                  <!-- 价格和位置 -->
                   <div class="flex items-center justify-between">
                     <div>
                       <div class="text-sm text-gray-600 mb-1">{{ generatedStrategy.token_symbol }} 当前价格</div>
                       <div class="text-4xl font-bold text-blue-600">
-                        ${{ formatPrice(generatedStrategy.entry_price) }}
+                        ${{ formatPrice(generatedStrategy.snapshot_price || generatedStrategy.token_current_price) }}
+                      </div>
+                      <!-- 如果有建议入场价且与快照价格不同，显示建议入场价 -->
+                      <div v-if="generatedStrategy.entry_price && Math.abs(generatedStrategy.entry_price - (generatedStrategy.snapshot_price || generatedStrategy.token_current_price)) > 0.01" class="text-xs text-gray-500 mt-1">
+                        建议入场价: ${{ formatPrice(generatedStrategy.entry_price) }}
                       </div>
                     </div>
                     <div class="text-right">
                       <div class="text-xs text-gray-500 mb-2">价格位置</div>
-                      <div class="text-sm font-semibold" :class="calculateGridDeviation(generatedStrategy.entry_price, generatedStrategy.additional_parameters.grid_config.settings?.lower_price || generatedStrategy.additional_parameters.grid_config.grid_lower_price, generatedStrategy.additional_parameters.grid_config.settings?.higher_price || generatedStrategy.additional_parameters.grid_config.grid_upper_price) > 0 ? 'text-green-600' : 'text-red-600'">
-                        {{ calculateGridDeviation(generatedStrategy.entry_price, generatedStrategy.additional_parameters.grid_config.settings?.lower_price || generatedStrategy.additional_parameters.grid_config.grid_lower_price, generatedStrategy.additional_parameters.grid_config.settings?.higher_price || generatedStrategy.additional_parameters.grid_config.grid_upper_price) > 0 ? '偏上 +' : '偏下 ' }}{{ Math.abs(calculateGridDeviation(generatedStrategy.entry_price, generatedStrategy.additional_parameters.grid_config.settings?.lower_price || generatedStrategy.additional_parameters.grid_config.grid_lower_price, generatedStrategy.additional_parameters.grid_config.settings?.higher_price || generatedStrategy.additional_parameters.grid_config.grid_upper_price)) }}%
+                      <!-- 网格交易显示相对网格中心的偏离 -->
+                      <div v-if="generatedStrategy.additional_parameters?.grid_config" class="text-sm font-semibold" :class="calculateGridDeviation(generatedStrategy.snapshot_price || generatedStrategy.token_current_price, generatedStrategy.additional_parameters.grid_config.settings?.lower_price || generatedStrategy.additional_parameters.grid_config.grid_lower_price, generatedStrategy.additional_parameters.grid_config.settings?.higher_price || generatedStrategy.additional_parameters.grid_config.grid_upper_price) > 0 ? 'text-green-600' : calculateGridDeviation(generatedStrategy.snapshot_price || generatedStrategy.token_current_price, generatedStrategy.additional_parameters.grid_config.settings?.lower_price || generatedStrategy.additional_parameters.grid_config.grid_lower_price, generatedStrategy.additional_parameters.grid_config.settings?.higher_price || generatedStrategy.additional_parameters.grid_config.grid_upper_price) < 0 ? 'text-red-600' : 'text-gray-600'">
+                        {{ calculateGridDeviation(generatedStrategy.snapshot_price || generatedStrategy.token_current_price, generatedStrategy.additional_parameters.grid_config.settings?.lower_price || generatedStrategy.additional_parameters.grid_config.grid_lower_price, generatedStrategy.additional_parameters.grid_config.settings?.higher_price || generatedStrategy.additional_parameters.grid_config.grid_upper_price) > 0 ? '偏上 +' : calculateGridDeviation(generatedStrategy.snapshot_price || generatedStrategy.token_current_price, generatedStrategy.additional_parameters.grid_config.settings?.lower_price || generatedStrategy.additional_parameters.grid_config.grid_lower_price, generatedStrategy.additional_parameters.grid_config.settings?.higher_price || generatedStrategy.additional_parameters.grid_config.grid_upper_price) < 0 ? '偏下 ' : '居中 ' }}{{ Math.abs(calculateGridDeviation(generatedStrategy.snapshot_price || generatedStrategy.token_current_price, generatedStrategy.additional_parameters.grid_config.settings?.lower_price || generatedStrategy.additional_parameters.grid_config.grid_lower_price, generatedStrategy.additional_parameters.grid_config.settings?.higher_price || generatedStrategy.additional_parameters.grid_config.grid_upper_price)) }}%
+                      </div>
+                      <!-- 非网格交易显示24h涨跌 -->
+                      <div v-else class="text-sm font-semibold" :class="(generatedStrategy.market_condition?.price_change_percentage_24h || 0) > 0 ? 'text-green-600' : 'text-red-600'">
+                        {{ (generatedStrategy.market_condition?.price_change_percentage_24h || 0) > 0 ? '+' : '' }}{{ (generatedStrategy.market_condition?.price_change_percentage_24h || 0).toFixed(2) }}%
                       </div>
                       <div class="text-xs text-gray-500 mt-1">
-                        相对网格中心
+                        {{ generatedStrategy.additional_parameters?.grid_config ? '相对网格中心' : '24小时涨跌' }}
                       </div>
                     </div>
                   </div>
-                  <div class="mt-4 pt-4 border-t border-blue-100">
+
+                  <!-- 网格价格范围（仅网格交易显示） -->
+                  <div v-if="generatedStrategy.additional_parameters?.grid_config" class="mt-4 pt-4 border-t border-gray-100">
                     <div class="flex items-center justify-between text-sm">
                       <div>
                         <span class="text-gray-500">网格下限：</span>
@@ -339,208 +409,104 @@
                       </div>
                     </div>
                   </div>
+
+                  <!-- 交易方向指示（所有策略显示） -->
+                  <div class="mt-6 pt-6 border-t border-gray-100">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-3">
+                        <div class="text-sm text-gray-600">交易方向：</div>
+                        <div class="flex items-center gap-2">
+                          <!-- 交易方向图标和文字 -->
+                          <div v-if="generatedStrategy.trading_direction === 'long'" class="flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-lg">
+                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                            </svg>
+                            <span class="font-bold text-green-700">做多 (Long)</span>
+                          </div>
+                          <div v-else-if="generatedStrategy.trading_direction === 'short'" class="flex items-center gap-2 px-4 py-2 bg-red-50 border border-red-200 rounded-lg">
+                            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/>
+                            </svg>
+                            <span class="font-bold text-red-700">做空 (Short)</span>
+                          </div>
+                          <div v-else class="flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg">
+                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                            </svg>
+                            <span class="font-bold text-blue-700">双向 (Both)</span>
+                          </div>
+
+                          <!-- 市场趋势标签 -->
+                          <div class="px-3 py-2 rounded-lg text-sm font-medium"
+                               :class="{
+                                 'bg-green-50 text-green-700 border border-green-200': generatedStrategy.market_trend === 'bullish',
+                                 'bg-red-50 text-red-700 border border-red-200': generatedStrategy.market_trend === 'bearish',
+                                 'bg-gray-50 text-gray-700 border border-gray-200': generatedStrategy.market_trend === 'sideways'
+                               }">
+                            {{ generatedStrategy.market_trend === 'bullish' ? '看涨市场' : generatedStrategy.market_trend === 'bearish' ? '看跌市场' : '横盘震荡' }}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
               <!-- 网格交易配置（仅网格交易显示） -->
-              <div v-if="generatedStrategy.additional_parameters?.grid_config" class="p-6 border-b border-gray-200">
+              <div v-if="generatedStrategy.additional_parameters?.grid_config">
+                <GridConfig
+                  :config="{
+                    ...generatedStrategy.additional_parameters.grid_config,
+                    leverage: generatedStrategy.leverage,
+                    position_size_percentage: generatedStrategy.position_size_percentage
+                  }"
+                />
+              </div>
+
+              <!-- 定投策略配置（仅定投策略显示） -->
+              <div v-if="generatedStrategy.additional_parameters?.dca_config" class="p-6 border-b border-gray-200">
+                <DCAConfig :config="generatedStrategy.additional_parameters.dca_config" />
+              </div>
+
+              <!-- 突破策略配置（仅突破策略显示） -->
+              <div v-if="generatedStrategy.additional_parameters?.breakout_config" class="p-6 border-b border-gray-200">
                 <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                  <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM14 5a1 1 0 011-1h4a1 1 0 011 1v7a1 1 0 01-1 1h-4a1 1 0 01-1-1V5zM4 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1H5a1 1 0 01-1-1v-3zM14 16a1 1 0 011-1h4a1 1 0 011 1v3a1 1 0 01-1 1h-4a1 1 0 01-1-1v-3z"/>
+                  <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
                   </svg>
-                  网格交易配置
+                  突破策略配置
                 </h3>
 
-                <!-- 主要参数 - 大卡片 -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <!-- 价格区间卡片 -->
-                  <div class="bg-gradient-to-br from-blue-50 to-white rounded-xl p-5 border border-blue-100">
-                    <div class="flex items-start justify-between mb-3">
-                      <div>
-                        <div class="text-xs font-medium text-gray-600 mb-0.5">网格价格区间</div>
-                        <div class="text-[10px] text-gray-500">Price Range</div>
-                      </div>
-                      <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-blue-100 text-blue-700">
-                        {{ generatedStrategy.additional_parameters.grid_config.grid_type || 'Long' }}
-                      </span>
-                    </div>
-                    <div class="space-y-3">
-                      <div class="flex items-center justify-between">
-                        <span class="text-xs text-gray-500">上限</span>
-                        <span class="text-2xl font-bold text-green-600">
-                          ${{ formatPrice(generatedStrategy.additional_parameters.grid_config.settings?.higher_price || generatedStrategy.additional_parameters.grid_config.grid_upper_price) }}
-                        </span>
-                      </div>
-                      <div class="relative h-2 bg-gradient-to-r from-red-200 via-yellow-200 to-green-200 rounded-full">
-                        <div class="absolute inset-0 flex items-center justify-center">
-                          <div class="w-3 h-3 bg-blue-600 rounded-full border-2 border-white shadow-lg"></div>
-                        </div>
-                      </div>
-                      <div class="flex items-center justify-between">
-                        <span class="text-xs text-gray-500">下限</span>
-                        <span class="text-2xl font-bold text-red-600">
-                          ${{ formatPrice(generatedStrategy.additional_parameters.grid_config.settings?.lower_price || generatedStrategy.additional_parameters.grid_config.grid_lower_price) }}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- 网格设置卡片 -->
-                  <div class="bg-gradient-to-br from-orange-50 to-white rounded-xl p-5 border border-orange-100">
-                    <div class="flex items-start justify-between mb-3">
-                      <div>
-                        <div class="text-xs font-medium text-gray-600 mb-0.5">网格设置</div>
-                        <div class="text-[10px] text-gray-500">Grid Settings</div>
-                      </div>
-                      <span class="px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-orange-100 text-orange-700">
-                        {{ generatedStrategy.additional_parameters.grid_config.settings?.grid_size || 'interval' }}
-                      </span>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                      <div>
-                        <div class="text-[10px] text-gray-500 mb-1">网格数量</div>
-                        <div class="text-3xl font-bold text-orange-600">
-                          {{ generatedStrategy.additional_parameters.grid_config.settings?.grids || generatedStrategy.additional_parameters.grid_config.grid_count }}
-                        </div>
-                      </div>
-                      <div>
-                        <div class="text-[10px] text-gray-500 mb-1">单格利润</div>
-                        <div class="text-3xl font-bold text-green-600">
-                          {{ generatedStrategy.additional_parameters.grid_config.settings?.profit_per_grid || generatedStrategy.additional_parameters.grid_config.profit_per_grid_percentage }}%
-                        </div>
-                      </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-3 pt-3 mt-3 border-t border-orange-100">
-                      <div>
-                        <div class="text-[10px] text-gray-500 mb-1">止盈</div>
-                        <div class="text-sm font-semibold" :class="generatedStrategy.additional_parameters.grid_config.settings?.take_profit ? 'text-green-600' : 'text-gray-400'">
-                          {{ generatedStrategy.additional_parameters.grid_config.settings?.take_profit ? '✓ 启用' : '✗ 关闭' }}
-                        </div>
-                      </div>
-                      <div>
-                        <div class="text-[10px] text-gray-500 mb-1">止损</div>
-                        <div class="text-sm font-semibold" :class="generatedStrategy.additional_parameters.grid_config.settings?.stop_loss ? 'text-red-600' : 'text-gray-400'">
-                          {{ generatedStrategy.additional_parameters.grid_config.settings?.stop_loss ? '✓ 启用' : '✗ 关闭' }}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- 投资与配置 - 小卡片 -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                  <!-- 建议仓位 -->
-                  <div class="bg-white rounded-lg p-3.5 border border-gray-200 hover:border-gray-300 transition-colors">
-                    <div class="flex items-center justify-between mb-2">
-                      <div class="text-[10px] text-gray-500">建议仓位</div>
-                      <div class="w-7 h-7 rounded-lg bg-purple-50 flex items-center justify-center">
-                        <svg class="w-3.5 h-3.5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
-                        </svg>
-                      </div>
-                    </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <!-- 突破价格 -->
+                  <div class="bg-white rounded-lg p-3.5 border border-gray-200">
+                    <div class="text-[10px] text-gray-500 mb-1">突破价格</div>
                     <div class="text-xl font-bold text-purple-600">
-                      {{ generatedStrategy.position_size_percentage }}%
+                      ${{ parseFloat(generatedStrategy.additional_parameters.breakout_config.breakout_price || 0).toFixed(2) }}
                     </div>
-                    <div class="text-[10px] text-gray-500 mt-1">风险控制</div>
                   </div>
 
-                  <!-- 单格投资 -->
-                  <div class="bg-white rounded-lg p-3.5 border border-gray-200 hover:border-gray-300 transition-colors">
-                    <div class="flex items-center justify-between mb-2">
-                      <div class="text-[10px] text-gray-500">单格投资</div>
-                      <div class="w-7 h-7 rounded-lg bg-indigo-50 flex items-center justify-center">
-                        <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-                        </svg>
-                      </div>
-                    </div>
+                  <!-- 确认周期 -->
+                  <div class="bg-white rounded-lg p-3.5 border border-gray-200">
+                    <div class="text-[10px] text-gray-500 mb-1">确认周期</div>
                     <div class="text-xl font-bold text-indigo-600">
-                      ${{ formatPrice((generatedStrategy.additional_parameters.grid_config.investment || generatedStrategy.additional_parameters.grid_config.recommended_investment) / (generatedStrategy.additional_parameters.grid_config.settings?.grids || generatedStrategy.additional_parameters.grid_config.grid_count)) }}
+                      {{ generatedStrategy.additional_parameters.breakout_config.confirmation_period || '-' }}
                     </div>
-                    <div class="text-[10px] text-gray-500 mt-1">每格金额</div>
                   </div>
 
-                  <!-- 保证金模式 -->
-                  <div class="bg-white rounded-lg p-3.5 border border-gray-200 hover:border-gray-300 transition-colors">
-                    <div class="flex items-center justify-between mb-2">
-                      <div class="text-[10px] text-gray-500">保证金模式</div>
-                      <div class="w-7 h-7 rounded-lg bg-blue-50 flex items-center justify-center">
-                        <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                        </svg>
-                      </div>
+                  <!-- 止损距离 -->
+                  <div class="bg-white rounded-lg p-3.5 border border-gray-200">
+                    <div class="text-[10px] text-gray-500 mb-1">止损距离</div>
+                    <div class="text-xl font-bold text-red-600">
+                      {{ generatedStrategy.additional_parameters.breakout_config.stop_loss_percentage || 0 }}%
                     </div>
-                    <div class="text-xl font-bold text-blue-600">
-                      {{ generatedStrategy.additional_parameters.grid_config.position_settings?.margin_mode === 'isolated' ? '逐仓' : '全仓' }}
-                    </div>
-                    <div class="text-[10px] text-gray-500 mt-1">风险隔离</div>
                   </div>
 
-                  <!-- 仓位模式 -->
-                  <div class="bg-white rounded-lg p-3.5 border border-gray-200 hover:border-gray-300 transition-colors">
-                    <div class="flex items-center justify-between mb-2">
-                      <div class="text-[10px] text-gray-500">仓位模式</div>
-                      <div class="w-7 h-7 rounded-lg bg-cyan-50 flex items-center justify-center">
-                        <svg class="w-3.5 h-3.5 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
-                        </svg>
-                      </div>
-                    </div>
-                    <div class="text-xl font-bold text-cyan-600">
-                      {{ generatedStrategy.additional_parameters.grid_config.position_settings?.position_mode === 'one_way' ? '单向' : '双向' }}
-                    </div>
-                    <div class="text-[10px] text-gray-500 mt-1">持仓方向</div>
-                  </div>
-                </div>
-
-                <!-- 网格明细表 -->
-                <div v-if="generatedStrategy.additional_parameters.grid_config.grid_levels?.length > 0" class="mb-6">
-                  <h4 class="text-sm font-bold text-gray-700 mb-3 flex items-center gap-2">
-                    <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                    </svg>
-                    网格明细表
-                  </h4>
-                  <div class="overflow-x-auto">
-                    <table class="w-full text-sm">
-                      <thead class="bg-orange-50 border-b-2 border-orange-200">
-                        <tr>
-                          <th class="px-4 py-3 text-left text-xs font-semibold text-orange-700 uppercase">网格</th>
-                          <th class="px-4 py-3 text-right text-xs font-semibold text-orange-700 uppercase">买入价格</th>
-                          <th class="px-4 py-3 text-right text-xs font-semibold text-orange-700 uppercase">卖出价格</th>
-                          <th class="px-4 py-3 text-right text-xs font-semibold text-orange-700 uppercase">数量</th>
-                          <th class="px-4 py-3 text-right text-xs font-semibold text-orange-700 uppercase">投入</th>
-                          <th class="px-4 py-3 text-right text-xs font-semibold text-orange-700 uppercase">利润</th>
-                        </tr>
-                      </thead>
-                      <tbody class="divide-y divide-gray-200">
-                        <tr v-for="level in generatedStrategy.additional_parameters.grid_config.grid_levels"
-                            :key="level.level"
-                            class="hover:bg-orange-50 transition-colors">
-                          <td class="px-4 py-3 font-medium text-gray-900">{{ level.level }}</td>
-                          <td class="px-4 py-3 text-right text-gray-900">${{ formatPrice(level.buy_price) }}</td>
-                          <td class="px-4 py-3 text-right text-gray-900">${{ formatPrice(level.sell_price) }}</td>
-                          <td class="px-4 py-3 text-right text-gray-600">{{ level.quantity }}</td>
-                          <td class="px-4 py-3 text-right text-gray-900">${{ formatPrice(level.investment) }}</td>
-                          <td class="px-4 py-3 text-right text-green-600 font-semibold">${{ formatPrice(level.profit) }}</td>
-                        </tr>
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-
-                <!-- 风险提示 -->
-                <div v-if="generatedStrategy.additional_parameters.grid_config.risk_info?.risk_warning || generatedStrategy.additional_parameters.grid_config.risk_warning" class="p-4 bg-yellow-50 border-l-4 border-yellow-400 rounded-r-lg">
-                  <div class="flex items-start gap-3">
-                    <svg class="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                    </svg>
-                    <div>
-                      <div class="text-sm font-semibold text-yellow-800 mb-1">风险提示</div>
-                      <div class="text-sm text-yellow-700">
-                        {{ generatedStrategy.additional_parameters.grid_config.risk_info?.risk_warning || generatedStrategy.additional_parameters.grid_config.risk_warning }}
-                      </div>
+                  <!-- 目标倍数 -->
+                  <div class="bg-white rounded-lg p-3.5 border border-gray-200">
+                    <div class="text-[10px] text-gray-500 mb-1">目标倍数</div>
+                    <div class="text-xl font-bold text-green-600">
+                      {{ generatedStrategy.additional_parameters.breakout_config.target_multiplier || 0 }}x
                     </div>
                   </div>
                 </div>
@@ -742,6 +708,8 @@ import { useRouter } from 'vue-router'
 import { SparklesIcon, XMarkIcon } from '@heroicons/vue/24/outline'
 import Header from '../common/Header.vue'
 import UserSidebar from '../common/UserSidebar.vue'
+import GridConfig from './strategies/GridConfig.vue'
+import DCAConfig from './strategies/DCAConfig.vue'
 import { apiRequest, API_ENDPOINTS } from '../../utils/api'
 import { showSuccess, showError } from '../../utils/notification'
 
@@ -790,7 +758,10 @@ const tradingStyles = [
 ]
 
 const strategyMethods = [
-  { value: 'grid', label: '网格交易' }
+  { value: 'grid', label: '网格交易', icon: '📊', description: '适合震荡市场，低买高卖' },
+  { value: 'dca', label: '定投策略', icon: '💰', description: '分批建仓，降低成本' },
+  { value: 'breakout', label: '突破策略', icon: '🚀', description: '趋势突破，追涨杀跌' },
+  { value: 'technical', label: '技术分析', icon: '📈', description: '基于技术指标交易' }
 ]
 
 const riskLevels = [
@@ -1022,6 +993,42 @@ const formatPrice = (price) => {
   return parseFloat(price).toFixed(2)
 }
 
+// 生成完整的网格明细
+const getGridLevels = (gridConfig) => {
+  // 如果 AI 已经返回了完整的网格明细，直接使用
+  if (gridConfig.grid_levels && gridConfig.grid_levels.length > 2) {
+    return gridConfig.grid_levels
+  }
+
+  // 否则根据设置自动生成
+  const settings = gridConfig.settings || {}
+  const lowerPrice = parseFloat(settings.lower_price || 0)
+  const higherPrice = parseFloat(settings.higher_price || 0)
+  const grids = parseInt(settings.grids || gridConfig.grid_count || 10)
+
+  if (!lowerPrice || !higherPrice || !grids) {
+    return gridConfig.grid_levels || []
+  }
+
+  // 计算每格价格间距
+  const priceStep = (higherPrice - lowerPrice) / grids
+
+  // 生成网格明细
+  const levels = []
+  for (let i = 0; i < grids; i++) {
+    const buyPrice = lowerPrice + (priceStep * i)
+    const sellPrice = lowerPrice + (priceStep * (i + 1))
+
+    levels.push({
+      level: i + 1,
+      buy_price: buyPrice,
+      sell_price: sellPrice
+    })
+  }
+
+  return levels
+}
+
 // 格式化数字
 const formatNumber = (num) => {
   if (!num) return '0'
@@ -1226,6 +1233,16 @@ const getTradingFrequencyLabel = (value) => {
 const getStrategyMethodLabel = (value) => {
   const method = strategyMethods.find(m => m.value === value)
   return method ? method.label : value
+}
+
+// 获取策略标签（别名）
+const getStrategyLabel = (value) => {
+  return getStrategyMethodLabel(value)
+}
+
+const getStrategyIcon = (value) => {
+  const method = strategyMethods.find(m => m.value === value)
+  return method ? method.icon : '📊'
 }
 
 // 前往风险评估页面

@@ -70,6 +70,59 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/exchanges',
+    name: 'Exchanges',
+    component: () => import('../components/exchange/ExchangePage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/bots',
+    name: 'Bots',
+    component: () => import('../components/bot/BotPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/bots/signal',
+    name: 'SignalBots',
+    component: () => import('../components/bot/BotTypePage.vue'),
+    props: { botType: 'signal' },
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/bots/trend-following',
+    name: 'TrendFollowingBots',
+    component: () => import('../components/bot/BotTypePage.vue'),
+    props: { botType: 'trend-following' },
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/bots/breakout',
+    name: 'BreakoutBots',
+    component: () => import('../components/bot/BotTypePage.vue'),
+    props: { botType: 'breakout' },
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/bots/martingale',
+    name: 'MartingaleBots',
+    component: () => import('../components/bot/BotTypePage.vue'),
+    props: { botType: 'martingale' },
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/bots/arbitrage',
+    name: 'ArbitrageBots',
+    component: () => import('../components/bot/BotTypePage.vue'),
+    props: { botType: 'arbitrage' },
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/bots/:id',
+    name: 'BotDetail',
+    component: () => import('../components/bot/BotDetailPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/membership',
     name: 'Membership',
     component: () => import('../components/membership/MembershipPage.vue'),

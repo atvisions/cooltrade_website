@@ -1,8 +1,8 @@
 <template>
   <!-- 浮动侧边栏 -->
-  <aside class="w-full bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden sticky top-24">
+  <aside class="w-full bg-white rounded-2xl shadow-lg border border-gray-200 sticky top-24" style="overflow: visible;">
     <!-- 用户信息卡片 -->
-    <div class="p-6 bg-blue-50 border-b border-gray-200">
+    <div class="p-6 bg-blue-50 border-b border-gray-200 rounded-t-2xl">
       <div class="flex items-center space-x-4">
         <!-- 用户头像 -->
         <div class="w-16 h-16 rounded-full overflow-hidden bg-blue-600 flex items-center justify-center flex-shrink-0 ring-4 ring-white">
@@ -22,43 +22,117 @@
     <nav class="p-4">
       <ul class="space-y-1">
         <li v-for="item in menuItems" :key="item.id" class="relative">
-          <router-link
-            :to="item.path"
-            :class="[
-              'flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 group relative',
-              isActive(item.id)
-                ? 'bg-blue-50 text-blue-600'
-                : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
-            ]"
-          >
-            <!-- 左侧蓝色圆弧指示器 -->
-            <div
-              v-if="isActive(item.id)"
-              class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-600 rounded-r-full"
-            ></div>
-
-            <component
-              :is="item.icon"
+          <!-- 主菜单项 -->
+          <div>
+            <router-link
+              v-if="!item.children"
+              :to="item.path"
               :class="[
-                'w-5 h-5 mr-3 flex-shrink-0',
-                isActive(item.id) ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'
-              ]"
-            />
-            <span>{{ item.name }}</span>
-
-            <!-- 徽章 -->
-            <span
-              v-if="item.badge"
-              :class="[
-                'ml-auto px-2 py-0.5 text-xs font-semibold rounded-full',
+                'flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 group relative',
                 isActive(item.id)
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-red-100 text-red-600'
+                  ? 'bg-blue-50 text-blue-600'
+                  : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
               ]"
             >
-              {{ item.badge }}
-            </span>
-          </router-link>
+              <!-- 左侧蓝色圆弧指示器 -->
+              <div
+                v-if="isActive(item.id)"
+                class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-600 rounded-r-full"
+              ></div>
+
+              <component
+                :is="item.icon"
+                :class="[
+                  'w-5 h-5 mr-3 flex-shrink-0',
+                  isActive(item.id) ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'
+                ]"
+              />
+              <span>{{ item.name }}</span>
+
+              <!-- 徽章 -->
+              <span
+                v-if="item.badge"
+                :class="[
+                  'ml-auto px-2 py-0.5 text-xs font-semibold rounded-full',
+                  isActive(item.id)
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-red-100 text-red-600'
+                ]"
+              >
+                {{ item.badge }}
+              </span>
+            </router-link>
+
+            <!-- 有子菜单的项 -->
+            <div v-else>
+              <button
+                @click="toggleSubmenu(item.id)"
+                :class="[
+                  'w-full flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 group relative',
+                  isActive(item.id) || isSubmenuActive(item)
+                    ? 'bg-blue-50 text-blue-600'
+                    : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                ]"
+              >
+                <!-- 左侧蓝色圆弧指示器 -->
+                <div
+                  v-if="isActive(item.id) || isSubmenuActive(item)"
+                  class="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-600 rounded-r-full"
+                ></div>
+
+                <component
+                  :is="item.icon"
+                  :class="[
+                    'w-5 h-5 mr-3 flex-shrink-0',
+                    isActive(item.id) || isSubmenuActive(item) ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'
+                  ]"
+                />
+                <span>{{ item.name }}</span>
+
+                <!-- 展开/收起图标 -->
+                <svg
+                  :class="[
+                    'w-4 h-4 ml-auto transition-transform',
+                    expandedMenus.includes(item.id) ? 'rotate-180' : ''
+                  ]"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              <!-- 子菜单 -->
+              <ul
+                v-show="expandedMenus.includes(item.id)"
+                class="mt-1 ml-4 space-y-1"
+              >
+                <li v-for="child in item.children" :key="child.id">
+                  <router-link
+                    :to="child.path"
+                    :class="[
+                      'flex items-center px-4 py-2 text-sm rounded-lg transition-all duration-200 relative',
+                      isActive(child.id)
+                        ? 'text-blue-600 font-medium bg-gradient-to-r from-blue-50 to-transparent border-l-2 border-blue-600 shadow-sm'
+                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    ]"
+                  >
+                    <component
+                      v-if="child.icon"
+                      :is="child.icon"
+                      :class="[
+                        'w-4 h-4 mr-3 flex-shrink-0',
+                        isActive(child.id) ? 'text-blue-600' : 'text-gray-400'
+                      ]"
+                    />
+                    <span v-else class="w-1.5 h-1.5 rounded-full bg-current mr-3"></span>
+                    {{ child.name }}
+                  </router-link>
+                </li>
+              </ul>
+            </div>
+          </div>
         </li>
       </ul>
     </nav>
@@ -98,7 +172,7 @@
     </div>
 
     <!-- 底部快捷操作 -->
-    <div class="p-4 border-t border-gray-200 bg-gray-50">
+    <div class="p-4 border-t border-gray-200 bg-gray-50 rounded-b-2xl">
       <a
         href="/profile/me"
         target="_blank"
@@ -117,7 +191,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '../../utils/userStore.js'
 import { apiRequest, API_ENDPOINTS } from '../../utils/api.js'
@@ -128,7 +202,12 @@ import {
   ChartBarIcon,
   SparklesIcon,
   StarIcon,
-  HeartIcon
+  HeartIcon,
+  BuildingLibraryIcon,
+  CpuChipIcon,
+  BoltIcon,
+  ArrowTrendingUpIcon,
+  ScaleIcon
 } from '@heroicons/vue/24/outline'
 
 const route = useRoute()
@@ -146,6 +225,9 @@ const userStore = useUserStore()
 
 // 积分数据
 const userPoints = ref(0)
+
+// 展开的菜单
+const expandedMenus = ref([]) // 默认收起所有子菜单
 
 // 加载积分信息
 const loadPoints = async () => {
@@ -175,6 +257,52 @@ const menuItems = ref([
     path: '/dashboard',
     icon: HomeIcon,
     badge: null
+  },
+  {
+    id: 'exchanges',
+    name: '我的交易所',
+    path: '/exchanges',
+    icon: BuildingLibraryIcon,
+    badge: null
+  },
+  {
+    id: 'bots',
+    name: '我的机器人',
+    path: '/bots',
+    icon: CpuChipIcon,
+    badge: null,
+    children: [
+      {
+        id: 'bots-signal',
+        name: '信号机器人',
+        path: '/bots/signal',
+        icon: BellIcon
+      },
+      {
+        id: 'bots-trend-following',
+        name: '趋势跟踪',
+        path: '/bots/trend-following',
+        icon: ChartBarIcon
+      },
+      {
+        id: 'bots-breakout',
+        name: '突破机器人',
+        path: '/bots/breakout',
+        icon: BoltIcon
+      },
+      {
+        id: 'bots-martingale',
+        name: '马丁格尔',
+        path: '/bots/martingale',
+        icon: ArrowTrendingUpIcon
+      },
+      {
+        id: 'bots-arbitrage',
+        name: '套利机器人',
+        path: '/bots/arbitrage',
+        icon: ScaleIcon
+      }
+    ]
   },
   {
     id: 'ai-strategy',
@@ -213,23 +341,85 @@ const menuItems = ref([
   }
 ])
 
+// 切换子菜单展开/收起
+const toggleSubmenu = (itemId) => {
+  const index = expandedMenus.value.indexOf(itemId)
+  if (index > -1) {
+    expandedMenus.value.splice(index, 1)
+  } else {
+    expandedMenus.value.push(itemId)
+  }
+}
+
+// 判断子菜单是否有激活项
+const isSubmenuActive = (item) => {
+  if (!item.children) return false
+  return item.children.some(child => isActive(child.id))
+}
+
 // 判断是否激活
 const isActive = (itemId) => {
   // 优先使用props传入的activeItem
   if (props.activeItem) {
     return props.activeItem === itemId
   }
-  
+
   // 否则根据路由判断
-  const item = menuItems.value.find(i => i.id === itemId)
+  const currentPath = route.path
+  const currentQuery = route.query
+
+  // 查找主菜单项
+  let item = menuItems.value.find(i => i.id === itemId)
+
+  // 如果没找到，在子菜单中查找
+  if (!item) {
+    for (const menuItem of menuItems.value) {
+      if (menuItem.children) {
+        item = menuItem.children.find(child => child.id === itemId)
+        if (item) break
+      }
+    }
+  }
+
   if (!item) return false
-  
-  return route.path === item.path || route.path.startsWith(item.path + '/')
+
+  // 精确匹配路径
+  if (currentPath !== item.path.split('?')[0]) return false
+
+  // 如果有查询参数，也要匹配
+  if (item.path.includes('?')) {
+    const queryString = item.path.split('?')[1]
+    const params = new URLSearchParams(queryString)
+    for (const [key, value] of params) {
+      if (currentQuery[key] !== value) return false
+    }
+  }
+
+  return true
+}
+
+// 检查并自动展开包含激活项的子菜单
+const checkAndExpandActiveSubmenu = () => {
+  menuItems.value.forEach(item => {
+    if (item.children && isSubmenuActive(item)) {
+      // 如果子菜单中有激活项，且当前未展开，则展开
+      if (!expandedMenus.value.includes(item.id)) {
+        expandedMenus.value.push(item.id)
+      }
+    }
+  })
 }
 
 onMounted(() => {
   // 初始化时加载用户信息
   userStore.loadUserFromStorage()
+  // 检查并展开包含激活项的子菜单
+  checkAndExpandActiveSubmenu()
+})
+
+// 监听路由变化，自动展开包含激活项的子菜单
+watch(() => route.path, () => {
+  checkAndExpandActiveSubmenu()
 })
 </script>
 
@@ -238,26 +428,6 @@ onMounted(() => {
 aside {
   position: sticky;
   top: 5rem;
-  max-height: calc(100vh - 6rem);
-  overflow-y: auto;
-}
-
-/* 自定义滚动条 */
-aside::-webkit-scrollbar {
-  width: 6px;
-}
-
-aside::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-aside::-webkit-scrollbar-thumb {
-  background: #e5e7eb;
-  border-radius: 3px;
-}
-
-aside::-webkit-scrollbar-thumb:hover {
-  background: #d1d5db;
 }
 </style>
 

@@ -44,6 +44,26 @@ export const API_ENDPOINTS = {
   AI_STRATEGY_SHARE: `${API_BASE_URL}/market/ai-strategy/share/`,
   AI_STRATEGY_LIKE: `${API_BASE_URL}/market/ai-strategy/like/`,
 
+  // 交易所 API 相关
+  EXCHANGE_API_LIST: `${API_BASE_URL}/auth/exchange-apis/`,
+  EXCHANGE_API_CREATE: `${API_BASE_URL}/auth/exchange-apis/create/`,
+  EXCHANGE_API_DETAIL: (id) => `${API_BASE_URL}/auth/exchange-apis/${id}/`,
+
+  // 交易机器人相关
+  BOT_LIST: `${API_BASE_URL}/trading/bots/`,
+  BOT_CREATE: `${API_BASE_URL}/trading/bots/`,
+  BOT_DETAIL: (id) => `${API_BASE_URL}/trading/bots/${id}/`,
+  BOT_UPDATE: (id) => `${API_BASE_URL}/trading/bots/${id}/`,
+  BOT_DELETE: (id) => `${API_BASE_URL}/trading/bots/${id}/`,
+  BOT_START: (id) => `${API_BASE_URL}/trading/bots/${id}/start/`,
+  BOT_STOP: (id) => `${API_BASE_URL}/trading/bots/${id}/stop/`,
+  BOT_PAUSE: (id) => `${API_BASE_URL}/trading/bots/${id}/pause/`,
+  BOT_TRADES: (id) => `${API_BASE_URL}/trading/bots/${id}/trades/`,
+  BOT_SIGNALS: (id) => `${API_BASE_URL}/trading/bots/${id}/signals/`,
+  BOT_STATISTICS: `${API_BASE_URL}/trading/bots/statistics/`,
+  EXCHANGE_API_SYNC: (id) => `${API_BASE_URL}/auth/exchange-apis/${id}/sync/`,
+  EXCHANGE_API_TEST: `${API_BASE_URL}/auth/exchange-apis/test/`,
+
   // 其他端点可以在这里添加
 }
 
@@ -251,6 +271,65 @@ export const userAPI = {
   }
 }
 
+// 交易所 API 相关的函数
+export const exchangeAPI = {
+  // 获取所有交易所配置
+  async getExchangeList() {
+    return apiRequest(API_ENDPOINTS.EXCHANGE_API_LIST)
+  },
+
+  // 创建交易所配置
+  async createExchange(exchangeData) {
+    return apiRequest(API_ENDPOINTS.EXCHANGE_API_CREATE, {
+      method: 'POST',
+      body: JSON.stringify(exchangeData)
+    })
+  },
+
+  // 获取单个交易所配置
+  async getExchangeDetail(id) {
+    return apiRequest(API_ENDPOINTS.EXCHANGE_API_DETAIL(id))
+  },
+
+  // 更新交易所配置
+  async updateExchange(id, exchangeData) {
+    return apiRequest(API_ENDPOINTS.EXCHANGE_API_DETAIL(id), {
+      method: 'PUT',
+      body: JSON.stringify(exchangeData)
+    })
+  },
+
+  // 删除交易所配置
+  async deleteExchange(id) {
+    return apiRequest(API_ENDPOINTS.EXCHANGE_API_DETAIL(id), {
+      method: 'DELETE'
+    })
+  },
+
+  // 同步余额
+  async syncBalance(id) {
+    return apiRequest(API_ENDPOINTS.EXCHANGE_API_SYNC(id), {
+      method: 'POST'
+    })
+  },
+
+  // 测试连接（不保存）
+  async testConnection(exchangeData) {
+    return apiRequest(API_ENDPOINTS.EXCHANGE_API_TEST, {
+      method: 'POST',
+      body: JSON.stringify(exchangeData)
+    })
+  },
+
+  // 更新交易所状态（启用/禁用）
+  async updateExchangeStatus(id, status) {
+    return apiRequest(API_ENDPOINTS.EXCHANGE_API_DETAIL(id), {
+      method: 'PUT',
+      body: JSON.stringify({ status })
+    })
+  }
+}
+
 // 市场数据相关的API函数
 // TODO: 等待后端市场应用创建后启用
 // export const marketAPI = {
@@ -270,6 +349,84 @@ export const userAPI = {
 //     return apiRequest(`${API_BASE_URL}/market/tokens/${tokenId}/`)
 //   }
 // }
+
+// 交易机器人 API
+export const botAPI = {
+  // 获取机器人列表
+  async getBotList(params = {}) {
+    const queryParams = new URLSearchParams(params).toString()
+    const url = queryParams ? `${API_ENDPOINTS.BOT_LIST}?${queryParams}` : API_ENDPOINTS.BOT_LIST
+    return apiRequest(url)
+  },
+
+  // 创建机器人
+  async createBot(data) {
+    return apiRequest(API_ENDPOINTS.BOT_CREATE, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  },
+
+  // 获取机器人详情
+  async getBotDetail(id) {
+    return apiRequest(API_ENDPOINTS.BOT_DETAIL(id))
+  },
+
+  // 更新机器人
+  async updateBot(id, data) {
+    return apiRequest(API_ENDPOINTS.BOT_UPDATE(id), {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    })
+  },
+
+  // 删除机器人
+  async deleteBot(id) {
+    return apiRequest(API_ENDPOINTS.BOT_DELETE(id), {
+      method: 'DELETE'
+    })
+  },
+
+  // 启动机器人
+  async startBot(id) {
+    return apiRequest(API_ENDPOINTS.BOT_START(id), {
+      method: 'POST'
+    })
+  },
+
+  // 停止机器人
+  async stopBot(id) {
+    return apiRequest(API_ENDPOINTS.BOT_STOP(id), {
+      method: 'POST'
+    })
+  },
+
+  // 暂停机器人
+  async pauseBot(id) {
+    return apiRequest(API_ENDPOINTS.BOT_PAUSE(id), {
+      method: 'POST'
+    })
+  },
+
+  // 获取机器人交易记录
+  async getBotTrades(id, params = {}) {
+    const queryParams = new URLSearchParams(params).toString()
+    const url = queryParams ? `${API_ENDPOINTS.BOT_TRADES(id)}?${queryParams}` : API_ENDPOINTS.BOT_TRADES(id)
+    return apiRequest(url)
+  },
+
+  // 获取机器人信号记录
+  async getBotSignals(id, params = {}) {
+    const queryParams = new URLSearchParams(params).toString()
+    const url = queryParams ? `${API_ENDPOINTS.BOT_SIGNALS(id)}?${queryParams}` : API_ENDPOINTS.BOT_SIGNALS(id)
+    return apiRequest(url)
+  },
+
+  // 获取机器人统计数据
+  async getBotStatistics() {
+    return apiRequest(API_ENDPOINTS.BOT_STATISTICS)
+  }
+}
 
 // 错误处理工具函数
 export function handleApiError(error) {

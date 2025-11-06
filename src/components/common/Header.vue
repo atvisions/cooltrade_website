@@ -36,7 +36,7 @@
               class="px-4 py-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-medium"
               :class="{ 'text-blue-600 bg-blue-50': $route.path === '/strategies' }"
             >
-              策略市场
+              社区
             </router-link>
           </nav>
         </div>

@@ -452,6 +452,11 @@
                 </div>
               </div>
 
+              <!-- 新的策略卡片（仅趋势策略显示） -->
+              <div v-if="generatedStrategy.primary_entry_price || generatedStrategy.alternative_entry_price || generatedStrategy.confidence_level" class="p-6 border-b border-gray-200">
+                <StrategyCardNew :strategy="generatedStrategy" />
+              </div>
+
               <!-- 网格交易配置（仅网格交易显示） -->
               <div v-if="generatedStrategy.additional_parameters?.grid_config">
                 <GridConfig
@@ -710,6 +715,7 @@ import Header from '../common/Header.vue'
 import UserSidebar from '../common/UserSidebar.vue'
 import GridConfig from './strategies/GridConfig.vue'
 import DCAConfig from './strategies/DCAConfig.vue'
+import StrategyCardNew from './StrategyCardNew.vue'
 import { apiRequest, API_ENDPOINTS } from '../../utils/api'
 import { showSuccess, showError } from '../../utils/notification'
 
@@ -728,7 +734,7 @@ const showStrategyDropdown = ref(false)
 // 表单数据
 const formData = ref({
   trading_style: 'swing',
-  strategy_method: 'grid',
+  strategy_method: 'trend',
   risk_level: 'balanced'
 })
 
@@ -758,10 +764,7 @@ const tradingStyles = [
 ]
 
 const strategyMethods = [
-  { value: 'grid', label: '网格交易', icon: '📊', description: '适合震荡市场，低买高卖' },
-  { value: 'dca', label: '定投策略', icon: '💰', description: '分批建仓，降低成本' },
-  { value: 'breakout', label: '突破策略', icon: '🚀', description: '趋势突破，追涨杀跌' },
-  { value: 'technical', label: '技术分析', icon: '📈', description: '基于技术指标交易' }
+  { value: 'trend', label: '趋势分析', icon: '📈', description: '基于技术指标的趋势分析报告' }
 ]
 
 const riskLevels = [

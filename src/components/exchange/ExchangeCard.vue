@@ -155,10 +155,33 @@
           </div>
 
           <!-- 无资产提示 -->
-          <div v-if="!hasSpotBalance() && !hasFutureBalance()" class="bg-gray-50 rounded-lg p-3">
-            <div class="flex items-center space-x-2">
-              <span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded">No assets</span>
-              <span class="text-sm text-gray-600">暂无资产</span>
+          <div v-if="!hasSpotBalance() && !hasFutureBalance()" class="bg-orange-50 rounded-lg p-4 border border-orange-200">
+            <div class="flex items-start space-x-3">
+              <div class="flex-shrink-0">
+                <svg class="w-5 h-5 text-orange-600" fill="currentColor" viewBox="0 0 20 20">
+                  <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                </svg>
+              </div>
+              <div class="flex-1">
+                <div class="flex items-center space-x-2 mb-2">
+                  <span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs font-medium rounded">No assets</span>
+                  <span class="text-sm font-medium text-gray-900">暂无资产</span>
+                </div>
+                <div v-if="exchange.is_testnet" class="text-xs text-gray-600 space-y-2">
+                  <p class="font-medium text-orange-700">📌 测试网账户需要手动获取测试资金：</p>
+                  <ol class="list-decimal list-inside space-y-1 ml-2 text-gray-700">
+                    <li>访问 <a href="https://www.gate.com/testnet/futures_trade/BTC/BTC_USD" target="_blank" class="text-blue-600 hover:text-blue-700 underline font-medium">Gate.io 测试网合约交易</a></li>
+                    <li>登录您的 Gate.io 账户（会自动创建测试网账户）</li>
+                    <li>系统会自动为您的测试账户分配虚拟资金（通常是 10,000 USDT）</li>
+                    <li>如需更多测试资金，可在合约账户页面点击"充值测试币"</li>
+                    <li>获取资金后，返回此页面点击 <span class="inline-flex items-center px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded font-medium">🔄 同步</span> 按钮刷新余额</li>
+                  </ol>
+                  <p class="text-orange-600 font-medium mt-2">⚠️ 注意：测试网资金仅用于模拟交易，无法提现或转换为真实资金</p>
+                </div>
+                <p v-else class="text-xs text-gray-600">
+                  请向此账户充值后再使用
+                </p>
+              </div>
             </div>
           </div>
         </div>

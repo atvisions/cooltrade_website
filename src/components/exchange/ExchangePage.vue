@@ -131,6 +131,25 @@ const isSyncing = computed(() => {
   return exchanges.value.some(ex => ex.syncing === true)
 })
 
+// 格式化货币
+const formatCurrency = (value) => {
+  const numValue = parseFloat(value || 0)
+
+  // 如果金额小于 0.01，保留4位小数
+  if (numValue > 0 && numValue < 0.01) {
+    return '$' + numValue.toLocaleString('en-US', {
+      minimumFractionDigits: 4,
+      maximumFractionDigits: 4
+    })
+  }
+
+  // 否则保留2位小数
+  return '$' + numValue.toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  })
+}
+
 // 加载交易所列表
 const loadExchanges = async () => {
   isLoading.value = true
@@ -227,6 +246,9 @@ const syncExchange = async (exchangeId) => {
       // 重新计算余额
       const ex = exchanges.value[index]
       console.log('balance_snapshot:', ex.balance_snapshot)
+      console.log('balance_snapshot.spot:', JSON.stringify(ex.balance_snapshot?.spot || {}))
+      console.log('balance_snapshot.future:', JSON.stringify(ex.balance_snapshot?.future || {}))
+      console.log('balance_snapshot.total_usd:', ex.balance_snapshot?.total_usd)
 
       if (ex.balance_snapshot && typeof ex.balance_snapshot === 'object') {
         // 新格式：包含 spot 和 future

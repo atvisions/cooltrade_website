@@ -34,24 +34,93 @@
               查看市场
             </router-link>
           </div>
+        </div>
+      </div>
+    </section>
 
-          <!-- 数据展示 -->
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto">
-            <div class="text-center">
-              <div class="text-4xl font-bold text-black mb-2">1000+</div>
-              <div class="text-sm text-gray-500">活跃策略</div>
+    <!-- 数据统计 Section - 高级设计 -->
+    <section class="py-20 bg-gradient-to-br from-slate-50 via-white to-slate-50">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-16">
+          <h2 class="text-4xl font-bold text-slate-900 mb-4">平台数据统计</h2>
+          <p class="text-lg text-slate-500">实时监控信号机器人运行状态</p>
+        </div>
+
+        <!-- 统计卡片 -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <!-- 总机器人 -->
+          <div class="group relative">
+            <div class="absolute inset-0 bg-gradient-to-r from-blue-600 to-blue-400 rounded-2xl blur opacity-0 group-hover:opacity-20 transition duration-300"></div>
+            <div class="relative bg-white rounded-2xl p-6 border border-slate-200 hover:border-blue-300 hover:shadow-lg transition-all duration-300">
+              <div class="flex items-start justify-between">
+                <div>
+                  <p class="text-sm font-medium text-slate-600 uppercase tracking-wider">总机器人</p>
+                  <p class="text-4xl font-bold text-slate-900 mt-3">{{ totalBots }}</p>
+                  <p class="text-xs text-slate-400 mt-2">全部机器人总数</p>
+                </div>
+                <div class="p-4 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg">
+                  <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                </div>
+              </div>
             </div>
-            <div class="text-center">
-              <div class="text-4xl font-bold text-black mb-2">5000+</div>
-              <div class="text-sm text-gray-500">注册用户</div>
+          </div>
+
+          <!-- 运行中 -->
+          <div class="group relative">
+            <div class="absolute inset-0 bg-gradient-to-r from-green-600 to-emerald-400 rounded-2xl blur opacity-0 group-hover:opacity-20 transition duration-300"></div>
+            <div class="relative bg-white rounded-2xl p-6 border border-slate-200 hover:border-green-300 hover:shadow-lg transition-all duration-300">
+              <div class="flex items-start justify-between">
+                <div>
+                  <p class="text-sm font-medium text-slate-600 uppercase tracking-wider">运行中</p>
+                  <p class="text-4xl font-bold text-slate-900 mt-3">{{ runningBots }}</p>
+                  <p class="text-xs text-slate-400 mt-2">正在运行的机器人</p>
+                </div>
+                <div class="p-4 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg">
+                  <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  </svg>
+                </div>
+              </div>
             </div>
-            <div class="text-center">
-              <div class="text-4xl font-bold text-black mb-2">$10M+</div>
-              <div class="text-sm text-gray-500">交易量</div>
+          </div>
+
+          <!-- 今日信号 -->
+          <div class="group relative">
+            <div class="absolute inset-0 bg-gradient-to-r from-purple-600 to-pink-400 rounded-2xl blur opacity-0 group-hover:opacity-20 transition duration-300"></div>
+            <div class="relative bg-white rounded-2xl p-6 border border-slate-200 hover:border-purple-300 hover:shadow-lg transition-all duration-300">
+              <div class="flex items-start justify-between">
+                <div>
+                  <p class="text-sm font-medium text-slate-600 uppercase tracking-wider">今日信号</p>
+                  <p class="text-4xl font-bold text-slate-900 mt-3">{{ todaySignalsCount }}</p>
+                  <p class="text-xs text-slate-400 mt-2">条交易信号</p>
+                </div>
+                <div class="p-4 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl shadow-lg">
+                  <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                  </svg>
+                </div>
+              </div>
             </div>
-            <div class="text-center">
-              <div class="text-4xl font-bold text-black mb-2">99.9%</div>
-              <div class="text-sm text-gray-500">系统稳定性</div>
+          </div>
+
+          <!-- 胜率 -->
+          <div class="group relative">
+            <div class="absolute inset-0 bg-gradient-to-r from-amber-600 to-orange-400 rounded-2xl blur opacity-0 group-hover:opacity-20 transition duration-300"></div>
+            <div class="relative bg-white rounded-2xl p-6 border border-slate-200 hover:border-amber-300 hover:shadow-lg transition-all duration-300">
+              <div class="flex items-start justify-between">
+                <div>
+                  <p class="text-sm font-medium text-slate-600 uppercase tracking-wider">胜率</p>
+                  <p class="text-4xl font-bold text-slate-900 mt-3">{{ winRate }}%</p>
+                  <p class="text-xs text-slate-400 mt-2">交易成功率</p>
+                </div>
+                <div class="p-4 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl shadow-lg">
+                  <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                  </svg>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -338,14 +407,62 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import Header from '../common/Header.vue'
+import { botAPI } from '../../utils/api'
 
 // FAQ 展开状态
 const openFaq = ref(null)
 
+// 数据统计
+const bots = ref([])
+const signals = ref([])
+const loading = ref(false)
+
+// 计算属性
+const totalBots = computed(() => bots.value.length)
+const runningBots = computed(() => bots.value.filter(bot => bot.status === 'running').length)
+const todaySignalsCount = computed(() => {
+  const today = new Date().toDateString()
+  return signals.value.filter(signal =>
+    new Date(signal.created_at).toDateString() === today
+  ).length
+})
+const winRate = computed(() => {
+  if (bots.value.length === 0) return 0
+  const totalWinRate = bots.value.reduce((sum, bot) => sum + (bot.win_rate || 0), 0)
+  return Math.round(totalWinRate / bots.value.length)
+})
+
+// 加载数据
+const loadData = async () => {
+  try {
+    loading.value = true
+
+    // 加载机器人列表
+    const botsResponse = await botAPI.getBotList()
+    const botsData = botsResponse.results || botsResponse.data || botsResponse
+    bots.value = Array.isArray(botsData) ? botsData : []
+
+    // 加载信号列表
+    const signalsResponse = await botAPI.getSignalList()
+    const signalsData = signalsResponse.results || signalsResponse.data || signalsResponse
+    signals.value = Array.isArray(signalsData) ? signalsData : []
+
+    console.log('首页数据加载完成:', { bots: bots.value.length, signals: signals.value.length })
+  } catch (error) {
+    console.error('加载首页数据失败:', error)
+  } finally {
+    loading.value = false
+  }
+}
+
 const toggleFaq = (index) => {
   openFaq.value = openFaq.value === index ? null : index
 }
+
+onMounted(() => {
+  loadData()
+})
 </script>
 

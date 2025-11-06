@@ -109,7 +109,9 @@
                 class="mt-1 ml-4 space-y-1"
               >
                 <li v-for="child in item.children" :key="child.id">
+                  <!-- 没有子菜单的二级菜单项 -->
                   <router-link
+                    v-if="!child.children"
                     :to="child.path"
                     :class="[
                       'flex items-center px-4 py-2 text-sm rounded-lg transition-all duration-200 relative',
@@ -129,6 +131,71 @@
                     <span v-else class="w-1.5 h-1.5 rounded-full bg-current mr-3"></span>
                     {{ child.name }}
                   </router-link>
+
+                  <!-- 有子菜单的二级菜单项 -->
+                  <div v-else>
+                    <button
+                      @click="toggleSubmenu(child.id)"
+                      :class="[
+                        'w-full flex items-center px-4 py-2 text-sm rounded-lg transition-all duration-200 relative',
+                        isActive(child.id) || isSubmenuActive(child)
+                          ? 'text-blue-600 font-medium bg-gradient-to-r from-blue-50 to-transparent'
+                          : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      ]"
+                    >
+                      <component
+                        v-if="child.icon"
+                        :is="child.icon"
+                        :class="[
+                          'w-4 h-4 mr-3 flex-shrink-0',
+                          isActive(child.id) || isSubmenuActive(child) ? 'text-blue-600' : 'text-gray-400'
+                        ]"
+                      />
+                      <span>{{ child.name }}</span>
+
+                      <!-- 展开/收起图标 -->
+                      <svg
+                        :class="[
+                          'w-3 h-3 ml-auto transition-transform',
+                          expandedMenus.includes(child.id) ? 'rotate-180' : ''
+                        ]"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+
+                    <!-- 三级菜单 -->
+                    <ul
+                      v-show="expandedMenus.includes(child.id)"
+                      class="mt-1 ml-4 space-y-1"
+                    >
+                      <li v-for="grandchild in child.children" :key="grandchild.id">
+                        <router-link
+                          :to="grandchild.path"
+                          :class="[
+                            'flex items-center px-3 py-2 text-sm rounded-lg transition-all duration-200 relative',
+                            isActive(grandchild.id)
+                              ? 'text-blue-600 font-medium bg-blue-50'
+                              : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                          ]"
+                        >
+                          <component
+                            v-if="grandchild.icon"
+                            :is="grandchild.icon"
+                            :class="[
+                              'w-3 h-3 mr-2 flex-shrink-0',
+                              isActive(grandchild.id) ? 'text-blue-600' : 'text-gray-400'
+                            ]"
+                          />
+                          <span v-else class="w-1 h-1 rounded-full bg-current mr-2"></span>
+                          {{ grandchild.name }}
+                        </router-link>
+                      </li>
+                    </ul>
+                  </div>
                 </li>
               </ul>
             </div>
@@ -266,43 +333,18 @@ const menuItems = ref([
     badge: null
   },
   {
+    id: 'signal-bots',
+    name: '信号机器人',
+    path: '/signal-bots',
+    icon: BellIcon,
+    badge: null
+  },
+  {
     id: 'bots',
-    name: '我的机器人',
+    name: '趋势跟踪机器人',
     path: '/bots',
-    icon: CpuChipIcon,
-    badge: null,
-    children: [
-      {
-        id: 'bots-signal',
-        name: '信号机器人',
-        path: '/bots/signal',
-        icon: BellIcon
-      },
-      {
-        id: 'bots-trend-following',
-        name: '趋势跟踪',
-        path: '/bots/trend-following',
-        icon: ChartBarIcon
-      },
-      {
-        id: 'bots-breakout',
-        name: '突破机器人',
-        path: '/bots/breakout',
-        icon: BoltIcon
-      },
-      {
-        id: 'bots-martingale',
-        name: '马丁格尔',
-        path: '/bots/martingale',
-        icon: ArrowTrendingUpIcon
-      },
-      {
-        id: 'bots-arbitrage',
-        name: '套利机器人',
-        path: '/bots/arbitrage',
-        icon: ScaleIcon
-      }
-    ]
+    icon: ArrowTrendingUpIcon,
+    badge: null
   },
   {
     id: 'ai-strategy',
@@ -384,15 +426,23 @@ const isActive = (itemId) => {
   if (!item) return false
 
   // 精确匹配路径
-  if (currentPath !== item.path.split('?')[0]) return false
+  const itemPath = item.path.split('?')[0]
+  if (currentPath !== itemPath) return false
 
-  // 如果有查询参数，也要匹配
+  // 如果菜单项有查询参数，需要匹配
   if (item.path.includes('?')) {
     const queryString = item.path.split('?')[1]
     const params = new URLSearchParams(queryString)
     for (const [key, value] of params) {
       if (currentQuery[key] !== value) return false
     }
+    return true
+  }
+
+  // 如果菜单项没有查询参数，但当前路由有查询参数，则不匹配
+  // 这样可以避免 /bots 和 /bots?type=signal 都高亮
+  if (Object.keys(currentQuery).length > 0) {
+    return false
   }
 
   return true

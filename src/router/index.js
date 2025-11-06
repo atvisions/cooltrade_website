@@ -78,48 +78,55 @@ const routes = [
   {
     path: '/bots',
     name: 'Bots',
-    component: () => import('../components/bot/BotPage.vue'),
+    component: () => import('../components/bots/pages/BotListPage.vue'),
     meta: { requiresAuth: true }
   },
   {
-    path: '/bots/signal',
+    path: '/signal-bots',
     name: 'SignalBots',
-    component: () => import('../components/bot/BotTypePage.vue'),
-    props: { botType: 'signal' },
+    component: () => import('../components/bots/pages/SignalBotListPage.vue'),
     meta: { requiresAuth: true }
   },
   {
-    path: '/bots/trend-following',
-    name: 'TrendFollowingBots',
-    component: () => import('../components/bot/BotTypePage.vue'),
-    props: { botType: 'trend-following' },
+    path: '/bots/create',
+    name: 'CreateBot',
+    component: () => import('../components/bots/pages/CreateTradingBotPage.vue'),
     meta: { requiresAuth: true }
   },
   {
-    path: '/bots/breakout',
-    name: 'BreakoutBots',
-    component: () => import('../components/bot/BotTypePage.vue'),
-    props: { botType: 'breakout' },
+    path: '/bots/create-signal',
+    name: 'CreateSignalBot',
+    component: () => import('../components/bots/pages/CreateSignalBotPage.vue'),
     meta: { requiresAuth: true }
   },
   {
-    path: '/bots/martingale',
-    name: 'MartingaleBots',
-    component: () => import('../components/bot/BotTypePage.vue'),
-    props: { botType: 'martingale' },
+    path: '/bots/edit/:id',
+    name: 'EditBot',
+    component: () => import('../components/bots/pages/CreateTradingBotPage.vue'),
     meta: { requiresAuth: true }
   },
   {
-    path: '/bots/arbitrage',
-    name: 'ArbitrageBots',
-    component: () => import('../components/bot/BotTypePage.vue'),
-    props: { botType: 'arbitrage' },
+    path: '/bots/edit-signal/:id',
+    name: 'EditSignalBot',
+    component: () => import('../components/bots/pages/CreateSignalBotPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/signals',
+    name: 'SignalMonitor',
+    component: () => import('../components/bots/pages/SignalBotMonitorPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/signal-bots/:id',
+    name: 'SignalBotDetail',
+    component: () => import('../components/bots/pages/SignalBotDetailPage.vue'),
     meta: { requiresAuth: true }
   },
   {
     path: '/bots/:id',
     name: 'BotDetail',
-    component: () => import('../components/bot/BotDetailPage.vue'),
+    component: () => import('../components/bots/pages/BotDetailPage.vue'),
     meta: { requiresAuth: true }
   },
   {

@@ -35,8 +35,11 @@ export const API_ENDPOINTS = {
   INVITATION_INFO: `${API_BASE_URL}/auth/invitation-info/`,
   USER_RANKING: `${API_BASE_URL}/auth/invitation-info/ranking/`,
 
+  // 代币搜索
+  TOKEN_SEARCH: `${API_BASE_URL}/market/tokens/search/`,
+
   // AI 策略相关
-  AI_STRATEGY_SEARCH_TOKEN: `${API_BASE_URL}/market/ai-strategy/search-token/`,
+  AI_STRATEGY_SEARCH_TOKEN: `${API_BASE_URL}/market/tokens/search/`,  // 兼容旧代码
   AI_STRATEGY_GENERATE: `${API_BASE_URL}/market/ai-strategy/generate/`,
   AI_STRATEGY_LIST: `${API_BASE_URL}/market/ai-strategy/list/`,
   AI_STRATEGY_DETAIL: `${API_BASE_URL}/market/ai-strategy/`,
@@ -48,6 +51,7 @@ export const API_ENDPOINTS = {
   EXCHANGE_API_LIST: `${API_BASE_URL}/auth/exchange-apis/`,
   EXCHANGE_API_CREATE: `${API_BASE_URL}/auth/exchange-apis/create/`,
   EXCHANGE_API_DETAIL: (id) => `${API_BASE_URL}/auth/exchange-apis/${id}/`,
+  SUPPORTED_EXCHANGES: `${API_BASE_URL}/auth/exchanges/supported/`,
 
   // 交易机器人相关
   BOT_LIST: `${API_BASE_URL}/trading/bots/`,
@@ -63,6 +67,14 @@ export const API_ENDPOINTS = {
   BOT_STATISTICS: `${API_BASE_URL}/trading/bots/statistics/`,
   EXCHANGE_API_SYNC: (id) => `${API_BASE_URL}/auth/exchange-apis/${id}/sync/`,
   EXCHANGE_API_TEST: `${API_BASE_URL}/auth/exchange-apis/test/`,
+
+  // 信号相关
+  SIGNAL_LIST: `${API_BASE_URL}/trading/signals/`,
+  SIGNAL_DETAIL: (id) => `${API_BASE_URL}/trading/signals/${id}/`,
+  SIGNAL_ACTIVE: `${API_BASE_URL}/trading/signals/active/`,
+  SIGNAL_STATISTICS: `${API_BASE_URL}/trading/signals/statistics/`,
+  SIGNAL_MARK_EXECUTED: (id) => `${API_BASE_URL}/trading/signals/${id}/mark_executed/`,
+  SIGNAL_CANCEL: (id) => `${API_BASE_URL}/trading/signals/${id}/cancel/`,
 
   // 其他端点可以在这里添加
 }
@@ -108,7 +120,29 @@ export async function apiRequest(url, options = {}) {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}))
-      throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
+
+      // 构建详细的错误信息
+      let errorMessage = errorData.message || `HTTP error! status: ${response.status}`
+
+      // 如果有验证错误，添加详细信息
+      if (errorData.errors && typeof errorData.errors === 'object') {
+        const errorDetails = Object.entries(errorData.errors)
+          .map(([field, message]) => `${field}: ${message}`)
+          .join('; ')
+        if (errorDetails) {
+          errorMessage = `${errorData.error || '验证失败'} - ${errorDetails}`
+        }
+      }
+
+      const error = new Error(errorMessage)
+      error.status = response.status
+      error.data = errorData
+      throw error
+    }
+
+    // 处理 204 No Content 响应（如 DELETE 请求）
+    if (response.status === 204) {
+      return { success: true }
     }
 
     return await response.json()
@@ -313,6 +347,11 @@ export const exchangeAPI = {
     })
   },
 
+  // 获取支持的交易所列表
+  async getSupportedExchanges() {
+    return apiRequest(API_ENDPOINTS.SUPPORTED_EXCHANGES)
+  },
+
   // 测试连接（不保存）
   async testConnection(exchangeData) {
     return apiRequest(API_ENDPOINTS.EXCHANGE_API_TEST, {
@@ -331,24 +370,24 @@ export const exchangeAPI = {
 }
 
 // 市场数据相关的API函数
-// TODO: 等待后端市场应用创建后启用
-// export const marketAPI = {
-//   // 获取市场概览数据
-//   async getMarketOverview() {
-//     return apiRequest(`${API_BASE_URL}/market/overview/`)
-//   },
-//
-//   // 获取代币列表
-//   async getTokensList(params = {}) {
-//     const queryParams = new URLSearchParams(params).toString()
-//     return apiRequest(`${API_BASE_URL}/market/tokens/?${queryParams}`)
-//   },
-//
-//   // 获取代币详情
-//   async getTokenDetail(tokenId) {
-//     return apiRequest(`${API_BASE_URL}/market/tokens/${tokenId}/`)
-//   }
-// }
+export const marketAPI = {
+  // 获取市场概览数据
+  async getMarketOverview() {
+    return apiRequest(`${API_BASE_URL}/market/overview/`)
+  },
+
+  // 获取代币列表
+  async getTokenList(params = {}) {
+    const queryParams = new URLSearchParams(params).toString()
+    const url = queryParams ? `${API_BASE_URL}/market/tokens/?${queryParams}` : `${API_BASE_URL}/market/tokens/`
+    return apiRequest(url)
+  },
+
+  // 获取代币详情
+  async getTokenDetail(tokenId) {
+    return apiRequest(`${API_BASE_URL}/market/tokens/${tokenId}/`)
+  }
+}
 
 // 交易机器人 API
 export const botAPI = {
@@ -425,6 +464,23 @@ export const botAPI = {
   // 获取机器人统计数据
   async getBotStatistics() {
     return apiRequest(API_ENDPOINTS.BOT_STATISTICS)
+  },
+
+  // 获取信号列表
+  async getSignalList(params = {}) {
+    const queryParams = new URLSearchParams(params).toString()
+    const url = queryParams ? `${API_ENDPOINTS.SIGNAL_LIST}?${queryParams}` : API_ENDPOINTS.SIGNAL_LIST
+    return apiRequest(url)
+  },
+
+  // 获取活跃信号
+  async getActiveSignals() {
+    return apiRequest(API_ENDPOINTS.SIGNAL_ACTIVE)
+  },
+
+  // 获取信号统计
+  async getSignalStatistics() {
+    return apiRequest(API_ENDPOINTS.SIGNAL_STATISTICS)
   }
 }
 

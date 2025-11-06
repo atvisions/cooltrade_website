@@ -2,24 +2,20 @@
   <div class="min-h-screen bg-slate-50">
     <Header />
     <div class="max-w-7xl mx-auto pt-20 pb-12 px-4 sm:px-6 lg:px-8">
-      <div class="flex gap-8 relative">
-        <div class="w-64 flex-shrink-0">
-          <UserSidebar activeItem="bots" />
-        </div>
-        <main class="flex-1 min-w-0">
+      <main class="w-full">
           <!-- 页面头部 -->
           <div class="mb-10">
             <div class="flex items-start justify-between mb-8">
               <div>
-                <h1 class="text-3xl font-bold text-slate-900">趋势跟踪机器人</h1>
-                <p class="text-slate-600 mt-2">管理和监控所有趋势跟踪机器人</p>
+                <h1 class="text-3xl font-bold text-slate-900">{{ pageConfig.title }}</h1>
+                <p class="text-slate-600 mt-2">{{ pageConfig.description }}</p>
               </div>
               <!-- 胶囊形状按钮设计 -->
               <button
                 @click="handleCreateBot"
                 class="group inline-flex items-center gap-3 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-full shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
-                <span class="px-2">创建趋势跟踪机器人</span>
+                <span class="px-2">{{ pageConfig.createButtonText }}</span>
                 <div class="flex items-center justify-center w-8 h-8 bg-white rounded-full group-hover:bg-gray-50 transition-all duration-200">
                   <svg class="w-4 h-4 text-blue-600 transform group-hover:translate-x-0.5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -114,8 +110,38 @@
               </button>
             </div>
 
-            <!-- TAB 1: 机器人列表 -->
+            <!-- TAB 1: 信号中心 -->
             <div v-if="activeTab === 0">
+              <div class="space-y-6">
+                <!-- 信号中心内容 - 待开发 -->
+                <div class="bg-white rounded-2xl p-12 border border-slate-200 text-center">
+                  <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
+                    <i class="pi pi-bell text-3xl text-blue-600"></i>
+                  </div>
+                  <h3 class="text-xl font-semibold text-slate-900 mb-2">信号中心</h3>
+                  <p class="text-slate-500 mb-6">实时监控市场信号和交易机会</p>
+                  <p class="text-sm text-slate-400">功能开发中...</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB 2: 策略管理 -->
+            <div v-if="activeTab === 1">
+              <div class="space-y-6">
+                <!-- 策略管理内容 - 待开发 -->
+                <div class="bg-white rounded-2xl p-12 border border-slate-200 text-center">
+                  <div class="inline-flex items-center justify-center w-16 h-16 bg-purple-100 rounded-full mb-4">
+                    <i class="pi pi-cog text-3xl text-purple-600"></i>
+                  </div>
+                  <h3 class="text-xl font-semibold text-slate-900 mb-2">策略管理</h3>
+                  <p class="text-slate-500 mb-6">管理和配置交易策略模板</p>
+                  <p class="text-sm text-slate-400">功能开发中...</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB 3: 机器人列表 -->
+            <div v-if="activeTab === 2">
               <!-- 筛选和搜索 - HeadlessUI 组件 -->
               <div class="bg-white rounded-2xl p-6 mb-6 border border-slate-200">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -233,13 +259,10 @@
                     <thead>
                       <tr class="border-b border-slate-200 bg-slate-50">
                         <th class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">机器人名称</th>
-                        <th v-if="isSignalBots" class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">交易对</th>
-                        <th v-if="!isSignalBots" class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">类型</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">类型</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">状态</th>
-                        <th v-if="isSignalBots" class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">信号类型</th>
-                        <th v-if="isSignalBots" class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">最近信号</th>
-                        <th v-if="!isSignalBots" class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">总盈亏</th>
-                        <th v-if="!isSignalBots" class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">胜率</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">总盈亏</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">胜率</th>
                         <th class="px-6 py-4 text-center text-xs font-semibold text-slate-700 uppercase tracking-wider">操作</th>
                       </tr>
                     </thead>
@@ -265,27 +288,19 @@
                             </div>
                           </div>
                         </td>
-                        <!-- 信号机器人显示交易对 -->
-                        <template v-if="isSignalBots">
-                          <td class="px-6 py-4">
-                            <span class="font-medium text-slate-900">
-                              {{ bot.token_symbol }}/{{ bot.trading_pair || 'USDT' }}
-                            </span>
-                          </td>
-                        </template>
                         <!-- 交易机器人显示类型 -->
-                        <template v-else>
-                          <td class="px-6 py-4">
-                            <span :class="[
-                              'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium',
-                              bot.bot_type === 'signal'
-                                ? 'bg-blue-100 text-blue-700'
-                                : 'bg-green-100 text-green-700'
-                            ]">
-                              {{ bot.bot_type === 'signal' ? '信号机器人' : '趋势跟踪' }}
-                            </span>
-                          </td>
-                        </template>
+                        <td class="px-6 py-4">
+                          <span :class="[
+                            'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium',
+                            bot.bot_type === 'trend_following'
+                              ? 'bg-green-100 text-green-700'
+                              : bot.bot_type === 'grid_trading'
+                              ? 'bg-orange-100 text-orange-700'
+                              : 'bg-purple-100 text-purple-700'
+                          ]">
+                            {{ getBotTypeLabel(bot.bot_type) }}
+                          </span>
+                        </td>
                         <td class="px-6 py-4">
                           <span :class="[
                             'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium',
@@ -298,38 +313,15 @@
                             {{ getStatusLabel(bot.status) }}
                           </span>
                         </td>
-                        <!-- 信号机器人显示信号数据 -->
-                        <template v-if="isSignalBots">
-                          <td class="px-6 py-4">
-                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-700">
-                              {{ getSignalTypeLabel(bot.signal_type) }}
-                            </span>
-                          </td>
-                          <td class="px-6 py-4">
-                            <div class="flex items-center gap-2">
-                              <span v-if="bot.latest_signal_direction === 'long'" class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">
-                                📈 看多
-                              </span>
-                              <span v-else-if="bot.latest_signal_direction === 'short'" class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-red-100 text-red-700">
-                                📉 看空
-                              </span>
-                              <span v-else class="text-slate-500 text-sm">
-                                暂无信号
-                              </span>
-                            </div>
-                          </td>
-                        </template>
                         <!-- 交易机器人显示盈亏数据 -->
-                        <template v-else>
-                          <td class="px-6 py-4">
-                            <p :class="bot.total_profit >= 0 ? 'text-green-600' : 'text-red-600'" class="font-semibold">
-                              {{ formatCurrency(bot.total_profit) }}
-                            </p>
-                          </td>
-                          <td class="px-6 py-4">
-                            <p class="text-slate-900 font-medium">{{ bot.win_rate || 0 }}%</p>
-                          </td>
-                        </template>
+                        <td class="px-6 py-4">
+                          <p :class="bot.total_profit >= 0 ? 'text-green-600' : 'text-red-600'" class="font-semibold">
+                            {{ formatCurrency(bot.total_profit) }}
+                          </p>
+                        </td>
+                        <td class="px-6 py-4">
+                          <p class="text-slate-900 font-medium">{{ bot.win_rate || 0 }}%</p>
+                        </td>
                         <td class="px-6 py-4">
                           <div class="flex items-center justify-center gap-1">
                             <!-- 启动/停止按钮 -->
@@ -387,8 +379,8 @@
               </div>
             </div>
 
-            <!-- TAB 2: 持仓管理 -->
-            <div v-if="activeTab === 1">
+            <!-- TAB 4: 持仓管理 -->
+            <div v-if="activeTab === 3">
               <div class="space-y-6">
                 <!-- 持仓统计卡片 -->
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -443,8 +435,8 @@
               </div>
             </div>
 
-            <!-- TAB 3: 委托订单 -->
-            <div v-if="activeTab === 2">
+            <!-- TAB 5: 委托订单 -->
+            <div v-if="activeTab === 4">
               <div class="space-y-6">
                 <!-- 订单统计卡片 -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -510,8 +502,8 @@
               </div>
             </div>
 
-            <!-- TAB 4: 交易记录 -->
-            <div v-if="activeTab === 3">
+            <!-- TAB 6: 交易记录 -->
+            <div v-if="activeTab === 5">
               <div class="space-y-6">
                 <!-- 交易记录筛选 -->
                 <div class="bg-white rounded-2xl p-6 border border-slate-200">
@@ -566,8 +558,8 @@
               </div>
             </div>
 
-            <!-- TAB 5: 性能分析 -->
-            <div v-if="activeTab === 4">
+            <!-- TAB 7: 性能分析 -->
+            <div v-if="activeTab === 6">
               <div class="space-y-6">
                 <!-- 性能指标卡片 -->
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -629,18 +621,16 @@
             </div>
           </div>
         </main>
-      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue'
 import { CheckIcon, ChevronUpDownIcon, MagnifyingGlassIcon } from '@heroicons/vue/20/solid'
 import Header from '../../common/Header.vue'
-import UserSidebar from '../../common/UserSidebar.vue'
 import { CpuChipIcon, PlayIcon, BellIcon, ChartBarIcon, StopIcon, PencilIcon, EyeIcon, TrashIcon } from '@heroicons/vue/24/outline'
 import { botAPI } from '../../../utils/api'
 import { showSuccess, showError } from '../../../utils/notification'
@@ -648,12 +638,44 @@ import { showSuccess, showError } from '../../../utils/notification'
 const router = useRouter()
 const route = useRoute()
 
-// 判断是否是信号机器人页面
-const isSignalBots = computed(() => route.query.type === 'signal')
+// 机器人类型配置
+const botTypeConfigs = {
+  trend_following: {
+    title: '趋势跟踪',
+    description: '管理和监控所有趋势跟踪机器人，自动执行交易策略',
+    createButtonText: '创建机器人',
+    createPath: '/bots/create',
+    apiType: 'trend_following'
+  },
+  grid_trading: {
+    title: '网格交易',
+    description: '管理和监控所有网格交易机器人，自动执行网格策略',
+    createButtonText: '创建机器人',
+    createPath: '/bots/create?type=grid_trading',
+    apiType: 'grid_trading'
+  },
+  dca: {
+    title: 'DCA 定投',
+    description: '管理和监控所有定投机器人，自动执行定投策略',
+    createButtonText: '创建机器人',
+    createPath: '/bots/create?type=dca',
+    apiType: 'dca'
+  }
+}
+
+// 当前机器人类型（从 query 参数获取，默认为 trend_following）
+const currentBotType = computed(() => route.query.type || 'trend_following')
+
+// 当前页面配置
+const pageConfig = computed(() => {
+  return botTypeConfigs[currentBotType.value] || botTypeConfigs.trend_following
+})
 
 // TAB 配置
-const activeTab = ref(0)
+const activeTab = ref(2)  // 默认显示"机器人列表"
 const tabs = ref([
+  { label: '信号中心', icon: 'bell' },
+  { label: '策略管理', icon: 'cog' },
   { label: '机器人列表', icon: 'list' },
   { label: '持仓管理', icon: 'wallet' },
   { label: '委托订单', icon: 'file-text' },
@@ -705,12 +727,8 @@ const exchangeOptionsWithAll = computed(() => [
 const filteredBots = computed(() => {
   let result = bots.value
 
-  // 根据页面类型过滤机器人
-  if (isSignalBots.value) {
-    result = result.filter(bot => bot.bot_type === 'signal')
-  } else {
-    result = result.filter(bot => bot.bot_type !== 'signal')
-  }
+  // bots.value 已经在 loadBots 中根据 currentBotType 过滤过了
+  // 这里只需要应用额外的过滤条件
 
   if (filters.value.status && filters.value.status !== '') {
     result = result.filter(bot => bot.status === filters.value.status)
@@ -731,21 +749,23 @@ const filteredBots = computed(() => {
     console.log(`搜索过滤: ${beforeCount} -> ${result.length}`)
   }
 
-
-
   return result
 })
 
 const loadBots = async () => {
   try {
     loading.value = true
-    console.log('开始加载机器人数据...')
+    console.log('开始加载机器人数据...', '类型:', currentBotType.value)
     const response = await botAPI.getBotList()
     console.log('API响应:', response)
     const data = response.results || response.data || response
     console.log('处理后的数据:', data)
-    bots.value = Array.isArray(data) ? data : []
-    console.log('设置的机器人数据:', bots.value)
+
+    // 根据机器人类型过滤
+    const allBots = Array.isArray(data) ? data : []
+    bots.value = allBots.filter(bot => bot.bot_type === currentBotType.value)
+
+    console.log('过滤后的机器人数据:', bots.value)
     updateExchangeOptions()
     updateStatistics()
   } catch (error) {
@@ -862,12 +882,23 @@ const handleDeleteBot = async (botId) => {
 }
 
 const handleCreateBot = () => {
-  router.push('/bots/create')
+  router.push(pageConfig.value.createPath)
 }
 
 const getStatusLabel = (status) => {
   const map = { running: '运行中', paused: '已暂停', stopped: '已停止', draft: '草稿' }
   return map[status] || status
+}
+
+// 获取机器人类型标签
+const getBotTypeLabel = (botType) => {
+  const labels = {
+    'trend_following': '趋势跟踪',
+    'grid_trading': '网格交易',
+    'dca': 'DCA定投',
+    'martingale': '马丁格尔'
+  }
+  return labels[botType] || botType
 }
 
 // 获取信号类型标签
@@ -930,6 +961,11 @@ const loadSignals = async () => {
     loadingSignals.value = false
   }
 }
+
+// 监听路由变化，重新加载数据
+watch(() => route.query.type, async () => {
+  await loadBots()
+})
 
 onMounted(async () => {
   await loadBots()

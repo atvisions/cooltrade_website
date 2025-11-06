@@ -16,6 +16,7 @@ import OrdersPage from '../components/user/OrdersPage.vue'
 import SubscriptionsPage from '../components/user/SubscriptionsPage.vue'
 import FollowingPage from '../components/user/FollowingPage.vue'
 import NotificationsPage from '../components/user/NotificationsPage.vue'
+import TokenRecommendationsPage from '../components/tokens/TokenRecommendationsPage.vue'
 import axios from 'axios'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
@@ -64,12 +65,6 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/trading',
-    name: 'Trading',
-    component: () => import('../components/trading/TradingPage.vue'),
-    meta: { requiresAuth: true }
-  },
-  {
     path: '/exchanges',
     name: 'Exchanges',
     component: () => import('../components/exchange/ExchangePage.vue'),
@@ -90,7 +85,7 @@ const routes = [
   {
     path: '/bots/create',
     name: 'CreateBot',
-    component: () => import('../components/bots/pages/CreateTradingBotPage.vue'),
+    component: () => import('../components/bots/pages/CreateTrendingBotPage.vue'),
     meta: { requiresAuth: true }
   },
   {
@@ -102,7 +97,7 @@ const routes = [
   {
     path: '/bots/edit/:id',
     name: 'EditBot',
-    component: () => import('../components/bots/pages/CreateTradingBotPage.vue'),
+    component: () => import('../components/bots/pages/CreateTrendingBotPage.vue'),
     meta: { requiresAuth: true }
   },
   {
@@ -121,6 +116,12 @@ const routes = [
     path: '/signal-bots/:id',
     name: 'SignalBotDetail',
     component: () => import('../components/bots/pages/SignalBotDetailPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/token-recommendations',
+    name: 'TokenRecommendations',
+    component: TokenRecommendationsPage,
     meta: { requiresAuth: true }
   },
   {

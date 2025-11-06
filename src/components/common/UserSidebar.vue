@@ -333,34 +333,6 @@ const menuItems = ref([
     badge: null
   },
   {
-    id: 'signal-bots',
-    name: '信号机器人',
-    path: '/signal-bots',
-    icon: BellIcon,
-    badge: null
-  },
-  {
-    id: 'bots',
-    name: '趋势跟踪机器人',
-    path: '/bots',
-    icon: ArrowTrendingUpIcon,
-    badge: null
-  },
-  {
-    id: 'ai-strategy',
-    name: '策略生成器',
-    path: '/ai-strategy',
-    icon: SparklesIcon,
-    badge: null
-  },
-  {
-    id: 'trading',
-    name: '交易中心',
-    path: '/trading',
-    icon: ChartBarIcon,
-    badge: null
-  },
-  {
     id: 'membership',
     name: '会员中心',
     path: '/membership',

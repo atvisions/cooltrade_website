@@ -13,21 +13,47 @@
         <main class="flex-1 min-w-0">
           <!-- 页面标题 -->
           <div class="mb-8">
-            <h1 class="text-3xl font-bold text-gray-900">我的交易所</h1>
-            <p class="text-gray-600 mt-2">管理您的交易所账户和API密钥</p>
+            <div class="flex items-start justify-between mb-8">
+              <div>
+                <h1 class="text-3xl font-bold text-gray-900">我的交易所</h1>
+                <p class="text-gray-600 mt-2">管理您的交易所账户和API密钥</p>
+              </div>
+              <!-- 胶囊形状按钮设计 -->
+              <button
+                @click="() => { console.log('点击绑定按钮'); showBindModal = true; console.log('showBindModal:', showBindModal) }"
+                class="group inline-flex items-center gap-3 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-full shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
+                <span class="px-2">绑定新交易所</span>
+                <div class="flex items-center justify-center w-8 h-8 bg-white rounded-full group-hover:bg-gray-50 transition-all duration-200">
+                  <svg class="w-4 h-4 text-blue-600 transform group-hover:translate-x-0.5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                  </svg>
+                </div>
+              </button>
+            </div>
           </div>
 
           <!-- 已绑定的交易所 -->
           <div class="bg-white rounded-2xl border border-gray-200 p-6 mb-6">
             <div class="flex items-center justify-between mb-6">
               <h3 class="text-lg font-semibold text-gray-900">已绑定的交易所</h3>
-              <button
-                @click="() => { console.log('点击绑定按钮'); showBindModal = true; console.log('showBindModal:', showBindModal) }"
-                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium flex items-center space-x-2"
-              >
-                <PlusIcon class="w-5 h-5" />
-                <span>绑定新交易所</span>
-              </button>
+
+              <!-- 账户类型筛选 -->
+              <div class="inline-flex items-center bg-slate-100 rounded-lg p-1">
+                <button
+                  v-for="filter in accountTypeFilters"
+                  :key="filter.value"
+                  @click="activeAccountType = filter.value"
+                  :class="[
+                    'px-4 py-2 text-sm font-medium rounded-md transition-all duration-200',
+                    activeAccountType === filter.value
+                      ? 'bg-white text-slate-900 shadow-sm'
+                      : 'text-slate-600 hover:text-slate-900'
+                  ]"
+                >
+                  {{ filter.label }}
+                </button>
+              </div>
             </div>
 
             <!-- 同步提示 -->
@@ -45,9 +71,9 @@
             </div>
 
             <!-- 交易所列表 -->
-            <div v-if="exchanges.length > 0" class="space-y-4">
+            <div v-if="filteredExchanges.length > 0" class="space-y-4">
               <ExchangeCard
-                v-for="exchange in exchanges"
+                v-for="exchange in filteredExchanges"
                 :key="exchange.id"
                 :exchange="exchange"
                 @sync="syncExchange"
@@ -60,9 +86,14 @@
             <!-- 空状态 -->
             <div v-else class="text-center py-12">
               <div class="text-6xl mb-4">🏦</div>
-              <h3 class="text-lg font-semibold text-gray-900 mb-2">还没有绑定交易所</h3>
-              <p class="text-gray-600 mb-6">绑定交易所后，即可使用自动交易功能</p>
+              <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                {{ exchanges.length === 0 ? '还没有绑定交易所' : '没有找到符合条件的交易所' }}
+              </h3>
+              <p class="text-gray-600 mb-6">
+                {{ exchanges.length === 0 ? '绑定交易所后，即可使用自动交易功能' : '请尝试切换其他筛选条件' }}
+              </p>
               <button
+                v-if="exchanges.length === 0"
                 @click="() => { console.log('点击空状态按钮'); showBindModal = true; console.log('showBindModal:', showBindModal) }"
                 class="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-all duration-200 font-medium inline-flex items-center space-x-2"
               >
@@ -125,6 +156,30 @@ const isLoading = ref(false)
 const showUnbindConfirm = ref(false)
 const exchangeToUnbind = ref(null)
 const bindModalRef = ref(null)
+
+// 账户类型筛选
+const activeAccountType = ref('all')
+const accountTypeFilters = ref([
+  { label: '全部', value: 'all' },
+  { label: '真实账户', value: 'real' },
+  { label: '模拟账户', value: 'demo' }
+])
+
+// 筛选后的交易所列表
+const filteredExchanges = computed(() => {
+  if (activeAccountType.value === 'all') {
+    return exchanges.value
+  }
+  return exchanges.value.filter(exchange => {
+    // 根据 is_testnet 字段判断是真实账户还是模拟账户
+    if (activeAccountType.value === 'demo') {
+      return exchange.is_testnet === true
+    } else if (activeAccountType.value === 'real') {
+      return exchange.is_testnet === false || exchange.is_testnet === null
+    }
+    return true
+  })
+})
 
 // 是否正在同步
 const isSyncing = computed(() => {

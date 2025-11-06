@@ -2,11 +2,7 @@
   <div class="min-h-screen bg-slate-50">
     <Header />
     <div class="max-w-7xl mx-auto pt-20 pb-12 px-4 sm:px-6 lg:px-8">
-      <div class="flex gap-8 relative">
-        <div class="w-64 flex-shrink-0">
-          <UserSidebar activeItem="signal-bots" />
-        </div>
-        <main class="flex-1 min-w-0">
+      <main class="w-full">
           <!-- 页面头部 -->
           <div class="mb-10">
             <div class="flex items-start justify-between mb-8">
@@ -19,7 +15,7 @@
                 @click="handleCreateBot"
                 class="group inline-flex items-center gap-3 px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-full shadow-md hover:shadow-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
               >
-                <span class="px-2">创建信号机器人</span>
+                <span class="px-2">创建机器人</span>
                 <div class="flex items-center justify-center w-8 h-8 bg-white rounded-full group-hover:bg-gray-50 transition-all duration-200">
                   <svg class="w-4 h-4 text-blue-600 transform group-hover:translate-x-0.5 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
@@ -172,6 +168,41 @@
                             <ListboxOption
                               v-slot="{ active, selected }"
                               v-for="option in exchangeOptionsWithAll"
+                              :key="option.value"
+                              :value="option.value"
+                              as="template"
+                            >
+                              <li :class="[active ? 'bg-slate-100 text-slate-900' : 'text-slate-700', 'relative cursor-default select-none py-3 pl-4 pr-4']">
+                                <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">{{ option.label }}</span>
+                                <span v-if="selected" class="absolute inset-y-0 right-0 flex items-center pr-3 text-blue-600">
+                                  <CheckIcon class="h-5 w-5" aria-hidden="true" />
+                                </span>
+                              </li>
+                            </ListboxOption>
+                          </ListboxOptions>
+                        </transition>
+                      </div>
+                    </Listbox>
+                  </div>
+
+                  <!-- 信号类型筛选 -->
+                  <div class="space-y-2 w-48">
+                    <label class="block text-sm font-medium text-slate-700">信号类型</label>
+                    <Listbox v-model="filters.signalType">
+                      <div class="relative">
+                        <ListboxButton class="relative w-full cursor-default rounded-xl bg-slate-50 py-3 pl-4 pr-10 text-left border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                          <span class="block truncate text-slate-700">
+                            {{ signalTypeOptionsWithAll.find(option => option.value === filters.signalType)?.label || '全部类型' }}
+                          </span>
+                          <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                            <ChevronUpDownIcon class="h-5 w-5 text-slate-400" aria-hidden="true" />
+                          </span>
+                        </ListboxButton>
+                        <transition leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
+                          <ListboxOptions class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                            <ListboxOption
+                              v-slot="{ active, selected }"
+                              v-for="option in signalTypeOptionsWithAll"
                               :key="option.value"
                               :value="option.value"
                               as="template"
@@ -695,7 +726,6 @@
       @confirm="handleConfirmDelete"
       @cancel="handleCancelDelete"
     />
-  </div>
 </template>
 
 <script setup>
@@ -704,7 +734,6 @@ import { useRouter } from 'vue-router'
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue'
 import { CheckIcon, ChevronUpDownIcon, MagnifyingGlassIcon } from '@heroicons/vue/20/solid'
 import Header from '../../common/Header.vue'
-import UserSidebar from '../../common/UserSidebar.vue'
 import { CpuChipIcon, BellIcon, ChartBarIcon, PencilIcon, EyeIcon, TrashIcon, PlayIcon } from '@heroicons/vue/24/outline'
 import { PlayIcon as PlayIconSolid, StopIcon as StopIconSolid } from '@heroicons/vue/24/solid'
 import { botAPI } from '../../../utils/api'
@@ -747,6 +776,7 @@ const filters = ref({
   status: '',
   bot_type: '',
   exchange: '',
+  signalType: '',
   search: ''
 })
 
@@ -762,7 +792,20 @@ const statusOptionsWithAll = [
   ...statusOptions
 ]
 
+const signalTypeOptions = [
+  { label: '价格提醒', value: 'price_alert' },
+  { label: 'RSI指标', value: 'rsi' },
+  { label: 'MA交叉', value: 'ma_cross' },
+  { label: '布林带', value: 'bollinger' },
+  { label: '成交量', value: 'volume' },
+  { label: 'MACD', value: 'macd' },
+  { label: 'KDJ', value: 'kdj' }
+]
 
+const signalTypeOptionsWithAll = [
+  { label: '全部类型', value: '' },
+  ...signalTypeOptions
+]
 
 const exchangeOptions = ref([])
 
@@ -783,6 +826,19 @@ const filteredBots = computed(() => {
     result = result.filter(bot => bot.exchange_name === filters.value.exchange)
   }
 
+  if (filters.value.signalType && filters.value.signalType !== '') {
+    result = result.filter(bot => {
+      // 直接使用后端返回的 signal_type 字段
+      if (!bot.signal_type) {
+        return false
+      }
+
+      // MA交叉的兼容性处理：后端是 ma_crossover，前端筛选器是 ma_cross
+      const botSignalType = bot.signal_type === 'ma_crossover' ? 'ma_cross' : bot.signal_type
+      return botSignalType === filters.value.signalType
+    })
+  }
+
   if (filters.value.search.trim()) {
     console.log('应用搜索过滤:', filters.value.search)
     const beforeCount = result.length
@@ -794,21 +850,15 @@ const filteredBots = computed(() => {
     console.log(`搜索过滤: ${beforeCount} -> ${result.length}`)
   }
 
-
-
   return result
 })
 
 const loadBots = async () => {
   try {
     loading.value = true
-    console.log('开始加载机器人数据...')
     const response = await botAPI.getBotList()
-    console.log('API响应:', response)
     const data = response.results || response.data || response
-    console.log('处理后的数据:', data)
     bots.value = Array.isArray(data) ? data : []
-    console.log('设置的机器人数据:', bots.value)
     updateExchangeOptions()
     updateStatistics()
   } catch (error) {
@@ -852,7 +902,7 @@ const updateStatistics = () => {
 }
 
 const resetFilters = () => {
-  filters.value = { status: '', bot_type: '', exchange: '', search: '' }
+  filters.value = { status: '', bot_type: '', exchange: '', signalType: '', search: '' }
 }
 
 const handleStartBot = async (botId) => {

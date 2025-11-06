@@ -1,10 +1,28 @@
 <template>
   <!-- 背景遮罩 -->
-  <div class="fixed inset-0 z-50 overflow-hidden">
-    <div class="absolute inset-0 bg-black bg-opacity-30 transition-opacity" @click="handleClose"></div>
+  <Transition
+    enter-active-class="transition-opacity duration-300 ease-out"
+    enter-from-class="opacity-0"
+    enter-to-class="opacity-100"
+    leave-active-class="transition-opacity duration-200 ease-in"
+    leave-from-class="opacity-100"
+    leave-to-class="opacity-0"
+  >
+    <div v-if="isVisible" class="fixed inset-0 z-50 overflow-hidden">
+      <div class="absolute inset-0 bg-black bg-opacity-30" @click="handleClose"></div>
+    </div>
+  </Transition>
 
-    <!-- 侧边栏面板 -->
-    <div class="fixed inset-y-0 right-0 flex max-w-full">
+  <!-- 侧边栏面板 -->
+  <Transition
+    enter-active-class="transition-transform duration-300 ease-out"
+    enter-from-class="translate-x-full"
+    enter-to-class="translate-x-0"
+    leave-active-class="transition-transform duration-200 ease-in"
+    leave-from-class="translate-x-0"
+    leave-to-class="translate-x-full"
+  >
+    <div v-if="isVisible" class="fixed inset-y-0 right-0 flex max-w-full z-50">
       <div class="relative w-screen max-w-md">
         <div class="h-full flex flex-col bg-white shadow-xl">
           <!-- 头部 -->
@@ -284,11 +302,11 @@
         </div>
       </div>
     </div>
-  </div>
+  </Transition>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { XMarkIcon, ExclamationTriangleIcon } from '@heroicons/vue/24/outline'
 import { exchangeAPI } from '../../utils/api'
 import { showNotification } from '../../utils/notification'
@@ -296,9 +314,16 @@ import { showNotification } from '../../utils/notification'
 // Emits
 const emit = defineEmits(['close', 'success'])
 
+// 控制动画显示
+const isVisible = ref(false)
+
 // 调试：组件挂载时打印
 onMounted(() => {
   console.log('BindExchangeModal 已挂载')
+  // 延迟显示以触发动画
+  nextTick(() => {
+    isVisible.value = true
+  })
 })
 
 // 当前步骤
@@ -348,20 +373,26 @@ const selectExchange = (exchangeId) => {
 
 // 关闭弹窗
 const handleClose = () => {
-  currentStep.value = 'select'
-  detectedPermissions.value = null
-  isEditMode.value = false
-  editingExchangeId.value = null
-  // 重置表单
-  formData.value = {
-    exchange: 'binance',
-    name: '',
-    api_key: '',
-    secret_key: '',
-    passphrase: '',
-    is_testnet: false
-  }
-  emit('close')
+  // 先触发关闭动画
+  isVisible.value = false
+
+  // 等待动画完成后再执行清理和触发 close 事件
+  setTimeout(() => {
+    currentStep.value = 'select'
+    detectedPermissions.value = null
+    isEditMode.value = false
+    editingExchangeId.value = null
+    // 重置表单
+    formData.value = {
+      exchange: 'binance',
+      name: '',
+      api_key: '',
+      secret_key: '',
+      passphrase: '',
+      is_testnet: false
+    }
+    emit('close')
+  }, 200) // 与 leave 动画时长一致
 }
 
 // 设置编辑模式
@@ -579,26 +610,34 @@ const handleSubmit = async () => {
     exchangeData.has_trade_permission = exchangeData.permissions?.trade || false
 
     console.log('准备发送的交易所数据:', exchangeData)
-    emit('success', exchangeData)
+
     showNotification({
       type: 'success',
       title: isEditMode.value ? '更新成功' : '绑定成功',
       message: isEditMode.value ? '交易所配置已更新' : '交易所已成功绑定，可以开始使用了'
     })
 
-    // 重置表单
-    formData.value = {
-      exchange: 'binance',
-      name: '',
-      api_key: '',
-      secret_key: '',
-      passphrase: '',
-      is_testnet: false
-    }
-    detectedPermissions.value = null
-    currentStep.value = 'select'
-    isEditMode.value = false
-    editingExchangeId.value = null
+    // 先触发关闭动画
+    isVisible.value = false
+
+    // 等待动画完成后再执行清理和触发 success 事件
+    setTimeout(() => {
+      emit('success', exchangeData)
+
+      // 重置表单
+      formData.value = {
+        exchange: 'binance',
+        name: '',
+        api_key: '',
+        secret_key: '',
+        passphrase: '',
+        is_testnet: false
+      }
+      detectedPermissions.value = null
+      currentStep.value = 'select'
+      isEditMode.value = false
+      editingExchangeId.value = null
+    }, 200) // 与 leave 动画时长一致
   } catch (error) {
     console.error(isEditMode.value ? '更新失败:' : '绑定失败:', error)
     showNotification({

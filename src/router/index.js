@@ -131,6 +131,24 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
+    path: '/recommendations',
+    name: 'Recommendations',
+    component: () => import('../components/bots/pages/RecommendationListPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/risk-config',
+    name: 'RiskConfig',
+    component: () => import('../components/bots/pages/RiskConfigPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/positions',
+    name: 'Positions',
+    component: () => import('../components/bots/pages/PositionListPage.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
     path: '/membership',
     name: 'Membership',
     component: () => import('../components/membership/MembershipPage.vue'),
@@ -206,6 +224,12 @@ const routes = [
     path: '/following',
     name: 'Following',
     component: FollowingPage,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/my-shares',
+    name: 'MyShares',
+    component: () => import('../components/user/MySharesPage.vue'),
     meta: { requiresAuth: true }
   },
   {

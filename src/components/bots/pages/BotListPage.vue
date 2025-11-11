@@ -54,30 +54,32 @@
                 </div>
               </div>
 
-              <!-- 今日信号 -->
+              <!-- 总交易次数 -->
               <div class="bg-white rounded-2xl p-6 border border-slate-200 hover:border-slate-300 transition-colors duration-200">
                 <div class="flex items-start justify-between">
                   <div>
-                    <p class="text-sm font-medium text-slate-500 uppercase tracking-wider">今日信号</p>
-                    <p class="text-4xl font-bold text-purple-600 mt-3">{{ todaySignals }}</p>
-                    <p class="text-xs text-slate-400 mt-2">条信号</p>
+                    <p class="text-sm font-medium text-slate-500 uppercase tracking-wider">总交易次数</p>
+                    <p class="text-4xl font-bold text-blue-600 mt-3">{{ statistics.total_trades || 0 }}</p>
+                    <p class="text-xs text-slate-400 mt-2">累计交易次数</p>
                   </div>
                   <div class="p-3">
-                    <BellIcon class="h-6 w-6 text-slate-600" />
+                    <ChartBarIcon class="h-6 w-6 text-slate-600" />
                   </div>
                 </div>
               </div>
 
-              <!-- 总信号数 -->
+              <!-- 总收益 -->
               <div class="bg-white rounded-2xl p-6 border border-slate-200 hover:border-slate-300 transition-colors duration-200">
                 <div class="flex items-start justify-between">
                   <div>
-                    <p class="text-sm font-medium text-slate-500 uppercase tracking-wider">总信号数</p>
-                    <p class="text-4xl font-bold text-amber-600 mt-3">{{ totalSignals }}</p>
-                    <p class="text-xs text-slate-400 mt-2">条信号</p>
+                    <p class="text-sm font-medium text-slate-500 uppercase tracking-wider">总收益</p>
+                    <p class="text-4xl font-bold text-green-600 mt-3">${{ Number(statistics.total_profit || 0).toFixed(2) }}</p>
+                    <p class="text-xs text-slate-400 mt-2">累计收益</p>
                   </div>
                   <div class="p-3">
-                    <ChartBarIcon class="h-6 w-6 text-slate-600" />
+                    <svg class="h-6 w-6 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
                   </div>
                 </div>
               </div>
@@ -110,38 +112,8 @@
               </button>
             </div>
 
-            <!-- TAB 1: 信号中心 -->
+            <!-- TAB 1: 机器人列表 -->
             <div v-if="activeTab === 0">
-              <div class="space-y-6">
-                <!-- 信号中心内容 - 待开发 -->
-                <div class="bg-white rounded-2xl p-12 border border-slate-200 text-center">
-                  <div class="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
-                    <i class="pi pi-bell text-3xl text-blue-600"></i>
-                  </div>
-                  <h3 class="text-xl font-semibold text-slate-900 mb-2">信号中心</h3>
-                  <p class="text-slate-500 mb-6">实时监控市场信号和交易机会</p>
-                  <p class="text-sm text-slate-400">功能开发中...</p>
-                </div>
-              </div>
-            </div>
-
-            <!-- TAB 2: 策略管理 -->
-            <div v-if="activeTab === 1">
-              <div class="space-y-6">
-                <!-- 策略管理内容 - 待开发 -->
-                <div class="bg-white rounded-2xl p-12 border border-slate-200 text-center">
-                  <div class="inline-flex items-center justify-center w-16 h-16 bg-purple-100 rounded-full mb-4">
-                    <i class="pi pi-cog text-3xl text-purple-600"></i>
-                  </div>
-                  <h3 class="text-xl font-semibold text-slate-900 mb-2">策略管理</h3>
-                  <p class="text-slate-500 mb-6">管理和配置交易策略模板</p>
-                  <p class="text-sm text-slate-400">功能开发中...</p>
-                </div>
-              </div>
-            </div>
-
-            <!-- TAB 3: 机器人列表 -->
-            <div v-if="activeTab === 2">
               <!-- 筛选和搜索 - HeadlessUI 组件 -->
               <div class="bg-white rounded-2xl p-6 mb-6 border border-slate-200">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -353,6 +325,17 @@
                               <PencilIcon class="h-4 w-4" />
                             </button>
 
+                            <!-- 分享按钮 -->
+                            <button
+                              @click="handleShareBot(bot)"
+                              class="p-2 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors duration-200"
+                              title="分享机器人"
+                            >
+                              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                              </svg>
+                            </button>
+
                             <!-- 详情按钮 -->
                             <button
                               @click="handleViewBot(bot.id)"
@@ -379,249 +362,52 @@
               </div>
             </div>
 
-            <!-- TAB 4: 持仓管理 -->
+            <!-- TAB 2: 持仓管理 -->
+            <div v-if="activeTab === 1">
+              <PositionList />
+            </div>
+
+            <!-- TAB 3: 委托订单 -->
+            <div v-if="activeTab === 2">
+              <OrderList />
+            </div>
+
+            <!-- TAB 4: 交易审批 -->
             <div v-if="activeTab === 3">
-              <div class="space-y-6">
-                <!-- 持仓统计卡片 -->
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div class="bg-white rounded-2xl p-6 border border-slate-200">
-                    <div class="flex items-center justify-between">
-                      <div>
-                        <p class="text-sm font-medium text-slate-500">总持仓数</p>
-                        <p class="text-2xl font-bold text-slate-900 mt-1">0</p>
-                      </div>
-                      <div class="p-3 bg-blue-100 rounded-full">
-                        <i class="pi pi-wallet text-blue-600"></i>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="bg-white rounded-2xl p-6 border border-slate-200">
-                    <div class="flex items-center justify-between">
-                      <div>
-                        <p class="text-sm font-medium text-slate-500">浮动盈亏</p>
-                        <p class="text-2xl font-bold text-green-600 mt-1">+$0.00</p>
-                      </div>
-                      <div class="p-3 bg-green-100 rounded-full">
-                        <i class="pi pi-trending-up text-green-600"></i>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="bg-white rounded-2xl p-6 border border-slate-200">
-                    <div class="flex items-center justify-between">
-                      <div>
-                        <p class="text-sm font-medium text-slate-500">持仓价值</p>
-                        <p class="text-2xl font-bold text-slate-900 mt-1">$0.00</p>
-                      </div>
-                      <div class="p-3 bg-purple-100 rounded-full">
-                        <i class="pi pi-dollar text-purple-600"></i>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- 持仓列表 -->
-                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-                  <div class="px-6 py-4 border-b border-slate-200 bg-slate-50">
-                    <h3 class="text-lg font-semibold text-slate-900">当前持仓</h3>
-                  </div>
-                  <div class="p-12 text-center">
-                    <div class="inline-block p-4 bg-slate-100 rounded-full mb-4">
-                      <i class="pi pi-wallet text-2xl text-slate-400"></i>
-                    </div>
-                    <p class="text-slate-500">暂无持仓数据</p>
-                    <p class="text-sm text-slate-400 mt-2">持仓管理功能开发中，敬请期待...</p>
-                  </div>
-                </div>
-              </div>
+              <RecommendationList />
             </div>
 
-            <!-- TAB 5: 委托订单 -->
+            <!-- TAB 5: 交易记录 -->
             <div v-if="activeTab === 4">
-              <div class="space-y-6">
-                <!-- 订单统计卡片 -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                  <div class="bg-white rounded-2xl p-6 border border-slate-200">
-                    <div class="flex items-center justify-between">
-                      <div>
-                        <p class="text-sm font-medium text-slate-500">活跃订单</p>
-                        <p class="text-2xl font-bold text-blue-600 mt-1">0</p>
-                      </div>
-                      <div class="p-3 bg-blue-100 rounded-full">
-                        <i class="pi pi-file-text text-blue-600"></i>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="bg-white rounded-2xl p-6 border border-slate-200">
-                    <div class="flex items-center justify-between">
-                      <div>
-                        <p class="text-sm font-medium text-slate-500">等待成交</p>
-                        <p class="text-2xl font-bold text-amber-600 mt-1">0</p>
-                      </div>
-                      <div class="p-3 bg-amber-100 rounded-full">
-                        <i class="pi pi-clock text-amber-600"></i>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="bg-white rounded-2xl p-6 border border-slate-200">
-                    <div class="flex items-center justify-between">
-                      <div>
-                        <p class="text-sm font-medium text-slate-500">部分成交</p>
-                        <p class="text-2xl font-bold text-orange-600 mt-1">0</p>
-                      </div>
-                      <div class="p-3 bg-orange-100 rounded-full">
-                        <i class="pi pi-percentage text-orange-600"></i>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="bg-white rounded-2xl p-6 border border-slate-200">
-                    <div class="flex items-center justify-between">
-                      <div>
-                        <p class="text-sm font-medium text-slate-500">今日成交</p>
-                        <p class="text-2xl font-bold text-green-600 mt-1">0</p>
-                      </div>
-                      <div class="p-3 bg-green-100 rounded-full">
-                        <i class="pi pi-check text-green-600"></i>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- 委托订单列表 -->
-                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-                  <div class="px-6 py-4 border-b border-slate-200 bg-slate-50">
-                    <h3 class="text-lg font-semibold text-slate-900">委托订单</h3>
-                  </div>
-                  <div class="p-12 text-center">
-                    <div class="inline-block p-4 bg-slate-100 rounded-full mb-4">
-                      <i class="pi pi-file-text text-2xl text-slate-400"></i>
-                    </div>
-                    <p class="text-slate-500">暂无委托订单</p>
-                    <p class="text-sm text-slate-400 mt-2">委托订单管理功能开发中，敬请期待...</p>
-                  </div>
-                </div>
-              </div>
+              <TradeList />
             </div>
 
-            <!-- TAB 6: 交易记录 -->
+            <!-- TAB 6: 风控配置 -->
             <div v-if="activeTab === 5">
-              <div class="space-y-6">
-                <!-- 交易记录筛选 -->
-                <div class="bg-white rounded-2xl p-6 border border-slate-200">
-                  <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div class="space-y-2">
-                      <label class="block text-sm font-medium text-slate-700">机器人</label>
-                      <select class="w-full rounded-xl bg-slate-50 border border-slate-200 px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="">全部机器人</option>
-                        <option v-for="bot in filteredBots" :key="bot.id" :value="bot.id">{{ bot.name }}</option>
-                      </select>
-                    </div>
-                    <div class="space-y-2">
-                      <label class="block text-sm font-medium text-slate-700">交易对</label>
-                      <select class="w-full rounded-xl bg-slate-50 border border-slate-200 px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="">全部交易对</option>
-                        <option value="BTC/USDT">BTC/USDT</option>
-                        <option value="ETH/USDT">ETH/USDT</option>
-                      </select>
-                    </div>
-                    <div class="space-y-2">
-                      <label class="block text-sm font-medium text-slate-700">盈亏状态</label>
-                      <select class="w-full rounded-xl bg-slate-50 border border-slate-200 px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="">全部</option>
-                        <option value="profit">盈利</option>
-                        <option value="loss">亏损</option>
-                      </select>
-                    </div>
-                    <div class="space-y-2">
-                      <label class="block text-sm font-medium text-slate-700">时间范围</label>
-                      <select class="w-full rounded-xl bg-slate-50 border border-slate-200 px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <option value="7">最近7天</option>
-                        <option value="30">最近30天</option>
-                        <option value="90">最近90天</option>
-                        <option value="all">全部</option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- 交易记录表格 -->
-                <div class="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
-                  <div class="px-6 py-4 border-b border-slate-200 bg-slate-50">
-                    <h3 class="text-lg font-semibold text-slate-900">交易记录</h3>
-                  </div>
-                  <div class="p-12 text-center">
-                    <div class="inline-block p-4 bg-slate-100 rounded-full mb-4">
-                      <i class="pi pi-history text-2xl text-slate-400"></i>
-                    </div>
-                    <p class="text-slate-500">交易记录功能开发中，敬请期待...</p>
-                  </div>
-                </div>
-              </div>
+              <RiskConfigPanel />
             </div>
 
-            <!-- TAB 7: 性能分析 -->
+            <!-- TAB 7: 策略回测 -->
             <div v-if="activeTab === 6">
-              <div class="space-y-6">
-                <!-- 性能指标卡片 -->
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                  <div class="bg-white rounded-2xl p-6 border border-slate-200">
-                    <div class="flex items-center justify-between">
-                      <div>
-                        <p class="text-sm font-medium text-slate-500">总收益率</p>
-                        <p class="text-2xl font-bold text-green-600 mt-1">+0.00%</p>
-                      </div>
-                      <div class="p-3 bg-green-100 rounded-full">
-                        <i class="pi pi-trending-up text-green-600"></i>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="bg-white rounded-2xl p-6 border border-slate-200">
-                    <div class="flex items-center justify-between">
-                      <div>
-                        <p class="text-sm font-medium text-slate-500">最大回撤</p>
-                        <p class="text-2xl font-bold text-red-600 mt-1">0.00%</p>
-                      </div>
-                      <div class="p-3 bg-red-100 rounded-full">
-                        <i class="pi pi-trending-down text-red-600"></i>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="bg-white rounded-2xl p-6 border border-slate-200">
-                    <div class="flex items-center justify-between">
-                      <div>
-                        <p class="text-sm font-medium text-slate-500">夏普比率</p>
-                        <p class="text-2xl font-bold text-blue-600 mt-1">0.00</p>
-                      </div>
-                      <div class="p-3 bg-blue-100 rounded-full">
-                        <i class="pi pi-chart-line text-blue-600"></i>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="bg-white rounded-2xl p-6 border border-slate-200">
-                    <div class="flex items-center justify-between">
-                      <div>
-                        <p class="text-sm font-medium text-slate-500">盈利因子</p>
-                        <p class="text-2xl font-bold text-purple-600 mt-1">0.00</p>
-                      </div>
-                      <div class="p-3 bg-purple-100 rounded-full">
-                        <i class="pi pi-percentage text-purple-600"></i>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+              <BacktestPanel />
+            </div>
 
-                <!-- 性能分析图表区域 -->
-                <div class="bg-white rounded-2xl p-12 border border-slate-200 text-center shadow-sm">
-                  <div class="inline-block p-4 bg-blue-100 rounded-full mb-4">
-                    <i class="pi pi-chart-line text-2xl text-blue-600"></i>
-                  </div>
-                  <h3 class="text-xl font-semibold text-slate-900 mb-2">性能分析</h3>
-                  <p class="text-slate-500">盈亏曲线图表和详细性能分析功能开发中，敬请期待...</p>
-                </div>
-              </div>
+            <!-- TAB 8: 性能分析 -->
+            <div v-if="activeTab === 7">
+              <PerformanceAnalysis />
             </div>
           </div>
         </main>
     </div>
+
+    <!-- 分享弹窗 -->
+    <ShareBotModal
+      :is-open="showShareModal"
+      :bot="selectedBot"
+      :loading="loadingBotId !== null"
+      @confirm="handleConfirmShare"
+      @cancel="handleCancelShare"
+    />
   </div>
 </template>
 
@@ -631,6 +417,14 @@ import { useRouter, useRoute } from 'vue-router'
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue'
 import { CheckIcon, ChevronUpDownIcon, MagnifyingGlassIcon } from '@heroicons/vue/20/solid'
 import Header from '../../common/Header.vue'
+import ShareBotModal from '../../common/ShareBotModal.vue'
+import PositionList from '../components/PositionList.vue'
+import OrderList from '../components/OrderList.vue'
+import RecommendationList from '../components/RecommendationList.vue'
+import TradeList from '../components/TradeList.vue'
+import RiskConfigPanel from '../components/RiskConfigPanel.vue'
+import BacktestPanel from '../components/BacktestPanel.vue'
+import PerformanceAnalysis from '../components/PerformanceAnalysis.vue'
 import { CpuChipIcon, PlayIcon, BellIcon, ChartBarIcon, StopIcon, PencilIcon, EyeIcon, TrashIcon } from '@heroicons/vue/24/outline'
 import { botAPI } from '../../../utils/api'
 import { showSuccess, showError } from '../../../utils/notification'
@@ -672,27 +466,27 @@ const pageConfig = computed(() => {
 })
 
 // TAB 配置
-const activeTab = ref(2)  // 默认显示"机器人列表"
+const activeTab = ref(0)  // 默认显示"机器人列表"
 const tabs = ref([
-  { label: '信号中心', icon: 'bell' },
-  { label: '策略管理', icon: 'cog' },
   { label: '机器人列表', icon: 'list' },
   { label: '持仓管理', icon: 'wallet' },
-  { label: '委托订单', icon: 'file-text' },
-  { label: '交易记录', icon: 'history' },
+  { label: '委托订单', icon: 'document-text' },
+  { label: '交易审批', icon: 'bolt' },
+  { label: '交易记录', icon: 'clock' },
+  { label: '风控配置', icon: 'shield-check' },
+  { label: '策略回测', icon: 'chart-bar' },
   { label: '性能分析', icon: 'chart-line' }
 ])
 
 const loading = ref(false)
 const loadingBotId = ref(null)
-const loadingSignals = ref(false)
 const bots = ref([])
-const recentSignals = ref([])
 const statistics = ref({
   total_bots: 0,
   running_bots: 0,
   paused_bots: 0,
   total_profit: 0,
+  total_trades: 0,
   win_rate: 0
 })
 
@@ -802,7 +596,8 @@ const updateStatistics = () => {
     running_bots: bots.value.filter(bot => bot.status === 'running').length,
     paused_bots: bots.value.filter(bot => bot.status === 'paused').length,
     total_profit: bots.value.reduce((sum, bot) => sum + (bot.total_profit || 0), 0),
-    win_rate: bots.value.length > 0 
+    total_trades: bots.value.reduce((sum, bot) => sum + (bot.total_trades || 0), 0),
+    win_rate: bots.value.length > 0
       ? Math.round(bots.value.reduce((sum, bot) => sum + (bot.win_rate || 0), 0) / bots.value.length)
       : 0
   }
@@ -881,6 +676,59 @@ const handleDeleteBot = async (botId) => {
   }
 }
 
+// 分享弹窗状态
+const showShareModal = ref(false)
+const selectedBot = ref(null)
+
+const handleShareBot = (bot) => {
+  selectedBot.value = bot
+  showShareModal.value = true
+}
+
+const handleConfirmShare = async (visibility) => {
+  if (!selectedBot.value) return
+
+  try {
+    loadingBotId.value = selectedBot.value.id
+    const response = await botAPI.updateBot(selectedBot.value.id, { visibility })
+
+    // 更新本地数据
+    const botIndex = bots.value.findIndex(b => b.id === selectedBot.value.id)
+    if (botIndex !== -1) {
+      bots.value[botIndex].visibility = visibility
+      bots.value[botIndex].share_code = response.data.share_code
+    }
+
+    if (visibility === 'public') {
+      const shareUrl = `${window.location.origin}/strategies?share_code=${response.data.share_code}`
+
+      // 复制到剪贴板
+      try {
+        await navigator.clipboard.writeText(shareUrl)
+        showSuccess(`已设置为公开！分享链接已复制到剪贴板`)
+      } catch (err) {
+        showSuccess(`已设置为公开！分享链接：${shareUrl}`)
+      }
+    } else if (visibility === 'followers_only') {
+      showSuccess('已设置为仅关注者可见')
+    }
+
+    // 关闭弹窗
+    showShareModal.value = false
+    selectedBot.value = null
+  } catch (error) {
+    console.error('更新分享设置失败:', error)
+    showError(error.response?.data?.message || '更新分享设置失败')
+  } finally {
+    loadingBotId.value = null
+  }
+}
+
+const handleCancelShare = () => {
+  showShareModal.value = false
+  selectedBot.value = null
+}
+
 const handleCreateBot = () => {
   router.push(pageConfig.value.createPath)
 }
@@ -933,34 +781,7 @@ const formatDate = (dateString) => {
   })
 }
 
-// 信号统计计算属性
-const todaySignals = computed(() => {
-  const today = new Date().toDateString()
-  return recentSignals.value.filter(signal =>
-    new Date(signal.created_at).toDateString() === today
-  ).length
-})
 
-const totalSignals = computed(() => recentSignals.value.length)
-
-
-
-// 加载信号数据
-const loadSignals = async () => {
-  try {
-    loadingSignals.value = true
-    const response = await botAPI.getSignalList()
-    console.log('信号API响应:', response)
-    const signals = response.results || response.data || response
-    recentSignals.value = Array.isArray(signals) ? signals : []
-    console.log('加载的信号数:', recentSignals.value.length)
-  } catch (error) {
-    console.error('加载信号失败:', error)
-    recentSignals.value = []
-  } finally {
-    loadingSignals.value = false
-  }
-}
 
 // 监听路由变化，重新加载数据
 watch(() => route.query.type, async () => {
@@ -969,7 +790,6 @@ watch(() => route.query.type, async () => {
 
 onMounted(async () => {
   await loadBots()
-  await loadSignals()
 })
 </script>
 

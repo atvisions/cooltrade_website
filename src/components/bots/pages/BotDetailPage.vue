@@ -69,7 +69,7 @@
               </div>
 
               <!-- 基础信息网格 -->
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 hover:border-blue-300 transition-colors">
                   <p class="text-xs font-medium text-slate-600 uppercase tracking-wider">类型</p>
                   <p class="text-lg font-semibold text-slate-900 mt-2">
@@ -88,6 +88,21 @@
                         : 'bg-red-100 text-red-700'
                     ]">
                       {{ getStatusLabel(bot.status) }}
+                    </span>
+                  </div>
+                </div>
+                <div class="p-4 bg-slate-50 rounded-xl border border-slate-200 hover:border-indigo-300 transition-colors">
+                  <p class="text-xs font-medium text-slate-600 uppercase tracking-wider">交易模式</p>
+                  <div class="mt-2">
+                    <span :class="[
+                      'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium',
+                      bot.trading_mode === 'signal_only'
+                        ? 'bg-blue-100 text-blue-700'
+                        : bot.trading_mode === 'semi_auto'
+                        ? 'bg-purple-100 text-purple-700'
+                        : 'bg-orange-100 text-orange-700'
+                    ]">
+                      {{ getTradingModeLabel(bot.trading_mode) }}
                     </span>
                   </div>
                 </div>
@@ -285,7 +300,14 @@ const getStatusLabel = (status) => {
   return map[status] || status
 }
 
-
+const getTradingModeLabel = (mode) => {
+  const map = {
+    signal_only: '仅信号通知',
+    semi_auto: '半自动交易',
+    full_auto: '全自动交易'
+  }
+  return map[mode] || mode
+}
 
 const formatCurrency = (value) => {
   if (!value) return '$0.00'

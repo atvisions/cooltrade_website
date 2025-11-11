@@ -400,6 +400,27 @@
                               </div>
                             </div>
 
+                            <!-- 分享按钮 -->
+                            <div class="relative">
+                              <button
+                                @click="handleShareBot(bot)"
+                                @mouseenter="showTooltip(`share-${bot.id}`)"
+                                @mouseleave="hideTooltip"
+                                class="p-2 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors duration-200"
+                              >
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                                </svg>
+                              </button>
+                              <div
+                                v-if="hoveredButton === `share-${bot.id}`"
+                                class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-slate-900 text-white text-xs rounded-lg whitespace-nowrap z-50 pointer-events-none"
+                              >
+                                分享机器人
+                                <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
+                              </div>
+                            </div>
+
                             <!-- 详情按钮 -->
                             <div class="relative">
                               <button
@@ -726,6 +747,24 @@
       @confirm="handleConfirmDelete"
       @cancel="handleCancelDelete"
     />
+
+    <!-- 分享弹窗 -->
+    <ShareBotModal
+      :is-open="showShareModal"
+      :bot="selectedBot"
+      :loading="loadingBotId !== null"
+      @confirm="handleConfirmShare"
+      @cancel="handleCancelShare"
+    />
+
+    <!-- 分享详情弹窗 -->
+    <ShareStatsModal
+      :is-open="showShareStatsModal"
+      :bot-id="selectedBotId"
+      @close="showShareStatsModal = false"
+      @unshared="handleUnshared"
+      @edit="handleEditShare"
+    />
 </template>
 
 <script setup>
@@ -734,6 +773,8 @@ import { useRouter } from 'vue-router'
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue'
 import { CheckIcon, ChevronUpDownIcon, MagnifyingGlassIcon } from '@heroicons/vue/20/solid'
 import Header from '../../common/Header.vue'
+import ShareBotModal from '../../common/ShareBotModal.vue'
+import ShareStatsModal from '../../common/ShareStatsModal.vue'
 import { CpuChipIcon, BellIcon, ChartBarIcon, PencilIcon, EyeIcon, TrashIcon, PlayIcon } from '@heroicons/vue/24/outline'
 import { PlayIcon as PlayIconSolid, StopIcon as StopIconSolid } from '@heroicons/vue/24/solid'
 import { botAPI } from '../../../utils/api'
@@ -1033,6 +1074,82 @@ const handleConfirmDelete = async () => {
 const handleCancelDelete = () => {
   showDeleteConfirm.value = false
   pendingDeleteBotId.value = null
+}
+
+// 分享弹窗状态
+const showShareModal = ref(false)
+const showShareStatsModal = ref(false)
+const selectedBot = ref(null)
+const selectedBotId = ref(null)
+
+const handleShareBot = (bot) => {
+  selectedBot.value = bot
+  selectedBotId.value = bot.id
+
+  // 如果已分享，显示详情弹窗；否则显示设置弹窗
+  if (bot.visibility && bot.visibility !== 'private') {
+    showShareStatsModal.value = true
+  } else {
+    showShareModal.value = true
+  }
+}
+
+const handleConfirmShare = async (visibility) => {
+  if (!selectedBot.value) return
+
+  try {
+    loadingBotId.value = selectedBot.value.id
+    const response = await botAPI.updateBot(selectedBot.value.id, { visibility })
+
+    // 更新本地数据
+    const botIndex = bots.value.findIndex(b => b.id === selectedBot.value.id)
+    if (botIndex !== -1) {
+      bots.value[botIndex].visibility = visibility
+      bots.value[botIndex].share_code = response.data.share_code
+    }
+
+    if (visibility === 'public') {
+      const shareUrl = `${window.location.origin}/strategies?share_code=${response.data.share_code}`
+
+      // 复制到剪贴板
+      try {
+        await navigator.clipboard.writeText(shareUrl)
+        showSuccess(`已设置为公开！分享链接已复制到剪贴板`)
+      } catch (err) {
+        showSuccess(`已设置为公开！分享链接：${shareUrl}`)
+      }
+    } else if (visibility === 'followers_only') {
+      showSuccess('已设置为仅关注者可见')
+    }
+
+    // 关闭弹窗
+    showShareModal.value = false
+    selectedBot.value = null
+  } catch (error) {
+    console.error('更新分享设置失败:', error)
+    showError(error.response?.data?.message || '更新分享设置失败')
+  } finally {
+    loadingBotId.value = null
+  }
+}
+
+const handleCancelShare = () => {
+  showShareModal.value = false
+  selectedBot.value = null
+}
+
+// 处理取消分享
+const handleUnshared = async () => {
+  // 重新加载机器人列表
+  await loadBots()
+  showSuccess('已取消分享')
+}
+
+// 处理编辑分享设置
+const handleEditShare = () => {
+  // 关闭详情弹窗，打开设置弹窗
+  showShareStatsModal.value = false
+  showShareModal.value = true
 }
 
 const handleCreateBot = () => {

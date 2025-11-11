@@ -274,7 +274,8 @@ import {
   CpuChipIcon,
   BoltIcon,
   ArrowTrendingUpIcon,
-  ScaleIcon
+  ScaleIcon,
+  ShareIcon
 } from '@heroicons/vue/24/outline'
 
 const route = useRoute()
@@ -330,6 +331,13 @@ const menuItems = ref([
     name: '我的交易所',
     path: '/exchanges',
     icon: BuildingLibraryIcon,
+    badge: null
+  },
+  {
+    id: 'my-shares',
+    name: '我的分享',
+    path: '/my-shares',
+    icon: ShareIcon,
     badge: null
   },
   {

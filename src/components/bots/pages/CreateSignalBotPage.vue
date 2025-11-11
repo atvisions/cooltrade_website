@@ -38,47 +38,174 @@
               </div>
             </div>
             <div class="space-y-6">
-              <!-- 交易所选择 -->
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">
-                  交易所 <span class="text-red-500">*</span>
-                  <span class="text-xs text-slate-500 ml-2">选择要监控的交易所</span>
-                </label>
+              <!-- 交易所选择（两级联动） -->
+              <div class="space-y-4">
+                <!-- 第一级：选择交易所类型 -->
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                    交易所类型 <span class="text-red-500">*</span>
+                    <span class="text-xs text-slate-500 ml-2">选择要监控的交易所</span>
+                  </label>
 
-                <!-- 交易所列表 -->
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                  <button
-                    v-for="exchange in availableExchanges"
-                    :key="exchange.value"
-                    type="button"
-                    @click="formData.exchange_name = exchange.value"
-                    :class="[
-                      'flex flex-col items-center justify-center p-4 border-2 rounded-xl transition-all',
-                      formData.exchange_name === exchange.value
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-slate-200 hover:border-slate-300 bg-white'
-                    ]"
-                  >
-                    <img
-                      :src="exchange.logo"
-                      :alt="exchange.label"
-                      class="w-12 h-12 rounded-lg mb-2 object-contain"
-                      @error="handleImageError"
-                    />
-                    <div class="font-medium text-slate-900 text-sm">
-                      {{ exchange.label }}
-                    </div>
-                    <svg
-                      v-if="formData.exchange_name === exchange.value"
-                      class="h-5 w-5 text-blue-500 mt-2"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
+                  <!-- 交易所类型列表 -->
+                  <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <button
+                      v-for="exchange in availableExchanges"
+                      :key="exchange.value"
+                      type="button"
+                      @click="selectExchangeType(exchange.value)"
+                      :class="[
+                        'flex flex-col items-center justify-center p-4 border-2 rounded-xl transition-all',
+                        selectedExchangeType === exchange.value
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-slate-200 hover:border-slate-300 bg-white'
+                      ]"
                     >
-                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                    </svg>
-                  </button>
+                      <img
+                        :src="exchange.logo"
+                        :alt="exchange.label"
+                        class="w-12 h-12 rounded-lg mb-2 object-contain"
+                        @error="handleImageError"
+                      />
+                      <div class="font-medium text-slate-900 text-sm">
+                        {{ exchange.label }}
+                      </div>
+                      <svg
+                        v-if="selectedExchangeType === exchange.value"
+                        class="h-5 w-5 text-blue-500 mt-2"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                      </svg>
+                    </button>
+                  </div>
+                  <p v-if="errors.exchange_name" class="mt-1 text-sm text-red-500">{{ errors.exchange_name }}</p>
                 </div>
-                <p v-if="errors.exchange_name" class="mt-1 text-sm text-red-500">{{ errors.exchange_name }}</p>
+
+                <!-- 第二级：选择交易所账号（可选） -->
+                <div v-if="selectedExchangeType">
+                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                    交易所账号
+                    <span class="text-xs text-slate-500 ml-2">
+                      可选 - 选择账号可获取实时价格，不选择则使用公开数据
+                    </span>
+                  </label>
+
+                  <!-- 如果有该交易所的账号 -->
+                  <div v-if="filteredExchangeAPIs.length > 0" class="space-y-2">
+                    <!-- 不使用账号选项 -->
+                    <button
+                      type="button"
+                      @click="selectExchangeAPI(null)"
+                      :class="[
+                        'w-full flex items-center justify-between p-4 border-2 rounded-xl transition-all text-left',
+                        formData.exchange_api === null && selectedExchangeType
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-slate-200 hover:border-slate-300 bg-white'
+                      ]"
+                    >
+                      <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
+                          <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <div class="font-medium text-slate-900">使用公开数据</div>
+                          <div class="text-xs text-slate-500">不需要 API 密钥，使用交易所公开价格数据</div>
+                        </div>
+                      </div>
+                      <svg
+                        v-if="formData.exchange_api === null && selectedExchangeType"
+                        class="h-5 w-5 text-blue-500"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                      </svg>
+                    </button>
+
+                    <!-- 账号列表 -->
+                    <button
+                      v-for="api in filteredExchangeAPIs"
+                      :key="api.id"
+                      type="button"
+                      @click="selectExchangeAPI(api.id)"
+                      :class="[
+                        'w-full flex items-center justify-between p-4 border-2 rounded-xl transition-all text-left',
+                        formData.exchange_api === api.id
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-slate-200 hover:border-slate-300 bg-white'
+                      ]"
+                    >
+                      <div class="flex items-center gap-3">
+                        <img
+                          :src="getExchangeLogo(api.exchange)"
+                          :alt="api.exchange"
+                          class="w-10 h-10 rounded-lg object-contain"
+                          @error="handleImageError"
+                        />
+                        <div>
+                          <div class="font-medium text-slate-900">{{ api.name || getExchangeLabel(api.exchange) }}</div>
+                          <div class="text-xs text-slate-500">
+                            {{ api.is_testnet ? '测试网' : '主网' }} •
+                            余额: {{ getBalanceDisplay(api) }}
+                          </div>
+                        </div>
+                      </div>
+                      <svg
+                        v-if="formData.exchange_api === api.id"
+                        class="h-5 w-5 text-blue-500"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <!-- 如果没有该交易所的账号，显示"使用公开数据"选项 -->
+                  <div v-else class="space-y-2">
+                    <!-- 使用公开数据选项（默认选中） -->
+                    <button
+                      type="button"
+                      @click="selectExchangeAPI(null)"
+                      class="w-full flex items-center justify-between p-4 border-2 border-blue-500 bg-blue-50 rounded-xl transition-all text-left"
+                    >
+                      <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <div class="font-medium text-slate-900">使用公开数据</div>
+                          <div class="text-xs text-slate-500">不需要 API 密钥，使用交易所公开价格数据</div>
+                        </div>
+                      </div>
+                      <svg class="h-5 w-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                      </svg>
+                    </button>
+
+                    <!-- 添加账号提示 -->
+                    <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg">
+                      <div class="flex items-center justify-between">
+                        <div class="text-sm text-slate-600">
+                          如需使用账号数据，可以添加 {{ selectedExchange?.label }} API
+                        </div>
+                        <button
+                          type="button"
+                          @click="goToExchangeSettings"
+                          class="px-3 py-1.5 bg-white border border-slate-300 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors"
+                        >
+                          添加账号
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <!-- 代币和计价币种 -->
@@ -768,7 +895,7 @@
                     <div class="flex justify-between text-xs">
                       <span class="text-slate-500">交易对</span>
                       <span class="font-medium text-slate-900">
-                        {{ formData.token?.symbol ? `${formData.token.symbol}/${formData.quote_currency || 'USDT'}` : '-' }}
+                        {{ selectedToken?.symbol ? `${selectedToken.symbol}/${formData.trading_pair || 'USDT'}` : '-' }}
                       </span>
                     </div>
                     <div class="flex justify-between text-xs">
@@ -1004,10 +1131,19 @@ let searchTimeout = null
 // 热门代币列表
 const popularTokens = ['BTC', 'ETH', 'BNB', 'SOL', 'XRP', 'ADA', 'DOGE', 'MATIC']
 
+// 交易所账号相关
+const selectedExchangeType = ref('')  // 选中的交易所类型
+const exchangeAPIs = ref([])  // 所有交易所账号
+const filteredExchangeAPIs = computed(() => {
+  if (!selectedExchangeType.value) return []
+  return exchangeAPIs.value.filter(api => api.exchange === selectedExchangeType.value)
+})
+
 const formData = ref({
   name: '',
   description: '',
-  exchange_name: '',  // 改为交易所名称
+  exchange_name: '',  // 交易所名称（用于公开数据）
+  exchange_api: null,  // 交易所账号 ID（可选，用于账号数据）
   token: null,
   trading_pair: 'USDT',
   timeframe: '1h',
@@ -1131,6 +1267,71 @@ const availableQuoteAssets = computed(() => {
   const tokenSymbol = selectedToken.value.symbol.toUpperCase()
   return allOptions.filter(option => option.value !== tokenSymbol)
 })
+
+// 选择交易所类型
+const selectExchangeType = (exchangeType) => {
+  selectedExchangeType.value = exchangeType
+  formData.value.exchange_name = exchangeType
+
+  // 如果该交易所没有账号，自动选择使用公开数据
+  if (filteredExchangeAPIs.value.length === 0) {
+    formData.value.exchange_api = null
+  }
+
+  // 清空代币选择
+  formData.value.token = null
+  tokenSearchQuery.value = ''
+  tokenSearchResults.value = []
+  selectedToken.value = null
+  showTokenResults.value = false
+}
+
+// 选择交易所账号
+const selectExchangeAPI = (apiId) => {
+  formData.value.exchange_api = apiId
+}
+
+// 跳转到交易所设置
+const goToExchangeSettings = () => {
+  router.push('/settings/exchanges')
+}
+
+// 获取交易所 Logo（从 availableExchanges 中查找）
+const getExchangeLogo = (exchange) => {
+  const exchangeData = availableExchanges.value.find(ex => ex.value === exchange)
+  return exchangeData?.logo || '/dex/gate.png'
+}
+
+// 获取交易所标签（从 availableExchanges 中查找）
+const getExchangeLabel = (exchange) => {
+  const exchangeData = availableExchanges.value.find(ex => ex.value === exchange)
+  return exchangeData?.label || exchange
+}
+
+// 获取余额显示（从 balance_snapshot 中提取）
+const getBalanceDisplay = (api) => {
+  if (!api.balance_snapshot || Object.keys(api.balance_snapshot).length === 0) {
+    return '-'
+  }
+
+  // 如果有 total_usd 字段，直接显示总价值
+  if (api.balance_snapshot.total_usd !== undefined) {
+    return `$${Number(api.balance_snapshot.total_usd).toFixed(2)}`
+  }
+
+  // 否则尝试从 spot 中获取 USDT 余额
+  if (api.balance_snapshot.spot?.USDT) {
+    const usdtBalance = api.balance_snapshot.spot.USDT.total || api.balance_snapshot.spot.USDT.free || api.balance_snapshot.spot.USDT
+    return `${Number(usdtBalance).toFixed(2)} USDT`
+  }
+
+  // 如果没有 spot，尝试直接获取 USDT
+  if (api.balance_snapshot.USDT) {
+    return `${Number(api.balance_snapshot.USDT).toFixed(2)} USDT`
+  }
+
+  return '-'
+}
 
 // 监听代币变化，自动清除冲突的计价币种
 watch(selectedToken, (newToken) => {
@@ -1358,6 +1559,18 @@ const loadData = async () => {
       console.log('✅ 加载交易所列表成功:', availableExchanges.value)
     }
 
+    // 加载用户的交易所账号
+    try {
+      const apisResponse = await exchangeAPI.getExchangeList()
+      if (apisResponse.success) {
+        exchangeAPIs.value = apisResponse.data || []
+        console.log('✅ 加载交易所账号成功:', exchangeAPIs.value.length, '个账号')
+      }
+    } catch (error) {
+      console.error('加载交易所账号失败:', error)
+      // 不影响主流程，继续执行
+    }
+
     // 如果是编辑模式，加载机器人数据
     if (isEditMode.value) {
       await loadBotData()
@@ -1374,7 +1587,11 @@ const loadData = async () => {
 // 加载机器人数据（编辑模式）
 const loadBotData = async () => {
   try {
-    const bot = await botAPI.getBotDetail(botId.value)
+    const response = await botAPI.getBotDetail(botId.value)
+    console.log('API 响应:', response)
+
+    // 处理不同的响应格式
+    const bot = response.data || response
     console.log('加载的机器人数据:', bot)
 
     // 保存机器人运行状态
@@ -1383,7 +1600,22 @@ const loadBotData = async () => {
     // 填充表单数据
     formData.value.name = bot.name || ''
     formData.value.description = bot.description || ''
-    formData.value.exchange_name = bot.exchange_name || (typeof bot.exchange_api === 'object' ? bot.exchange_api.exchange : '')
+
+    // 设置交易所类型和账号
+    if (bot.exchange_api) {
+      // 如果有关联的交易所账号
+      const apiId = typeof bot.exchange_api === 'object' ? bot.exchange_api.id : bot.exchange_api
+      const exchange = typeof bot.exchange_api === 'object' ? bot.exchange_api.exchange : bot.exchange_name
+      formData.value.exchange_api = apiId
+      formData.value.exchange_name = exchange
+      selectedExchangeType.value = exchange
+    } else if (bot.exchange_name) {
+      // 如果只有交易所名称（使用公开数据）
+      formData.value.exchange_name = bot.exchange_name
+      formData.value.exchange_api = null
+      selectedExchangeType.value = bot.exchange_name
+    }
+
     formData.value.token = typeof bot.token === 'object' ? bot.token.id : bot.token
     formData.value.trading_pair = bot.trading_pair || 'USDT'
     formData.value.timeframe = bot.timeframe || '1h'
@@ -1576,7 +1808,8 @@ const handleSubmit = async () => {
       name: formData.value.name,
       description: formData.value.description,
       token: formData.value.token,
-      exchange_name: formData.value.exchange_name,  // 使用交易所名称
+      exchange_name: formData.value.exchange_name,  // 交易所名称（必填）
+      exchange_api: formData.value.exchange_api,  // 交易所账号 ID（可选）
       trading_pair: formData.value.trading_pair,
       timeframe: formData.value.timeframe,
       signal_type: formData.value.signal_type,

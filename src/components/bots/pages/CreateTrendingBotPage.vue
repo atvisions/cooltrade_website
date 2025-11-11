@@ -24,6 +24,228 @@
             </div>
           </div>
 
+          <!-- 交易模式选择 -->
+          <Card variant="default" class="mb-6">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                </svg>
+              </div>
+              <div>
+                <h2 class="text-lg font-semibold text-slate-900">交易模式</h2>
+                <p class="text-sm text-slate-500">选择机器人的交易模式</p>
+              </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <!-- 信号触发交易 -->
+              <button
+                type="button"
+                @click="formData.trading_mode = 'signal_trigger'"
+                :class="[
+                  'p-6 border-2 rounded-xl transition-all text-left',
+                  formData.trading_mode === 'signal_trigger'
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-slate-200 hover:border-slate-300 bg-white'
+                ]"
+              >
+                <div class="flex items-start justify-between mb-3">
+                  <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  </div>
+                  <svg
+                    v-if="formData.trading_mode === 'signal_trigger'"
+                    class="h-5 w-5 text-blue-500"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-slate-900 mb-2">信号触发交易</h3>
+                <p class="text-sm text-slate-600 mb-3">
+                  监听信号机器人，当信号触发时自动执行交易
+                </p>
+                <div class="flex items-center gap-2 text-xs">
+                  <span class="px-2 py-1 bg-green-100 text-green-700 rounded-full font-medium">
+                    所有用户可用
+                  </span>
+                </div>
+              </button>
+
+              <!-- 半自动交易 -->
+              <button
+                type="button"
+                @click="formData.trading_mode = 'semi_auto'"
+                :class="[
+                  'p-6 border-2 rounded-xl transition-all text-left',
+                  formData.trading_mode === 'semi_auto'
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-slate-200 hover:border-slate-300 bg-white'
+                ]"
+              >
+                <div class="flex items-start justify-between mb-3">
+                  <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <svg
+                    v-if="formData.trading_mode === 'semi_auto'"
+                    class="h-5 w-5 text-blue-500"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-slate-900 mb-2">半自动交易</h3>
+                <p class="text-sm text-slate-600 mb-3">
+                  AI 生成交易建议，您确认后执行。建议有效期 15 分钟
+                </p>
+                <div class="flex items-center gap-2 text-xs">
+                  <span class="px-2 py-1 bg-blue-100 text-blue-700 rounded-full font-medium">
+                    专业用户可用
+                  </span>
+                </div>
+              </button>
+
+              <!-- 全自动交易 -->
+              <button
+                type="button"
+                @click="formData.trading_mode = 'full_auto'"
+                :class="[
+                  'p-6 border-2 rounded-xl transition-all text-left',
+                  formData.trading_mode === 'full_auto'
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-slate-200 hover:border-slate-300 bg-white'
+                ]"
+              >
+                <div class="flex items-start justify-between mb-3">
+                  <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                  </div>
+                  <svg
+                    v-if="formData.trading_mode === 'full_auto'"
+                    class="h-5 w-5 text-blue-500"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                  </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-slate-900 mb-2">全自动交易</h3>
+                <p class="text-sm text-slate-600 mb-3">
+                  完全自动执行交易，无需人工确认。通过风控检查后立即执行
+                </p>
+                <div class="flex items-center gap-2 text-xs">
+                  <span class="px-2 py-1 bg-orange-100 text-orange-700 rounded-full font-medium">
+                    旗舰用户可用
+                  </span>
+                </div>
+              </button>
+            </div>
+          </Card>
+
+          <!-- 信号机器人选择（仅在选择"信号触发交易"时显示） -->
+          <Card v-if="formData.trading_mode === 'signal_trigger'" variant="default" class="mb-6">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <div>
+                <h2 class="text-lg font-semibold text-slate-900">信号源配置</h2>
+                <p class="text-sm text-slate-500">选择要监听的信号机器人</p>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-3">
+                  选择信号机器人 <span class="text-red-500">*</span>
+                  <span class="text-xs text-slate-500 ml-2">
+                    当信号机器人触发信号时，此趋势跟踪机器人将自动执行交易
+                  </span>
+                </label>
+
+                <!-- 信号机器人列表 -->
+                <div v-if="signalBots.length > 0" class="space-y-2">
+                  <button
+                    v-for="bot in signalBots"
+                    :key="bot.id"
+                    type="button"
+                    @click="formData.signal_bot = bot.id"
+                    :class="[
+                      'w-full flex items-center justify-between p-4 border-2 rounded-xl transition-all text-left',
+                      formData.signal_bot === bot.id
+                        ? 'border-blue-500 bg-blue-50'
+                        : 'border-slate-200 hover:border-slate-300 bg-white'
+                    ]"
+                  >
+                    <div class="flex items-center gap-3">
+                      <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <div class="font-medium text-slate-900">{{ bot.name }}</div>
+                        <div class="text-xs text-slate-500 mt-1">
+                          {{ bot.exchange_name }} • {{ bot.token }}/{{ bot.trading_pair }} • {{ bot.timeframe }}
+                        </div>
+                      </div>
+                    </div>
+                    <svg
+                      v-if="formData.signal_bot === bot.id"
+                      class="h-5 w-5 text-blue-500 flex-shrink-0"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                  </button>
+                </div>
+
+                <!-- 无可用信号机器人提示 -->
+                <div v-else class="space-y-3">
+                  <div class="p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                    <div class="flex items-start gap-3">
+                      <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                        </svg>
+                      </div>
+                      <div class="flex-1">
+                        <div class="font-medium text-amber-900 mb-1">暂无可用的信号机器人</div>
+                        <div class="text-sm text-amber-700">
+                          请先创建并启动一个信号机器人，才能使用信号触发交易模式
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 创建信号机器人按钮 -->
+                  <button
+                    type="button"
+                    @click="goToCreateSignalBot"
+                    class="w-full flex items-center justify-center gap-2 p-3 border-2 border-dashed border-slate-300 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-all text-slate-600 hover:text-blue-600"
+                  >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span class="font-medium">创建信号机器人</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </Card>
+
           <!-- 交易配置 -->
           <Card variant="default" class="mb-6">
             <div class="flex items-center gap-3 mb-6">
@@ -38,77 +260,146 @@
               </div>
             </div>
             <div class="space-y-6">
-              <!-- 交易所 API 选择 -->
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">
-                  交易所 API <span class="text-red-500">*</span>
-                  <span class="text-xs text-slate-500 ml-2">选择已绑定的交易所 API（需要交易权限）</span>
-                </label>
+              <!-- 交易所选择（两级联动） -->
+              <div class="space-y-4">
+                <!-- 第一级：选择交易所类型 -->
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                    交易所类型 <span class="text-red-500">*</span>
+                    <span class="text-xs text-slate-500 ml-2">选择要使用的交易所</span>
+                  </label>
 
-                <!-- 交易所 API 列表 -->
-                <div v-if="exchangeAPIs.length > 0" class="grid grid-cols-1 md:grid-cols-4 gap-3">
-                  <button
-                    v-for="api in exchangeAPIs"
-                    :key="api.id"
-                    type="button"
-                    @click="selectExchangeAPI(api)"
-                    :class="[
-                      'flex items-center gap-4 p-4 border-2 rounded-xl transition-all text-left',
-                      formData.exchange_api === api.id
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-slate-200 hover:border-slate-300 bg-white'
-                    ]"
-                  >
-                    <img
-                      :src="getExchangeLogo(api.exchange)"
-                      :alt="api.exchange"
-                      class="w-12 h-12 rounded-lg object-contain"
-                      @error="handleImageError"
-                    />
-                    <div class="flex-1">
-                      <div class="font-medium text-slate-900">
-                        {{ getExchangeLabel(api.exchange) }}
+                  <!-- 交易所类型列表 -->
+                  <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <button
+                      v-for="exchange in availableExchangeTypes"
+                      :key="exchange.value"
+                      type="button"
+                      @click="selectExchangeType(exchange.value)"
+                      :class="[
+                        'flex flex-col items-center justify-center p-4 border-2 rounded-xl transition-all',
+                        selectedExchangeType === exchange.value
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-slate-200 hover:border-slate-300 bg-white'
+                      ]"
+                    >
+                      <img
+                        :src="exchange.logo"
+                        :alt="exchange.label"
+                        class="w-12 h-12 rounded-lg mb-2 object-contain"
+                        @error="handleImageError"
+                      />
+                      <div class="font-medium text-slate-900 text-sm">
+                        {{ exchange.label }}
                       </div>
-                      <div class="text-sm text-slate-500">
-                        {{ api.api_name || api.exchange }}
+                      <svg
+                        v-if="selectedExchangeType === exchange.value"
+                        class="h-5 w-5 text-blue-500 mt-2"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                      </svg>
+                    </button>
+                  </div>
+                  <p v-if="errors.exchange_type" class="mt-1 text-sm text-red-500">{{ errors.exchange_type }}</p>
+                </div>
+
+                <!-- 第二级：选择交易所账号（必选） -->
+                <div v-if="selectedExchangeType">
+                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                    交易所账号 <span class="text-red-500">*</span>
+                    <span class="text-xs text-slate-500 ml-2">
+                      选择账号执行交易（需要交易权限）
+                    </span>
+                  </label>
+
+                  <!-- 如果有该交易所的账号 -->
+                  <div v-if="filteredExchangeAPIs.length > 0" class="space-y-2">
+                    <button
+                      v-for="api in filteredExchangeAPIs"
+                      :key="api.id"
+                      type="button"
+                      @click="selectExchangeAPI(api)"
+                      :class="[
+                        'w-full flex items-center justify-between p-4 border-2 rounded-xl transition-all text-left',
+                        formData.exchange_api === api.id
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-slate-200 hover:border-slate-300 bg-white'
+                      ]"
+                    >
+                      <div class="flex items-center gap-3">
+                        <img
+                          :src="getExchangeLogo(api.exchange)"
+                          :alt="api.exchange"
+                          class="w-10 h-10 rounded-lg object-contain"
+                          @error="handleImageError"
+                        />
+                        <div>
+                          <div class="font-medium text-slate-900">{{ api.name || getExchangeLabel(api.exchange) }}</div>
+                          <div class="text-xs text-slate-500">
+                            {{ api.is_testnet ? '测试网' : '主网' }} •
+                            余额: {{ getBalanceDisplay(api) }}
+                          </div>
+                          <div class="flex items-center gap-2 mt-1">
+                            <span :class="[
+                              'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium',
+                              api.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
+                            ]">
+                              {{ api.status === 'active' ? '可用' : '不可用' }}
+                            </span>
+                            <span v-if="api.permissions?.trade" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700">
+                              交易权限
+                            </span>
+                            <span v-else class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700">
+                              无交易权限
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                      <div class="flex items-center gap-2 mt-1">
-                        <span :class="[
-                          'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium',
-                          api.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
-                        ]">
-                          {{ api.status === 'active' ? '可用' : '不可用' }}
-                        </span>
-                        <span v-if="api.permissions?.trade" class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700">
-                          交易权限
-                        </span>
+                      <svg
+                        v-if="formData.exchange_api === api.id"
+                        class="h-5 w-5 text-blue-500"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <!-- 如果没有该交易所的账号 -->
+                  <div v-else class="space-y-3">
+                    <div class="p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                      <div class="flex items-start gap-3">
+                        <div class="w-10 h-10 bg-amber-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                          <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                          </svg>
+                        </div>
+                        <div class="flex-1">
+                          <div class="font-medium text-amber-900 mb-1">暂无 {{ selectedExchangeLabel }} 账号</div>
+                          <div class="text-sm text-amber-700">
+                            请先添加 {{ selectedExchangeLabel }} API 才能使用该交易所
+                          </div>
+                        </div>
                       </div>
                     </div>
-                    <svg
-                      v-if="formData.exchange_api === api.id"
-                      class="h-5 w-5 text-blue-500 flex-shrink-0"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                    </svg>
-                  </button>
-                </div>
 
-                <!-- 无交易所 API 提示 -->
-                <div v-else class="p-6 border-2 border-dashed border-slate-300 rounded-xl text-center">
-                  <svg class="mx-auto h-12 w-12 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
-                  <p class="mt-2 text-sm text-slate-600">您还没有绑定交易所 API</p>
-                  <button
-                    @click="goToExchangeSettings"
-                    class="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700"
-                  >
-                    去绑定交易所
-                  </button>
+                    <!-- 添加账号按钮 -->
+                    <button
+                      type="button"
+                      @click="goToExchangeSettings"
+                      class="w-full flex items-center justify-center gap-2 p-3 border-2 border-dashed border-slate-300 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-all text-slate-600 hover:text-blue-600"
+                    >
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                      </svg>
+                      <span class="font-medium">添加 {{ selectedExchangeLabel }} API</span>
+                    </button>
+                  </div>
+                  <p v-if="errors.exchange_api" class="mt-1 text-sm text-red-500">{{ errors.exchange_api }}</p>
                 </div>
-                <p v-if="errors.exchange_api" class="mt-1 text-sm text-red-500">{{ errors.exchange_api }}</p>
               </div>
 
               <!-- 代币和计价币种 -->
@@ -133,14 +424,27 @@
                     <div
                       v-if="showTokenResults"
                       v-click-outside="() => showTokenResults = false"
-                      class="absolute z-10 mt-1 w-full bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-auto"
+                      class="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-y-auto"
                     >
                       <div v-if="searchingTokens" class="p-4 text-center text-slate-500">
-                        <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
-                        <p class="mt-2 text-sm">搜索中...</p>
+                        <div class="flex items-center justify-center">
+                          <svg class="animate-spin h-5 w-5 mr-2 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          搜索中...
+                        </div>
                       </div>
-                      <div v-else-if="tokenSearchResults.length === 0" class="p-4 text-center text-slate-500">
-                        <p class="text-sm">{{ tokenSearchQuery ? '未找到匹配的代币' : '请输入代币名称或符号' }}</p>
+                      <div v-else-if="tokenSearchResults.length === 0" class="p-4 text-center">
+                        <div class="text-slate-400 mb-2">
+                          <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                          </svg>
+                        </div>
+                        <div class="text-slate-600 font-medium">未找到相关代币</div>
+                        <div class="text-xs text-slate-500 mt-1">
+                          {{ tokenSearchQuery ? `${getExchangeLabel(selectedExchangeAPI.exchange)} 不支持该代币` : '请输入代币名称或符号' }}
+                        </div>
                       </div>
                       <div v-else>
                         <button
@@ -148,54 +452,39 @@
                           :key="token.id"
                           type="button"
                           @click="selectToken(token)"
-                          class="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 transition-colors text-left"
+                          class="w-full flex items-center p-3 hover:bg-slate-50 transition-colors text-left"
                         >
                           <img
                             :src="token.logo"
                             :alt="token.symbol"
-                            class="w-8 h-8 rounded-full"
+                            class="w-8 h-8 rounded-full mr-3 object-contain"
                             @error="handleImageError"
                           />
                           <div class="flex-1">
                             <div class="font-medium text-slate-900">{{ token.symbol }}</div>
-                            <div class="text-sm text-slate-500">{{ token.name }}</div>
+                            <div class="text-xs text-slate-500">{{ token.name }}</div>
                           </div>
-                          <div class="text-right">
-                            <div class="text-sm font-medium text-slate-900">${{ formatPrice(token.current_price) }}</div>
-                            <div :class="[
-                              'text-xs',
-                              token.price_change_24h >= 0 ? 'text-green-600' : 'text-red-600'
-                            ]">
-                              {{ token.price_change_24h >= 0 ? '+' : '' }}{{ token.price_change_24h?.toFixed(2) }}%
-                            </div>
+                          <div class="text-sm text-slate-600">
+                            ${{ formatPrice(token.current_price) }}
                           </div>
                         </button>
                       </div>
                     </div>
                   </div>
-                  <p v-if="errors.token" class="mt-1 text-sm text-red-500">{{ errors.token }}</p>
-                  
-                  <!-- 已选择的代币 -->
-                  <div v-if="selectedToken" class="mt-3 flex items-center gap-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <img
-                      :src="selectedToken.logo"
-                      :alt="selectedToken.symbol"
-                      class="w-10 h-10 rounded-full"
-                      @error="handleImageError"
-                    />
-                    <div class="flex-1">
-                      <div class="font-medium text-slate-900">{{ selectedToken.symbol }}</div>
-                      <div class="text-sm text-slate-500">{{ selectedToken.name }}</div>
-                    </div>
+                  <!-- 热门代币快捷选择 -->
+                  <div class="mt-2 flex flex-wrap gap-2">
                     <button
-                      @click="clearToken"
-                      class="text-slate-400 hover:text-slate-600"
+                      v-for="popularToken in ['BTC', 'ETH', 'BNB', 'SOL', 'XRP']"
+                      :key="popularToken"
+                      type="button"
+                      @click="quickSelectToken(popularToken)"
+                      :disabled="!selectedExchangeAPI"
+                      class="px-3 py-1 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
+                      {{ popularToken }}
                     </button>
                   </div>
+                  <p v-if="errors.token" class="mt-1 text-sm text-red-500">{{ errors.token }}</p>
                 </div>
 
                 <!-- 计价币种 -->
@@ -212,30 +501,211 @@
                     <option value="BTC">BTC</option>
                     <option value="ETH">ETH</option>
                   </select>
+                  <p v-if="errors.trading_pair" class="mt-1 text-sm text-red-500">{{ errors.trading_pair }}</p>
                 </div>
               </div>
 
               <!-- 时间周期 -->
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">
+                <label class="block text-sm font-medium text-slate-700 mb-3">
                   时间周期 <span class="text-red-500">*</span>
                   <span class="text-xs text-slate-500 ml-2">选择交易策略的时间周期</span>
                 </label>
-                <div class="grid grid-cols-4 md:grid-cols-8 gap-3">
+                <div class="flex flex-wrap gap-2">
                   <button
                     v-for="tf in timeframeOptions"
                     :key="tf.value"
                     type="button"
                     @click="formData.timeframe = tf.value"
                     :class="[
-                      'px-4 py-2.5 border-2 rounded-lg font-medium transition-all',
+                      'px-4 py-2 rounded-lg text-sm font-medium transition-all',
                       formData.timeframe === tf.value
-                        ? 'border-blue-500 bg-blue-50 text-blue-700'
-                        : 'border-slate-200 hover:border-slate-300 text-slate-700'
+                        ? 'bg-blue-600 text-white shadow-sm'
+                        : 'bg-white text-slate-700 border border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                     ]"
                   >
                     {{ tf.label }}
                   </button>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          <!-- 策略配置 -->
+          <Card variant="default" class="mb-6">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+              <div>
+                <h2 class="text-lg font-semibold text-slate-900">策略配置</h2>
+                <p class="text-sm text-slate-500">选择技术指标和参数</p>
+              </div>
+            </div>
+            <div class="space-y-6">
+              <!-- 趋势指标选择 -->
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">
+                  趋势指标 <span class="text-red-500">*</span>
+                  <span class="text-xs text-slate-500 ml-2">选择用于判断趋势的技术指标</span>
+                </label>
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                  <button
+                    v-for="indicator in trendIndicators"
+                    :key="indicator.value"
+                    type="button"
+                    @click="formData.config.trend_indicator = indicator.value"
+                    :class="[
+                      'p-4 border-2 rounded-lg transition-all text-left',
+                      formData.config.trend_indicator === indicator.value
+                        ? 'border-purple-500 bg-purple-50'
+                        : 'border-slate-200 hover:border-slate-300 bg-white'
+                    ]"
+                  >
+                    <div class="font-medium text-slate-900 mb-1">{{ indicator.label }}</div>
+                    <div class="text-xs text-slate-500">{{ indicator.description }}</div>
+                  </button>
+                </div>
+              </div>
+
+              <!-- MA/EMA 交叉参数 -->
+              <div v-if="['ma_crossover', 'ema_crossover'].includes(formData.config.trend_indicator)" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                    快线周期 <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    v-model.number="formData.config.fast_period"
+                    type="number"
+                    min="1"
+                    placeholder="10"
+                    class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                    慢线周期 <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    v-model.number="formData.config.slow_period"
+                    type="number"
+                    min="1"
+                    placeholder="20"
+                    class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+              </div>
+
+              <!-- MACD 参数 -->
+              <div v-if="formData.config.trend_indicator === 'macd'" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                    快线周期 <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    v-model.number="formData.config.fast_period"
+                    type="number"
+                    min="1"
+                    placeholder="12"
+                    class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                    慢线周期 <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    v-model.number="formData.config.slow_period"
+                    type="number"
+                    min="1"
+                    placeholder="26"
+                    class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                    信号线周期 <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    v-model.number="formData.config.signal_period"
+                    type="number"
+                    min="1"
+                    placeholder="9"
+                    class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+              </div>
+
+              <!-- RSI 参数 -->
+              <div v-if="formData.config.trend_indicator === 'rsi'" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                    RSI 周期 <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    v-model.number="formData.config.rsi_period"
+                    type="number"
+                    min="1"
+                    placeholder="14"
+                    class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                    超买阈值 <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    v-model.number="formData.config.rsi_overbought"
+                    type="number"
+                    min="50"
+                    max="100"
+                    placeholder="70"
+                    class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                    超卖阈值 <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    v-model.number="formData.config.rsi_oversold"
+                    type="number"
+                    min="0"
+                    max="50"
+                    placeholder="30"
+                    class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+              </div>
+
+              <!-- 布林带参数 -->
+              <div v-if="formData.config.trend_indicator === 'bollinger'" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                    周期 <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    v-model.number="formData.config.bollinger_period"
+                    type="number"
+                    min="1"
+                    placeholder="20"
+                    class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                    标准差倍数 <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    v-model.number="formData.config.bollinger_std"
+                    type="number"
+                    step="0.1"
+                    min="0.1"
+                    placeholder="2"
+                    class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
                 </div>
               </div>
             </div>
@@ -676,6 +1146,21 @@
                   <div class="text-xs font-semibold text-slate-700 mb-3">交易配置</div>
                   <div class="space-y-2">
                     <div class="flex justify-between text-xs">
+                      <span class="text-slate-500">交易模式</span>
+                      <span class="font-medium text-slate-900">
+                        <span v-if="formData.trading_mode === 'signal_trigger'" class="text-blue-600">信号触发交易</span>
+                        <span v-else-if="formData.trading_mode === 'semi_auto'" class="text-purple-600">半自动交易</span>
+                        <span v-else-if="formData.trading_mode === 'full_auto'" class="text-orange-600">全自动交易</span>
+                        <span v-else>-</span>
+                      </span>
+                    </div>
+                    <div v-if="formData.trading_mode === 'signal_trigger'" class="flex justify-between text-xs">
+                      <span class="text-slate-500">信号机器人</span>
+                      <span class="font-medium text-slate-900">
+                        {{ signalBots.find(b => b.id === formData.signal_bot)?.name || '-' }}
+                      </span>
+                    </div>
+                    <div class="flex justify-between text-xs">
                       <span class="text-slate-500">交易所</span>
                       <span class="font-medium text-slate-900">
                         {{ selectedExchangeAPI?.exchange_name || '-' }}
@@ -691,6 +1176,43 @@
                       <span class="text-slate-500">时间周期</span>
                       <span class="font-medium text-slate-900">
                         {{ timeframeOptions?.find(t => t.value === formData.timeframe)?.label || '-' }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 策略配置 -->
+                <div class="border-t border-slate-200 pt-4">
+                  <div class="text-xs font-semibold text-slate-700 mb-3">策略配置</div>
+                  <div class="space-y-2">
+                    <div class="flex justify-between text-xs">
+                      <span class="text-slate-500">趋势指标</span>
+                      <span class="font-medium text-slate-900">
+                        {{ trendIndicators.find(t => t.value === formData.config.trend_indicator)?.label || '-' }}
+                      </span>
+                    </div>
+                    <div v-if="['ma_crossover', 'ema_crossover'].includes(formData.config.trend_indicator)" class="flex justify-between text-xs">
+                      <span class="text-slate-500">快线/慢线周期</span>
+                      <span class="font-medium text-slate-900">
+                        {{ formData.config.fast_period }} / {{ formData.config.slow_period }}
+                      </span>
+                    </div>
+                    <div v-if="formData.config.trend_indicator === 'macd'" class="flex justify-between text-xs">
+                      <span class="text-slate-500">MACD 参数</span>
+                      <span class="font-medium text-slate-900">
+                        {{ formData.config.fast_period }}/{{ formData.config.slow_period }}/{{ formData.config.signal_period }}
+                      </span>
+                    </div>
+                    <div v-if="formData.config.trend_indicator === 'rsi'" class="flex justify-between text-xs">
+                      <span class="text-slate-500">RSI 参数</span>
+                      <span class="font-medium text-slate-900">
+                        周期{{ formData.config.rsi_period }} ({{ formData.config.rsi_oversold }}/{{ formData.config.rsi_overbought }})
+                      </span>
+                    </div>
+                    <div v-if="formData.config.trend_indicator === 'bollinger'" class="flex justify-between text-xs">
+                      <span class="text-slate-500">布林带参数</span>
+                      <span class="font-medium text-slate-900">
+                        周期{{ formData.config.bollinger_period }} (±{{ formData.config.bollinger_std }}σ)
                       </span>
                     </div>
                   </div>
@@ -831,7 +1353,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, h } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import Header from '../../common/Header.vue'
 import Card from '../../common/ui/Card.vue'
@@ -847,11 +1369,64 @@ const loading = ref(false)
 const isEditMode = computed(() => !!route.params.id)
 const botId = computed(() => route.params.id)
 
+// 趋势指标选项
+const trendIndicators = ref([
+  {
+    value: 'ma_crossover',
+    label: 'MA 交叉',
+    description: '移动平均线交叉策略'
+  },
+  {
+    value: 'ema_crossover',
+    label: 'EMA 交叉',
+    description: '指数移动平均线交叉'
+  },
+  {
+    value: 'macd',
+    label: 'MACD',
+    description: '平滑异同移动平均线'
+  },
+  {
+    value: 'rsi',
+    label: 'RSI',
+    description: '相对强弱指标'
+  },
+  {
+    value: 'bollinger',
+    label: '布林带',
+    description: '布林带突破策略'
+  }
+])
+
+// 信号机器人列表
+const signalBots = ref([])
+
+// 加载信号机器人列表
+const loadSignalBots = async () => {
+  try {
+    console.log('开始加载信号机器人列表...')
+    const response = await botAPI.getBotList({
+      bot_type: 'signal',
+      status: 'running'  // 只显示运行中的信号机器人
+    })
+    console.log('信号机器人API响应:', response)
+
+    const data = response.results || response.data || response
+    signalBots.value = Array.isArray(data) ? data.filter(bot => bot.bot_type === 'signal') : []
+    console.log('加载的信号机器人数量:', signalBots.value.length, signalBots.value)
+  } catch (error) {
+    console.error('加载信号机器人失败:', error)
+    signalBots.value = []
+  }
+}
+
 // 表单数据 - 趋势跟踪机器人专用
 const formData = ref({
   name: '',
   description: '',
   bot_type: 'trend_following',
+  trading_mode: 'semi_auto',  // 交易模式：signal_trigger, semi_auto, full_auto
+  signal_bot: null,  // 关联的信号机器人 ID（仅在 signal_trigger 模式下使用）
   exchange_api: null,  // 交易所 API ID
   token: null,
   trading_pair: 'USDT',
@@ -874,14 +1449,45 @@ const formData = ref({
   limit_price_offset: null,
   amount_type: 'fixed',
   amount_value: null,
-  config: {}
+  // 策略配置（存储在 config 字段中）
+  config: {
+    trend_indicator: 'ma_crossover',
+    // MA/EMA 参数
+    fast_period: 10,
+    slow_period: 20,
+    // MACD 参数
+    signal_period: 9,
+    // RSI 参数
+    rsi_period: 14,
+    rsi_overbought: 70,
+    rsi_oversold: 30,
+    // 布林带参数
+    bollinger_period: 20,
+    bollinger_std: 2
+  }
 })
 
 const errors = ref({})
 
+// 交易所类型列表（从后端获取）
+const availableExchangeTypes = ref([])
+
 // 交易所 API 列表
 const exchangeAPIs = ref([])
 const selectedExchangeAPI = ref(null)
+const selectedExchangeType = ref(null)
+
+// 根据选择的交易所类型过滤 API
+const filteredExchangeAPIs = computed(() => {
+  if (!selectedExchangeType.value) return []
+  return exchangeAPIs.value.filter(api => api.exchange === selectedExchangeType.value)
+})
+
+// 获取选中交易所的标签
+const selectedExchangeLabel = computed(() => {
+  const exchange = availableExchangeTypes.value.find(e => e.value === selectedExchangeType.value)
+  return exchange ? exchange.label : ''
+})
 
 // 代币搜索
 const tokenSearchQuery = ref('')
@@ -945,18 +1551,36 @@ const isFormValid = computed(() => {
          formData.value.stop_loss_percentage > 0
 })
 
-// 加载交易所 API 列表
+// 加载交易所列表和 API
 const loadExchangeAPIs = async () => {
   try {
+    // 加载支持的交易所列表（包含 Logo）
+    const exchangesResponse = await exchangeAPI.getSupportedExchanges()
+    if (exchangesResponse.success) {
+      availableExchangeTypes.value = exchangesResponse.data
+      console.log('✅ 加载交易所列表成功:', availableExchangeTypes.value)
+    }
+
+    // 加载用户的交易所账号
     const response = await exchangeAPI.getExchangeList()
     console.log('所有交易所 API:', response.data)
-    // 只显示激活状态的 API（暂时不强制要求交易权限，因为可能权限字段未设置）
+    // 只显示激活状态的 API
     exchangeAPIs.value = response.data.filter(api => api.status === 'active')
     console.log('过滤后的交易所 API:', exchangeAPIs.value)
   } catch (error) {
     console.error('加载交易所 API 失败:', error)
     showError('加载交易所 API 失败')
   }
+}
+
+// 选择交易所类型
+const selectExchangeType = (exchangeType) => {
+  selectedExchangeType.value = exchangeType
+  // 清空之前选择的账号
+  formData.value.exchange_api = null
+  selectedExchangeAPI.value = null
+  // 清空代币选择
+  clearToken()
 }
 
 // 选择交易所 API
@@ -972,28 +1596,37 @@ const goToExchangeSettings = () => {
   router.push('/settings/exchanges')
 }
 
-// 获取交易所 Logo
+// 获取交易所 Logo（从 availableExchangeTypes 中查找）
 const getExchangeLogo = (exchange) => {
-  const logos = {
-    binance: '/dex/binance.png',
-    okx: '/dex/okx.png',
-    bybit: '/dex/bybit.png',
-    gateio: '/dex/gate.png',
-    gate: '/dex/gate.png'
-  }
-  return logos[exchange] || '/dex/gate.png'
+  const exchangeData = availableExchangeTypes.value.find(ex => ex.value === exchange)
+  return exchangeData?.logo || '/dex/gate.png'
 }
 
-// 获取交易所标签
+// 获取交易所标签（从 availableExchangeTypes 中查找）
 const getExchangeLabel = (exchange) => {
-  const labels = {
-    binance: 'Binance',
-    okx: 'OKX',
-    bybit: 'Bybit',
-    gateio: 'Gate.io',
-    gate: 'Gate.io'  // gate 和 gateio 都显示为 Gate.io
+  const exchangeData = availableExchangeTypes.value.find(ex => ex.value === exchange)
+  return exchangeData?.label || exchange
+}
+
+// 获取余额显示（从 balance_snapshot 中提取）
+const getBalanceDisplay = (api) => {
+  if (!api.balance_snapshot || Object.keys(api.balance_snapshot).length === 0) {
+    return '-'
   }
-  return labels[exchange] || exchange
+
+  // 如果有 total_usd 字段，直接显示总价值
+  if (api.balance_snapshot.total_usd !== undefined) {
+    return `$${Number(api.balance_snapshot.total_usd).toFixed(2)}`
+  }
+
+  // 否则尝试从 spot 中获取 USDT 余额
+  if (api.balance_snapshot.spot?.USDT) {
+    const usdtBalance = api.balance_snapshot.spot.USDT.total || api.balance_snapshot.spot.USDT.free || api.balance_snapshot.spot.USDT
+    return `${Number(usdtBalance).toFixed(2)} USDT`
+  }
+
+  // 如果都没有，返回 '-'
+  return '-'
 }
 
 // 代币搜索
@@ -1036,6 +1669,16 @@ const selectToken = (token) => {
   showTokenResults.value = false
 }
 
+// 快速选择热门代币
+const quickSelectToken = (symbol) => {
+  if (!selectedExchangeAPI.value) {
+    showError('请先选择交易所 API')
+    return
+  }
+  tokenSearchQuery.value = symbol
+  handleTokenSearch()
+}
+
 // 清空代币选择
 const clearToken = () => {
   selectedToken.value = null
@@ -1066,6 +1709,12 @@ const handleImageError = (e) => {
 const handleSubmit = async () => {
   if (!isFormValid.value) {
     showError('请填写所有必填项')
+    return
+  }
+
+  // 验证信号触发模式
+  if (formData.value.trading_mode === 'signal_trigger' && !formData.value.signal_bot) {
+    showError('请选择信号机器人')
     return
   }
 
@@ -1102,6 +1751,7 @@ const handleSubmit = async () => {
       name: formData.value.name || autoGeneratedName.value,
       description: formData.value.description || `${autoGeneratedName.value} - 自动交易策略`,
       bot_type: 'trend_following',
+      trading_mode: formData.value.trading_mode,
       exchange_api: formData.value.exchange_api,
       token: formData.value.token,
       trading_pair: formData.value.trading_pair,
@@ -1126,12 +1776,29 @@ const handleSubmit = async () => {
       config: formData.value.config
     }
 
+    let createdBot = null
     if (isEditMode.value) {
       await botAPI.updateBot(botId.value, submitData)
       showSuccess('趋势跟踪机器人更新成功')
     } else {
-      await botAPI.createBot(submitData)
+      const response = await botAPI.createBot(submitData)
+      createdBot = response.data || response
       showSuccess('趋势跟踪机器人创建成功')
+    }
+
+    // 如果是信号触发模式，创建 SignalTrigger
+    if (formData.value.trading_mode === 'signal_trigger' && formData.value.signal_bot && createdBot) {
+      try {
+        await botAPI.createTrigger({
+          signal_bot: formData.value.signal_bot,
+          trend_bot: createdBot.id,
+          is_active: true
+        })
+        console.log('信号触发器创建成功')
+      } catch (error) {
+        console.error('创建信号触发器失败:', error)
+        showError('机器人创建成功，但信号触发器创建失败')
+      }
     }
 
     router.push('/bots?type=trend_following')
@@ -1153,6 +1820,11 @@ const handleCancel = () => {
   router.push('/bots?type=trend_following')
 }
 
+// 跳转到创建信号机器人页面
+const goToCreateSignalBot = () => {
+  router.push('/bots/create-signal')
+}
+
 // Click outside directive
 const vClickOutside = {
   mounted(el, binding) {
@@ -1171,13 +1843,15 @@ const vClickOutside = {
 // 组件挂载时加载数据
 onMounted(async () => {
   await loadExchangeAPIs()
+  await loadSignalBots()  // 加载信号机器人列表
 
   // 如果是编辑模式，加载机器人数据
   if (isEditMode.value) {
     try {
       loading.value = true
       const response = await botAPI.getBotDetail(botId.value)
-      const bot = response.data
+      // 处理不同的响应格式
+      const bot = response.data || response
 
       // 填充表单数据
       formData.value.name = bot.name

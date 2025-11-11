@@ -76,6 +76,36 @@ export const API_ENDPOINTS = {
   SIGNAL_MARK_EXECUTED: (id) => `${API_BASE_URL}/trading/signals/${id}/mark_executed/`,
   SIGNAL_CANCEL: (id) => `${API_BASE_URL}/trading/signals/${id}/cancel/`,
 
+  // 信号触发器相关
+  SIGNAL_TRIGGER_LIST: `${API_BASE_URL}/trading/signal-triggers/`,
+  SIGNAL_TRIGGER_CREATE: `${API_BASE_URL}/trading/signal-triggers/`,
+  SIGNAL_TRIGGER_DETAIL: (id) => `${API_BASE_URL}/trading/signal-triggers/${id}/`,
+  SIGNAL_TRIGGER_TOGGLE: (id) => `${API_BASE_URL}/trading/signal-triggers/${id}/toggle/`,
+  SIGNAL_TRIGGER_AVAILABLE_BOTS: `${API_BASE_URL}/trading/signal-triggers/available_bots/`,
+
+  // 交易建议相关
+  RECOMMENDATION_LIST: `${API_BASE_URL}/trading/recommendations/`,
+  RECOMMENDATION_DETAIL: (id) => `${API_BASE_URL}/trading/recommendations/${id}/`,
+  RECOMMENDATION_PENDING: `${API_BASE_URL}/trading/recommendations/pending/`,
+  RECOMMENDATION_APPROVE: (id) => `${API_BASE_URL}/trading/recommendations/${id}/approve/`,
+  RECOMMENDATION_REJECT: (id) => `${API_BASE_URL}/trading/recommendations/${id}/reject/`,
+
+  // 风控配置相关
+  RISK_CONFIG: `${API_BASE_URL}/trading/risk-config/`,
+  RISK_CONFIG_DETAIL: (id) => `${API_BASE_URL}/trading/risk-config/${id}/`,
+  RISK_CONFIG_RESET_BREAKER: (id) => `${API_BASE_URL}/trading/risk-config/${id}/reset_breaker/`,
+  RISK_CONFIG_UPDATE_METRICS: `${API_BASE_URL}/trading/risk-config/update_metrics/`,
+
+  // 交易记录相关
+  TRADE_LIST: `${API_BASE_URL}/trading/trades/`,
+  TRADE_DETAIL: (id) => `${API_BASE_URL}/trading/trades/${id}/`,
+
+  // 持仓相关
+  POSITION_LIST: `${API_BASE_URL}/trading/positions/`,
+  POSITION_DETAIL: (id) => `${API_BASE_URL}/trading/positions/${id}/`,
+  POSITION_OPEN: `${API_BASE_URL}/trading/positions/open/`,
+  POSITION_CLOSE: (id) => `${API_BASE_URL}/trading/positions/${id}/close/`,
+
   // 其他端点可以在这里添加
 }
 
@@ -461,6 +491,23 @@ export const botAPI = {
     return apiRequest(url)
   },
 
+  // 获取分享统计
+  async getShareStats(id) {
+    return apiRequest(`${API_BASE_URL}/trading/bots/${id}/share_stats/`)
+  },
+
+  // 取消分享
+  async unshareBot(id) {
+    return apiRequest(`${API_BASE_URL}/trading/bots/${id}/unshare/`, {
+      method: 'POST'
+    })
+  },
+
+  // 获取我的分享列表
+  async getMyShares() {
+    return apiRequest(`${API_BASE_URL}/trading/bots/my_shares/`)
+  },
+
   // 获取机器人统计数据
   async getBotStatistics() {
     return apiRequest(API_ENDPOINTS.BOT_STATISTICS)
@@ -481,6 +528,160 @@ export const botAPI = {
   // 获取信号统计
   async getSignalStatistics() {
     return apiRequest(API_ENDPOINTS.SIGNAL_STATISTICS)
+  },
+
+  // ===== 信号触发器相关 =====
+  // 获取触发器列表
+  async getTriggerList(params = {}) {
+    const queryParams = new URLSearchParams(params).toString()
+    const url = queryParams ? `${API_ENDPOINTS.SIGNAL_TRIGGER_LIST}?${queryParams}` : API_ENDPOINTS.SIGNAL_TRIGGER_LIST
+    return apiRequest(url)
+  },
+
+  // 创建触发器
+  async createTrigger(data) {
+    return apiRequest(API_ENDPOINTS.SIGNAL_TRIGGER_CREATE, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  },
+
+  // 获取触发器详情
+  async getTriggerDetail(id) {
+    return apiRequest(API_ENDPOINTS.SIGNAL_TRIGGER_DETAIL(id))
+  },
+
+  // 更新触发器
+  async updateTrigger(id, data) {
+    return apiRequest(API_ENDPOINTS.SIGNAL_TRIGGER_DETAIL(id), {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    })
+  },
+
+  // 删除触发器
+  async deleteTrigger(id) {
+    return apiRequest(API_ENDPOINTS.SIGNAL_TRIGGER_DETAIL(id), {
+      method: 'DELETE'
+    })
+  },
+
+  // 切换触发器状态
+  async toggleTrigger(id) {
+    return apiRequest(API_ENDPOINTS.SIGNAL_TRIGGER_TOGGLE(id), {
+      method: 'POST'
+    })
+  },
+
+  // 获取可用的机器人列表
+  async getAvailableBots() {
+    return apiRequest(API_ENDPOINTS.SIGNAL_TRIGGER_AVAILABLE_BOTS)
+  },
+
+  // ===== 交易建议相关 =====
+  // 获取交易建议列表
+  async getRecommendationList(params = {}) {
+    const queryParams = new URLSearchParams(params).toString()
+    const url = queryParams ? `${API_ENDPOINTS.RECOMMENDATION_LIST}?${queryParams}` : API_ENDPOINTS.RECOMMENDATION_LIST
+    return apiRequest(url)
+  },
+
+  // 获取交易建议详情
+  async getRecommendationDetail(id) {
+    return apiRequest(API_ENDPOINTS.RECOMMENDATION_DETAIL(id))
+  },
+
+  // 获取待处理的交易建议
+  async getPendingRecommendations() {
+    return apiRequest(API_ENDPOINTS.RECOMMENDATION_PENDING)
+  },
+
+  // 批准交易建议
+  async approveRecommendation(id) {
+    return apiRequest(API_ENDPOINTS.RECOMMENDATION_APPROVE(id), {
+      method: 'POST'
+    })
+  },
+
+  // 拒绝交易建议
+  async rejectRecommendation(id) {
+    return apiRequest(API_ENDPOINTS.RECOMMENDATION_REJECT(id), {
+      method: 'POST'
+    })
+  },
+
+  // ===== 风控配置相关 =====
+  // 获取风控配置
+  async getRiskConfig() {
+    return apiRequest(API_ENDPOINTS.RISK_CONFIG)
+  },
+
+  // 创建风控配置
+  async createRiskConfig(data) {
+    return apiRequest(API_ENDPOINTS.RISK_CONFIG, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  },
+
+  // 更新风控配置
+  async updateRiskConfig(id, data) {
+    return apiRequest(API_ENDPOINTS.RISK_CONFIG_DETAIL(id), {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    })
+  },
+
+  // 重置熔断机制
+  async resetCircuitBreaker(id) {
+    return apiRequest(API_ENDPOINTS.RISK_CONFIG_RESET_BREAKER(id), {
+      method: 'POST'
+    })
+  },
+
+  // 更新风控指标
+  async updateRiskMetrics() {
+    return apiRequest(API_ENDPOINTS.RISK_CONFIG_UPDATE_METRICS, {
+      method: 'POST'
+    })
+  },
+
+  // ===== 交易记录相关 =====
+  // 获取交易记录列表
+  async getTradeList(params = {}) {
+    const queryParams = new URLSearchParams(params).toString()
+    const url = queryParams ? `${API_ENDPOINTS.TRADE_LIST}?${queryParams}` : API_ENDPOINTS.TRADE_LIST
+    return apiRequest(url)
+  },
+
+  // 获取交易记录详情
+  async getTradeDetail(id) {
+    return apiRequest(API_ENDPOINTS.TRADE_DETAIL(id))
+  },
+
+  // ===== 持仓相关 =====
+  // 获取持仓列表
+  async getPositionList(params = {}) {
+    const queryParams = new URLSearchParams(params).toString()
+    const url = queryParams ? `${API_ENDPOINTS.POSITION_LIST}?${queryParams}` : API_ENDPOINTS.POSITION_LIST
+    return apiRequest(url)
+  },
+
+  // 获取持仓详情
+  async getPositionDetail(id) {
+    return apiRequest(API_ENDPOINTS.POSITION_DETAIL(id))
+  },
+
+  // 获取未平仓列表
+  async getOpenPositions() {
+    return apiRequest(API_ENDPOINTS.POSITION_OPEN)
+  },
+
+  // 手动平仓
+  async closePosition(id) {
+    return apiRequest(API_ENDPOINTS.POSITION_CLOSE(id), {
+      method: 'POST'
+    })
   }
 }
 

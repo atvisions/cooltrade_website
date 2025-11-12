@@ -578,6 +578,51 @@ export const botAPI = {
     return apiRequest(API_ENDPOINTS.SIGNAL_TRIGGER_AVAILABLE_BOTS)
   },
 
+  // ===== 回测相关 =====
+  // 创建回测
+  async createBacktest(data) {
+    return apiRequest(`${API_BASE_URL}/trading/backtests/`, {
+      method: 'POST',
+      body: JSON.stringify(data)
+    })
+  },
+
+  // 获取回测详情
+  async getBacktestDetail(id) {
+    return apiRequest(`${API_BASE_URL}/trading/backtests/${id}/`)
+  },
+
+  // 获取回测列表
+  async getBacktestList(params = {}) {
+    const queryParams = new URLSearchParams(params).toString()
+    const url = queryParams ? `${API_BASE_URL}/trading/backtests/?${queryParams}` : `${API_BASE_URL}/trading/backtests/`
+    return apiRequest(url)
+  },
+
+  // 获取回测资金曲线
+  async getBacktestEquityCurve(id) {
+    return apiRequest(`${API_BASE_URL}/trading/backtests/${id}/equity_curve/`)
+  },
+
+  // 获取回测交易明细
+  async getBacktestTrades(id, params = {}) {
+    const queryParams = new URLSearchParams(params).toString()
+    const url = queryParams ? `${API_BASE_URL}/trading/backtests/${id}/trades/?${queryParams}` : `${API_BASE_URL}/trading/backtests/${id}/trades/`
+    return apiRequest(url)
+  },
+
+  // 获取回测统计信息
+  async getBacktestStatistics(id) {
+    return apiRequest(`${API_BASE_URL}/trading/backtests/${id}/statistics/`)
+  },
+
+  // 删除回测
+  async deleteBacktest(id) {
+    return apiRequest(`${API_BASE_URL}/trading/backtests/${id}/`, {
+      method: 'DELETE'
+    })
+  },
+
   // ===== 交易建议相关 =====
   // 获取交易建议列表
   async getRecommendationList(params = {}) {

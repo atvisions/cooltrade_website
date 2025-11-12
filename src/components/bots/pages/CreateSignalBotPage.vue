@@ -40,14 +40,14 @@
             <div class="space-y-6">
               <!-- 交易所选择（两级联动） -->
               <div class="space-y-4">
-                <!-- 第一级：选择交易所类型 -->
+                <!-- 选择交易所 -->
                 <div>
                   <label class="block text-sm font-medium text-slate-700 mb-2">
-                    交易所类型 <span class="text-red-500">*</span>
+                    选择交易所 <span class="text-red-500">*</span>
                     <span class="text-xs text-slate-500 ml-2">选择要监控的交易所</span>
                   </label>
 
-                  <!-- 交易所类型列表 -->
+                  <!-- 交易所列表 -->
                   <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <button
                       v-for="exchange in availableExchanges"
@@ -81,130 +81,6 @@
                     </button>
                   </div>
                   <p v-if="errors.exchange_name" class="mt-1 text-sm text-red-500">{{ errors.exchange_name }}</p>
-                </div>
-
-                <!-- 第二级：选择交易所账号（可选） -->
-                <div v-if="selectedExchangeType">
-                  <label class="block text-sm font-medium text-slate-700 mb-2">
-                    交易所账号
-                    <span class="text-xs text-slate-500 ml-2">
-                      可选 - 选择账号可获取实时价格，不选择则使用公开数据
-                    </span>
-                  </label>
-
-                  <!-- 如果有该交易所的账号 -->
-                  <div v-if="filteredExchangeAPIs.length > 0" class="space-y-2">
-                    <!-- 不使用账号选项 -->
-                    <button
-                      type="button"
-                      @click="selectExchangeAPI(null)"
-                      :class="[
-                        'w-full flex items-center justify-between p-4 border-2 rounded-xl transition-all text-left',
-                        formData.exchange_api === null && selectedExchangeType
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-slate-200 hover:border-slate-300 bg-white'
-                      ]"
-                    >
-                      <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
-                          <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                        </div>
-                        <div>
-                          <div class="font-medium text-slate-900">使用公开数据</div>
-                          <div class="text-xs text-slate-500">不需要 API 密钥，使用交易所公开价格数据</div>
-                        </div>
-                      </div>
-                      <svg
-                        v-if="formData.exchange_api === null && selectedExchangeType"
-                        class="h-5 w-5 text-blue-500"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                      </svg>
-                    </button>
-
-                    <!-- 账号列表 -->
-                    <button
-                      v-for="api in filteredExchangeAPIs"
-                      :key="api.id"
-                      type="button"
-                      @click="selectExchangeAPI(api.id)"
-                      :class="[
-                        'w-full flex items-center justify-between p-4 border-2 rounded-xl transition-all text-left',
-                        formData.exchange_api === api.id
-                          ? 'border-blue-500 bg-blue-50'
-                          : 'border-slate-200 hover:border-slate-300 bg-white'
-                      ]"
-                    >
-                      <div class="flex items-center gap-3">
-                        <img
-                          :src="getExchangeLogo(api.exchange)"
-                          :alt="api.exchange"
-                          class="w-10 h-10 rounded-lg object-contain"
-                          @error="handleImageError"
-                        />
-                        <div>
-                          <div class="font-medium text-slate-900">{{ api.name || getExchangeLabel(api.exchange) }}</div>
-                          <div class="text-xs text-slate-500">
-                            {{ api.is_testnet ? '测试网' : '主网' }} •
-                            余额: {{ getBalanceDisplay(api) }}
-                          </div>
-                        </div>
-                      </div>
-                      <svg
-                        v-if="formData.exchange_api === api.id"
-                        class="h-5 w-5 text-blue-500"
-                        fill="currentColor"
-                        viewBox="0 0 20 20"
-                      >
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                      </svg>
-                    </button>
-                  </div>
-
-                  <!-- 如果没有该交易所的账号，显示"使用公开数据"选项 -->
-                  <div v-else class="space-y-2">
-                    <!-- 使用公开数据选项（默认选中） -->
-                    <button
-                      type="button"
-                      @click="selectExchangeAPI(null)"
-                      class="w-full flex items-center justify-between p-4 border-2 border-blue-500 bg-blue-50 rounded-xl transition-all text-left"
-                    >
-                      <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                        </div>
-                        <div>
-                          <div class="font-medium text-slate-900">使用公开数据</div>
-                          <div class="text-xs text-slate-500">不需要 API 密钥，使用交易所公开价格数据</div>
-                        </div>
-                      </div>
-                      <svg class="h-5 w-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                      </svg>
-                    </button>
-
-                    <!-- 添加账号提示 -->
-                    <div class="p-3 bg-slate-50 border border-slate-200 rounded-lg">
-                      <div class="flex items-center justify-between">
-                        <div class="text-sm text-slate-600">
-                          如需使用账号数据，可以添加 {{ selectedExchange?.label }} API
-                        </div>
-                        <button
-                          type="button"
-                          @click="goToExchangeSettings"
-                          class="px-3 py-1.5 bg-white border border-slate-300 text-slate-700 text-sm font-medium rounded-lg hover:bg-slate-50 transition-colors"
-                        >
-                          添加账号
-                        </button>
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
 
@@ -442,13 +318,14 @@
                       </button>
                     </div>
                   </div>
+
                   <div>
                     <div class="flex items-center justify-between mb-2">
                       <label class="text-sm font-medium text-slate-700">
                         目标价格 (USD)
                         <span class="text-xs text-slate-500 ml-2">设置触发通知的价格</span>
                       </label>
-                      <span v-if="selectedToken" class="text-sm text-slate-600">
+                      <span v-if="selectedToken" class="text-sm font-semibold text-slate-900">
                         当前价格 ${{ formatPrice(selectedToken.current_price) }}
                       </span>
                     </div>
@@ -458,6 +335,110 @@
                       placeholder="例如: 95000"
                       step="0.00000001"
                     />
+
+                    <!-- 快捷百分比按钮 -->
+                    <div v-if="selectedToken && selectedToken.current_price" class="mt-3">
+                      <div class="text-xs text-slate-600 mb-2">快速设置（点击自动填入）：</div>
+                      <div class="grid grid-cols-5 gap-2">
+                        <button
+                          v-for="percent in quickPercentages"
+                          :key="percent"
+                          type="button"
+                          @click="setQuickPrice(percent)"
+                          class="p-2 border border-slate-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all text-center"
+                        >
+                          <div class="text-xs font-semibold" :class="percent > 0 ? 'text-green-600' : 'text-red-600'">
+                            {{ percent > 0 ? '+' : '' }}{{ percent }}%
+                          </div>
+                          <div class="text-xs text-slate-500 mt-0.5">
+                            ${{ formatQuickPrice(selectedToken.current_price, percent) }}
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- 价格变化预览 -->
+                    <div v-if="priceChangePreview" class="mt-3 p-3 bg-white border rounded-lg" :class="priceChangePreview.isLogicalError ? 'border-red-300 bg-red-50' : 'border-slate-200'">
+                      <div class="text-xs font-semibold mb-2" :class="priceChangePreview.isLogicalError ? 'text-red-700' : 'text-slate-700'">
+                        {{ priceChangePreview.isLogicalError ? '⚠️ 逻辑错误' : '📊 价格变化预览' }}
+                      </div>
+                      <div class="space-y-1.5 text-xs">
+                        <div class="flex justify-between">
+                          <span class="text-slate-600">目标价格：</span>
+                          <span class="font-semibold text-slate-900">${{ priceChangePreview.targetFormatted }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                          <span class="text-slate-600">当前价格：</span>
+                          <span class="font-semibold text-slate-900">${{ priceChangePreview.currentFormatted }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                          <span class="text-slate-600">变化幅度：</span>
+                          <span class="font-semibold" :class="priceChangePreview.percent >= 0 ? 'text-green-600' : 'text-red-600'">
+                            {{ priceChangePreview.percent >= 0 ? '+' : '' }}{{ priceChangePreview.percent }}%
+                            {{ priceChangePreview.direction === 'up' ? '↑' : '↓' }}
+                            ({{ priceChangePreview.directionText }} ${{ priceChangePreview.diffFormatted }})
+                          </span>
+                        </div>
+                        <div class="pt-2 border-t border-slate-200">
+                          <div :class="priceChangePreview.isLogicalError ? 'text-red-700' : 'text-slate-700'">
+                            <span class="font-medium">触发条件：</span>
+                            <span>{{ priceChangePreview.triggerDescription }}</span>
+                          </div>
+                        </div>
+
+                        <!-- 逻辑错误警告 -->
+                        <div v-if="priceChangePreview.isLogicalError" class="pt-2 border-t border-red-200">
+                          <div class="flex items-start gap-2 text-red-700">
+                            <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            <div>
+                              <div class="font-semibold">此条件永远无法触发！</div>
+                              <div class="mt-1">{{ priceChangePreview.errorMessage }}</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 使用场景说明 -->
+                  <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                    <div class="flex items-center gap-2 mb-3">
+                      <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                      </svg>
+                      <div class="text-xs font-semibold text-blue-900">常见使用场景</div>
+                    </div>
+                    <div class="space-y-2 text-xs text-blue-800">
+                      <div class="flex items-start gap-2">
+                        <svg class="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div>
+                          <span class="font-semibold">抄底场景：</span>
+                          设置"价格低于"并填入期望的买入价格，当价格跌到心理价位时收到通知，考虑是否买入
+                        </div>
+                      </div>
+                      <div class="flex items-start gap-2">
+                        <svg class="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                        </svg>
+                        <div>
+                          <span class="font-semibold">止盈场景：</span>
+                          设置"价格高于"并填入期望的卖出价格，当价格涨到目标价位时收到通知，考虑是否卖出
+                        </div>
+                      </div>
+                      <div class="flex items-start gap-2">
+                        <svg class="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        <div>
+                          <span class="font-semibold">关键位场景：</span>
+                          设置"向上突破"或"向下突破"关键阻力/支撑位，突破时收到通知，可能有大行情
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -742,6 +723,214 @@
             </div>
           </Card>
 
+          <!-- AI 分析模式 -->
+          <Card variant="default" class="mb-6">
+            <!-- 标题和开关 -->
+            <div class="flex items-center justify-between mb-6">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
+                  <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h2 class="text-lg font-semibold text-slate-900">AI 分析模式</h2>
+                    <span class="px-1.5 py-0.5 text-xs font-medium bg-purple-100 text-purple-700 rounded">AI</span>
+                  </div>
+                  <p class="text-sm text-slate-500">使用 AI 深度分析市场</p>
+                </div>
+              </div>
+
+              <label class="inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  v-model="formData.use_advanced_analysis"
+                  class="sr-only peer"
+                />
+                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                <span class="ml-3 text-sm font-medium text-slate-700">
+                  {{ formData.use_advanced_analysis ? '已启用' : '未启用' }}
+                </span>
+              </label>
+            </div>
+
+            <!-- 对比说明 -->
+            <div class="space-y-3">
+              <!-- 系统分析 -->
+              <div class="p-4 bg-slate-50 rounded-lg border border-slate-200">
+                <div class="flex items-center gap-2 mb-2">
+                  <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                  </svg>
+                  <span class="font-medium text-slate-900">系统分析（未开启 AI）</span>
+                </div>
+                <p class="text-sm text-slate-600 ml-7">
+                  基于技术指标的规则分析，给出看多/看空建议
+                </p>
+              </div>
+
+              <!-- AI 分析 -->
+              <div class="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                <div class="flex items-center gap-2 mb-2">
+                  <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                  <span class="font-medium text-purple-900">AI 深度分析（开启 AI）</span>
+                </div>
+                <p class="text-sm text-purple-700 ml-7 mb-3">
+                  调用 AI 模型进行深度分析，提供详细的市场洞察和操作建议
+                </p>
+                <div class="flex flex-wrap gap-x-4 gap-y-2 text-sm ml-7">
+                  <div class="flex items-center gap-1.5">
+                    <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span class="text-purple-700">市场趋势判断</span>
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span class="text-purple-700">风险评估</span>
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span class="text-purple-700">入场/止损/止盈建议</span>
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span class="text-purple-700">市场背景分析</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          <!-- 通知设置 -->
+          <Card variant="default" class="mb-6">
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+              </div>
+              <div>
+                <h2 class="text-lg font-semibold text-slate-900">通知设置</h2>
+                <p class="text-sm text-slate-500">选择接收信号通知的方式和频率</p>
+              </div>
+            </div>
+
+            <!-- 通知渠道 -->
+            <div class="mb-6">
+              <label class="block text-sm font-medium text-slate-700 mb-3">通知渠道</label>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label
+                  :class="[
+                    'flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all',
+                    formData.notify_email
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-slate-200 bg-white hover:border-slate-300'
+                  ]"
+                >
+                  <input
+                    type="checkbox"
+                    v-model="formData.notify_email"
+                    class="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <div class="ml-3 flex-1">
+                    <div class="flex items-center gap-2">
+                      <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                      </svg>
+                      <span class="font-medium text-slate-900">邮件通知</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1">发送信号通知到您的邮箱</p>
+                  </div>
+                </label>
+
+                <label
+                  :class="[
+                    'flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all',
+                    formData.notify_app
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-slate-200 bg-white hover:border-slate-300'
+                  ]"
+                >
+                  <input
+                    type="checkbox"
+                    v-model="formData.notify_app"
+                    class="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <div class="ml-3 flex-1">
+                    <div class="flex items-center gap-2">
+                      <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                      </svg>
+                      <span class="font-medium text-slate-900">应用内通知</span>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-1">在应用内实时接收通知</p>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- 提醒模式 -->
+            <div class="border-t border-slate-200 pt-6">
+              <label class="block text-sm font-medium text-slate-700 mb-2">
+                提醒频率
+                <span class="text-xs text-slate-500 ml-2">控制提醒的发送频率</span>
+              </label>
+              <div class="space-y-2">
+                <label
+                  v-for="mode in alertModes"
+                  :key="mode.value"
+                  :class="[
+                    'flex items-start p-3 border-2 rounded-lg cursor-pointer transition-all',
+                    alertConfig.mode === mode.value
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-slate-200 bg-white hover:border-slate-300'
+                  ]"
+                >
+                  <input
+                    type="radio"
+                    :value="mode.value"
+                    v-model="alertConfig.mode"
+                    class="mt-1 mr-3"
+                  />
+                  <div class="flex-1">
+                    <div class="flex items-center gap-2">
+                      <span class="text-sm font-medium text-slate-900">{{ mode.label }}</span>
+                      <span v-if="mode.recommended" class="px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded">推荐</span>
+                    </div>
+                    <p class="text-xs text-slate-600 mt-1">{{ mode.description }}</p>
+                  </div>
+                </label>
+              </div>
+
+              <div class="mt-4">
+                <label class="block text-sm font-medium text-slate-700 mb-2">
+                  冷却时间（分钟）
+                  <span class="text-xs text-slate-500 ml-2">两次提醒之间的最小间隔</span>
+                </label>
+                <Input
+                  v-model.number="alertConfig.cooldown_minutes"
+                  type="number"
+                  min="5"
+                  max="1440"
+                  placeholder="30"
+                />
+                <p class="text-xs text-slate-500 mt-1">
+                  建议：新手用户 60 分钟，短期交易 15-30 分钟，专业用户 30 分钟
+                </p>
+              </div>
+            </div>
+          </Card>
+
           <!-- 基本信息 -->
           <Card variant="default" class="mb-6">
             <div class="flex items-center gap-3 mb-6">
@@ -790,71 +979,6 @@
                   type="textarea"
                 />
               </div>
-            </div>
-          </Card>
-
-          <!-- 通知设置 -->
-          <Card variant="default" class="mb-6">
-            <div class="flex items-center gap-3 mb-6">
-              <div class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
-                <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                </svg>
-              </div>
-              <div>
-                <h2 class="text-lg font-semibold text-slate-900">通知设置</h2>
-                <p class="text-sm text-slate-500">选择接收信号通知的方式</p>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <label
-                :class="[
-                  'flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all',
-                  formData.notify_email
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-slate-200 bg-white hover:border-slate-300'
-                ]"
-              >
-                <input
-                  type="checkbox"
-                  v-model="formData.notify_email"
-                  class="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                />
-                <div class="ml-3 flex-1">
-                  <div class="flex items-center gap-2">
-                    <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                    <span class="font-medium text-slate-900">邮件通知</span>
-                  </div>
-                  <p class="text-xs text-slate-500 mt-1">发送信号通知到您的邮箱</p>
-                </div>
-              </label>
-
-              <label
-                :class="[
-                  'flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all',
-                  formData.notify_app
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-slate-200 bg-white hover:border-slate-300'
-                ]"
-              >
-                <input
-                  type="checkbox"
-                  v-model="formData.notify_app"
-                  class="w-5 h-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                />
-                <div class="ml-3 flex-1">
-                  <div class="flex items-center gap-2">
-                    <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                    </svg>
-                    <span class="font-medium text-slate-900">应用内通知</span>
-                  </div>
-                  <p class="text-xs text-slate-500 mt-1">在应用内实时接收通知</p>
-                </div>
-              </label>
             </div>
           </Card>
         </main>
@@ -915,6 +1039,21 @@
                       {{ signalTypes?.find(t => t.value === formData.signal_type)?.label }}
                     </div>
                     <div v-else class="text-xs text-slate-400">未选择</div>
+                  </div>
+                </div>
+
+                <!-- 专业分析模式 -->
+                <div class="border-t border-slate-200 pt-4">
+                  <div class="text-xs font-semibold text-slate-700 mb-3">分析模式</div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-xs text-slate-500">专业分析</span>
+                    <div v-if="formData.use_advanced_analysis" class="inline-flex items-center px-2 py-1 bg-gradient-to-r from-purple-100 to-blue-100 text-purple-700 rounded text-xs font-semibold">
+                      <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                      </svg>
+                      已启用
+                    </div>
+                    <div v-else class="text-xs text-slate-400">未启用</div>
                   </div>
                 </div>
 
@@ -1131,19 +1270,13 @@ let searchTimeout = null
 // 热门代币列表
 const popularTokens = ['BTC', 'ETH', 'BNB', 'SOL', 'XRP', 'ADA', 'DOGE', 'MATIC']
 
-// 交易所账号相关
+// 交易所相关
 const selectedExchangeType = ref('')  // 选中的交易所类型
-const exchangeAPIs = ref([])  // 所有交易所账号
-const filteredExchangeAPIs = computed(() => {
-  if (!selectedExchangeType.value) return []
-  return exchangeAPIs.value.filter(api => api.exchange === selectedExchangeType.value)
-})
 
 const formData = ref({
   name: '',
   description: '',
   exchange_name: '',  // 交易所名称（用于公开数据）
-  exchange_api: null,  // 交易所账号 ID（可选，用于账号数据）
   token: null,
   trading_pair: 'USDT',
   timeframe: '1h',
@@ -1151,6 +1284,7 @@ const formData = ref({
   notify_email: true,
   notify_app: true,
   check_interval: '5m',
+  use_advanced_analysis: false,  // 启用专业分析模式
   config: {}
 })
 
@@ -1224,6 +1358,34 @@ const kdjConfig = ref({
   oversold: 20
 })
 
+// 提醒模式配置
+const alertConfig = ref({
+  mode: 'state_change',  // 默认：状态变化提醒
+  cooldown_minutes: 30   // 默认：30分钟冷却
+})
+
+// 提醒模式选项
+const alertModes = [
+  {
+    label: '一次提醒',
+    value: 'one_shot',
+    description: '条件首次满足时提醒一次，不重复。适合普通用户。',
+    recommended: true
+  },
+  {
+    label: '条件维持提醒',
+    value: 'condition_sustain',
+    description: '条件持续满足时，间隔一段时间提醒一次。适合短期交易者。',
+    recommended: false
+  },
+  {
+    label: '状态变化提醒',
+    value: 'state_change',
+    description: '只在信号状态变化时提醒。适合专业交易者和Bot系统。',
+    recommended: false
+  }
+]
+
 // 时间周期选项
 const timeframes = [
   { label: '1分钟', value: '1m' },
@@ -1249,6 +1411,107 @@ const formatPrice = (price) => {
   return numPrice.toFixed(2)
 }
 
+// 快捷百分比选项
+const quickPercentages = [-20, -10, -5, 5, 10, 15, 20, 30, 50, 100]
+
+// 格式化快捷价格
+const formatQuickPrice = (currentPrice, percent) => {
+  if (!currentPrice) return '0'
+  const numPrice = typeof currentPrice === 'string' ? parseFloat(currentPrice) : currentPrice
+  if (isNaN(numPrice)) return '0'
+  const targetPrice = numPrice * (1 + percent / 100)
+  return targetPrice.toLocaleString('en-US', { maximumFractionDigits: 2 })
+}
+
+// 设置快捷价格
+const setQuickPrice = (percent) => {
+  if (!selectedToken.value || !selectedToken.value.current_price) {
+    showError('无法获取当前价格')
+    return
+  }
+  const currentPrice = parseFloat(selectedToken.value.current_price)
+  const targetPrice = currentPrice * (1 + percent / 100)
+  priceAlertConfig.value.target_price = targetPrice.toFixed(2)
+
+  // 智能切换触发条件
+  // 如果目标价格低于当前价格，自动切换到"价格低于"
+  // 如果目标价格高于当前价格，自动切换到"价格高于"
+  if (percent < 0) {
+    priceAlertConfig.value.condition = 'below'
+  } else if (percent > 0) {
+    priceAlertConfig.value.condition = 'above'
+  }
+}
+
+// 价格变化预览
+const priceChangePreview = computed(() => {
+  if (!priceAlertConfig.value.target_price || !selectedToken.value || !selectedToken.value.current_price) {
+    return null
+  }
+
+  const target = parseFloat(priceAlertConfig.value.target_price)
+  const current = parseFloat(selectedToken.value.current_price)
+
+  if (isNaN(target) || isNaN(current) || current === 0) {
+    return null
+  }
+
+  const diff = target - current
+  const percent = ((diff / current) * 100).toFixed(2)
+  const direction = diff > 0 ? 'up' : 'down'
+  const directionText = diff > 0 ? '上涨' : '下跌'
+
+  // 触发条件描述
+  let triggerDescription = ''
+  const condition = priceAlertConfig.value.condition
+  const targetFormatted = target.toLocaleString('en-US', { maximumFractionDigits: 2 })
+
+  // 检查逻辑错误
+  let isLogicalError = false
+  let errorMessage = ''
+
+  if (condition === 'above') {
+    triggerDescription = `当价格涨至 $${targetFormatted} 或以上时通知`
+    if (target <= current) {
+      isLogicalError = true
+      errorMessage = `目标价格 ($${targetFormatted}) 低于或等于当前价格 ($${current.toLocaleString('en-US', { maximumFractionDigits: 2 })})，价格无法"高于"一个更低的值。建议选择"价格低于"或提高目标价格。`
+    }
+  } else if (condition === 'below') {
+    triggerDescription = `当价格跌至 $${targetFormatted} 或以下时通知`
+    if (target >= current) {
+      isLogicalError = true
+      errorMessage = `目标价格 ($${targetFormatted}) 高于或等于当前价格 ($${current.toLocaleString('en-US', { maximumFractionDigits: 2 })})，价格无法"低于"一个更高的值。建议选择"价格高于"或降低目标价格。`
+    }
+  } else if (condition === 'crosses_above') {
+    triggerDescription = `当价格向上突破 $${targetFormatted} 时通知`
+    if (target <= current) {
+      isLogicalError = true
+      errorMessage = `目标价格 ($${targetFormatted}) 低于或等于当前价格，无法"向上突破"。建议提高目标价格或选择"向下突破"。`
+    }
+  } else if (condition === 'crosses_below') {
+    triggerDescription = `当价格向下跌破 $${targetFormatted} 时通知`
+    if (target >= current) {
+      isLogicalError = true
+      errorMessage = `目标价格 ($${targetFormatted}) 高于或等于当前价格，无法"向下跌破"。建议降低目标价格或选择"向上突破"。`
+    }
+  }
+
+  return {
+    target,
+    current,
+    diff: Math.abs(diff),
+    percent: parseFloat(percent),
+    direction,
+    directionText,
+    targetFormatted: target.toLocaleString('en-US', { maximumFractionDigits: 2 }),
+    currentFormatted: current.toLocaleString('en-US', { maximumFractionDigits: 2 }),
+    diffFormatted: Math.abs(diff).toLocaleString('en-US', { maximumFractionDigits: 2 }),
+    triggerDescription,
+    isLogicalError,
+    errorMessage
+  }
+})
+
 // 可用的计价币种选项（排除与代币相同的）
 const availableQuoteAssets = computed(() => {
   const allOptions = [
@@ -1273,64 +1536,12 @@ const selectExchangeType = (exchangeType) => {
   selectedExchangeType.value = exchangeType
   formData.value.exchange_name = exchangeType
 
-  // 如果该交易所没有账号，自动选择使用公开数据
-  if (filteredExchangeAPIs.value.length === 0) {
-    formData.value.exchange_api = null
-  }
-
   // 清空代币选择
   formData.value.token = null
   tokenSearchQuery.value = ''
   tokenSearchResults.value = []
   selectedToken.value = null
   showTokenResults.value = false
-}
-
-// 选择交易所账号
-const selectExchangeAPI = (apiId) => {
-  formData.value.exchange_api = apiId
-}
-
-// 跳转到交易所设置
-const goToExchangeSettings = () => {
-  router.push('/settings/exchanges')
-}
-
-// 获取交易所 Logo（从 availableExchanges 中查找）
-const getExchangeLogo = (exchange) => {
-  const exchangeData = availableExchanges.value.find(ex => ex.value === exchange)
-  return exchangeData?.logo || '/dex/gate.png'
-}
-
-// 获取交易所标签（从 availableExchanges 中查找）
-const getExchangeLabel = (exchange) => {
-  const exchangeData = availableExchanges.value.find(ex => ex.value === exchange)
-  return exchangeData?.label || exchange
-}
-
-// 获取余额显示（从 balance_snapshot 中提取）
-const getBalanceDisplay = (api) => {
-  if (!api.balance_snapshot || Object.keys(api.balance_snapshot).length === 0) {
-    return '-'
-  }
-
-  // 如果有 total_usd 字段，直接显示总价值
-  if (api.balance_snapshot.total_usd !== undefined) {
-    return `$${Number(api.balance_snapshot.total_usd).toFixed(2)}`
-  }
-
-  // 否则尝试从 spot 中获取 USDT 余额
-  if (api.balance_snapshot.spot?.USDT) {
-    const usdtBalance = api.balance_snapshot.spot.USDT.total || api.balance_snapshot.spot.USDT.free || api.balance_snapshot.spot.USDT
-    return `${Number(usdtBalance).toFixed(2)} USDT`
-  }
-
-  // 如果没有 spot，尝试直接获取 USDT
-  if (api.balance_snapshot.USDT) {
-    return `${Number(api.balance_snapshot.USDT).toFixed(2)} USDT`
-  }
-
-  return '-'
 }
 
 // 监听代币变化，自动清除冲突的计价币种
@@ -1559,18 +1770,6 @@ const loadData = async () => {
       console.log('✅ 加载交易所列表成功:', availableExchanges.value)
     }
 
-    // 加载用户的交易所账号
-    try {
-      const apisResponse = await exchangeAPI.getExchangeList()
-      if (apisResponse.success) {
-        exchangeAPIs.value = apisResponse.data || []
-        console.log('✅ 加载交易所账号成功:', exchangeAPIs.value.length, '个账号')
-      }
-    } catch (error) {
-      console.error('加载交易所账号失败:', error)
-      // 不影响主流程，继续执行
-    }
-
     // 如果是编辑模式，加载机器人数据
     if (isEditMode.value) {
       await loadBotData()
@@ -1601,18 +1800,9 @@ const loadBotData = async () => {
     formData.value.name = bot.name || ''
     formData.value.description = bot.description || ''
 
-    // 设置交易所类型和账号
-    if (bot.exchange_api) {
-      // 如果有关联的交易所账号
-      const apiId = typeof bot.exchange_api === 'object' ? bot.exchange_api.id : bot.exchange_api
-      const exchange = typeof bot.exchange_api === 'object' ? bot.exchange_api.exchange : bot.exchange_name
-      formData.value.exchange_api = apiId
-      formData.value.exchange_name = exchange
-      selectedExchangeType.value = exchange
-    } else if (bot.exchange_name) {
-      // 如果只有交易所名称（使用公开数据）
+    // 设置交易所（信号机器人只使用 exchange_name）
+    if (bot.exchange_name) {
       formData.value.exchange_name = bot.exchange_name
-      formData.value.exchange_api = null
       selectedExchangeType.value = bot.exchange_name
     }
 
@@ -1640,10 +1830,19 @@ const loadBotData = async () => {
     // 加载配置
     const config = bot.config || {}
 
+    // 加载 AI 分析模式配置
+    formData.value.use_advanced_analysis = config.use_advanced_analysis || false
+
+    // 加载提醒模式和冷却时间
+    alertConfig.value.mode = config.alert_mode || 'one_shot'
+    alertConfig.value.cooldown_minutes = config.cooldown_minutes || 30
+
     if (formData.value.signal_type === 'price_alert') {
+      // 从 config.price_alert 中读取价格提醒配置
+      const priceAlert = config.price_alert || {}
       priceAlertConfig.value = {
-        condition: config.condition || 'above',
-        target_price: config.target_price || ''
+        condition: priceAlert.condition || 'above',
+        target_price: priceAlert.target_price || ''
       }
     } else if (formData.value.signal_type === 'rsi' && config.rsi) {
       rsiConfig.value = {
@@ -1678,6 +1877,15 @@ const loadBotData = async () => {
         oversold: config.kdj.oversold || 20
       }
     }
+
+    // 加载提醒模式配置
+    alertConfig.value = {
+      mode: config.alert_mode || 'state_change',
+      cooldown_minutes: config.cooldown_minutes || 30
+    }
+
+    // 加载专业分析标志
+    formData.value.use_advanced_analysis = config.use_advanced_analysis || false
 
   } catch (error) {
     console.error('加载机器人数据失败:', error)
@@ -1725,7 +1933,11 @@ const handleSubmit = async () => {
     submitting.value = true
 
     // 根据信号类型构建config
-    let config = {}
+    let config = {
+      use_advanced_analysis: formData.value.use_advanced_analysis,  // 添加专业分析标志
+      alert_mode: alertConfig.value.mode,  // 提醒模式
+      cooldown_minutes: alertConfig.value.cooldown_minutes  // 冷却时间
+    }
 
     switch (formData.value.signal_type) {
       case 'price_alert':
@@ -1733,15 +1945,27 @@ const handleSubmit = async () => {
           showError('请输入目标价格')
           return
         }
+
+        // 验证价格提醒逻辑
+        if (priceChangePreview.value && priceChangePreview.value.isLogicalError) {
+          showError(priceChangePreview.value.errorMessage)
+          return
+        }
+
         config = {
+          ...config,  // 保留 use_advanced_analysis, alert_mode, cooldown_minutes
           signal_type: 'price_alert',
-          condition: priceAlertConfig.value.condition,
-          target_price: parseFloat(priceAlertConfig.value.target_price)
+          price_alert: {
+            condition: priceAlertConfig.value.condition,
+            target_price: parseFloat(priceAlertConfig.value.target_price)
+          }
         }
         break
 
       case 'rsi':
         config = {
+          ...config,
+          signal_type: 'rsi',
           rsi: {
             enabled: true,
             period: parseInt(rsiConfig.value.period) || 14,
@@ -1753,6 +1977,8 @@ const handleSubmit = async () => {
 
       case 'ma_crossover':
         config = {
+          ...config,
+          signal_type: 'ma_crossover',
           ma_cross: {
             enabled: true,
             fast: parseInt(maCrossConfig.value.fast) || 7,
@@ -1763,6 +1989,8 @@ const handleSubmit = async () => {
 
       case 'bollinger':
         config = {
+          ...config,
+          signal_type: 'bollinger',
           bollinger: {
             enabled: true,
             period: parseInt(bollingerConfig.value.period) || 20,
@@ -1773,6 +2001,8 @@ const handleSubmit = async () => {
 
       case 'volume':
         config = {
+          ...config,
+          signal_type: 'volume',
           volume: {
             enabled: true,
             threshold: parseFloat(volumeConfig.value.threshold) || 2.0
@@ -1782,6 +2012,8 @@ const handleSubmit = async () => {
 
       case 'macd':
         config = {
+          ...config,
+          signal_type: 'macd',
           macd: {
             enabled: true,
             fast: parseInt(macdConfig.value.fast) || 12,
@@ -1793,6 +2025,8 @@ const handleSubmit = async () => {
 
       case 'kdj':
         config = {
+          ...config,
+          signal_type: 'kdj',
           kdj: {
             enabled: true,
             period: parseInt(kdjConfig.value.period) || 9,
@@ -1808,8 +2042,7 @@ const handleSubmit = async () => {
       name: formData.value.name,
       description: formData.value.description,
       token: formData.value.token,
-      exchange_name: formData.value.exchange_name,  // 交易所名称（必填）
-      exchange_api: formData.value.exchange_api,  // 交易所账号 ID（可选）
+      exchange_name: formData.value.exchange_name,  // 交易所名称（信号机器人只需要这个）
       trading_pair: formData.value.trading_pair,
       timeframe: formData.value.timeframe,
       signal_type: formData.value.signal_type,

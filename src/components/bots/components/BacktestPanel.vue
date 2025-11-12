@@ -31,6 +31,7 @@
           <label class="block text-sm font-medium text-slate-700 mb-2">回测时间范围 *</label>
           <select
             v-model="config.time_range"
+            @change="updateDateRange"
             class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
           >
@@ -39,7 +40,30 @@
             <option value="90d">最近90天</option>
             <option value="180d">最近180天</option>
             <option value="1y">最近1年</option>
+            <option value="custom">自定义</option>
           </select>
+        </div>
+
+        <!-- 自定义开始日期 -->
+        <div v-if="config.time_range === 'custom'">
+          <label class="block text-sm font-medium text-slate-700 mb-2">开始日期 *</label>
+          <input
+            type="date"
+            v-model="config.start_date"
+            class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
+        </div>
+
+        <!-- 自定义结束日期 -->
+        <div v-if="config.time_range === 'custom'">
+          <label class="block text-sm font-medium text-slate-700 mb-2">结束日期 *</label>
+          <input
+            type="date"
+            v-model="config.end_date"
+            class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          />
         </div>
 
         <!-- 初始资金 -->
@@ -51,49 +75,82 @@
             min="100"
             step="100"
             class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="1000"
+            placeholder="10000"
             required
           />
         </div>
 
-        <!-- 手续费率 -->
+        <!-- 时间周期 -->
         <div>
-          <label class="block text-sm font-medium text-slate-700 mb-2">手续费率 (%)</label>
-          <input
-            type="number"
-            v-model.number="config.fee_rate"
-            min="0"
-            max="1"
-            step="0.01"
+          <label class="block text-sm font-medium text-slate-700 mb-2">时间周期 *</label>
+          <select
+            v-model="config.timeframe"
             class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="0.1"
-          />
+            required
+          >
+            <option value="1m">1分钟</option>
+            <option value="5m">5分钟</option>
+            <option value="15m">15分钟</option>
+            <option value="1h">1小时</option>
+            <option value="4h">4小时</option>
+            <option value="1d">1天</option>
+          </select>
         </div>
 
-        <!-- 滑点 -->
+        <!-- 退出策略 -->
         <div>
-          <label class="block text-sm font-medium text-slate-700 mb-2">滑点 (%)</label>
+          <label class="block text-sm font-medium text-slate-700 mb-2">退出策略 *</label>
+          <select
+            v-model="config.exit_strategy"
+            class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
+          >
+            <option value="fixed">固定止盈止损</option>
+            <option value="time">时间限制</option>
+            <option value="signal">反向信号</option>
+          </select>
+        </div>
+
+        <!-- 止盈百分比 -->
+        <div v-if="config.exit_strategy === 'fixed'">
+          <label class="block text-sm font-medium text-slate-700 mb-2">止盈 (%)</label>
           <input
             type="number"
-            v-model.number="config.slippage"
-            min="0"
-            max="5"
+            v-model.number="config.take_profit_pct"
+            min="0.1"
+            max="100"
             step="0.1"
             class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="0.5"
+            placeholder="5.0"
           />
         </div>
 
-        <!-- 回测模式 -->
-        <div>
-          <label class="block text-sm font-medium text-slate-700 mb-2">回测模式</label>
-          <select
-            v-model="config.mode"
+        <!-- 止损百分比 -->
+        <div v-if="config.exit_strategy === 'fixed'">
+          <label class="block text-sm font-medium text-slate-700 mb-2">止损 (%)</label>
+          <input
+            type="number"
+            v-model.number="config.stop_loss_pct"
+            min="0.1"
+            max="100"
+            step="0.1"
             class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="fast">快速回测</option>
-            <option value="accurate">精确回测</option>
-          </select>
+            placeholder="2.0"
+          />
+        </div>
+
+        <!-- 最大持仓时间 -->
+        <div v-if="config.exit_strategy === 'time'">
+          <label class="block text-sm font-medium text-slate-700 mb-2">最大持仓时间 (小时)</label>
+          <input
+            type="number"
+            v-model.number="config.max_holding_hours"
+            min="1"
+            max="720"
+            step="1"
+            class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="24"
+          />
         </div>
       </div>
 
@@ -138,8 +195,105 @@
 
     <!-- 回测结果 -->
     <div v-if="result && !running" class="space-y-6">
-      <!-- 结果概览 -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <!-- 指标类型切换 -->
+      <div class="flex items-center gap-4 mb-4">
+        <button
+          @click="metricType = 'quality'"
+          :class="[
+            'px-4 py-2 rounded-lg font-medium transition-colors',
+            metricType === 'quality'
+              ? 'bg-blue-600 text-white'
+              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+          ]"
+        >
+          ✨ 信号质量指标
+        </button>
+        <button
+          @click="metricType = 'trading'"
+          :class="[
+            'px-4 py-2 rounded-lg font-medium transition-colors',
+            metricType === 'trading'
+              ? 'bg-blue-600 text-white'
+              : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+          ]"
+        >
+          💰 交易收益指标
+        </button>
+      </div>
+
+      <!-- 说明文字 -->
+      <div v-if="metricType === 'quality'" class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div class="flex items-start gap-3">
+          <svg class="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <div class="text-sm text-blue-800">
+            <p class="font-medium mb-1">💡 适用于纯通知型信号机器人</p>
+            <p>这些指标评估信号本身的质量（准确率、假信号率等），而不是假设执行所有信号的收益。</p>
+          </div>
+        </div>
+      </div>
+      <div v-else class="bg-amber-50 border border-amber-200 rounded-lg p-4">
+        <div class="flex items-start gap-3">
+          <svg class="h-5 w-5 text-amber-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
+          <div class="text-sm text-amber-800">
+            <p class="font-medium mb-1">⚠️ 仅供参考</p>
+            <p>这些指标假设每个信号都立即执行交易，使用固定止盈止损。实际收益取决于您的交易决策。</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 信号质量指标卡片 -->
+      <div v-if="metricType === 'quality'" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm opacity-90">信号准确率</span>
+            <svg class="h-8 w-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <p class="text-3xl font-bold">{{ (result.signal_accuracy || 0).toFixed(1) }}%</p>
+          <p class="text-sm opacity-90 mt-1">价格按预期方向移动</p>
+        </div>
+
+        <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm opacity-90">假信号率</span>
+            <svg class="h-8 w-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </div>
+          <p class="text-3xl font-bold">{{ (result.false_signal_rate || 0).toFixed(1) }}%</p>
+          <p class="text-sm opacity-90 mt-1">价格立即反向</p>
+        </div>
+
+        <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm opacity-90">平均信号间隔</span>
+            <svg class="h-8 w-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <p class="text-3xl font-bold">{{ (result.avg_signal_interval_hours || 0).toFixed(1) }}h</p>
+          <p class="text-sm opacity-90 mt-1">信号频率</p>
+        </div>
+
+        <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-sm opacity-90">质量评分</span>
+            <svg class="h-8 w-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+            </svg>
+          </div>
+          <p class="text-3xl font-bold">{{ result.signal_quality_score || 0 }}/100</p>
+          <p class="text-sm opacity-90 mt-1">综合评分</p>
+        </div>
+      </div>
+
+      <!-- 交易收益指标卡片 -->
+      <div v-else class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white">
           <div class="flex items-center justify-between mb-2">
             <span class="text-sm opacity-90">总收益</span>
@@ -304,15 +458,53 @@ const running = ref(false)
 const progress = ref(0)
 const bots = ref([])
 const result = ref(null)
+const backtestId = ref(null)
+const metricType = ref('quality') // 'quality' or 'trading'
 
 const config = ref({
   bot_id: '',
-  time_range: '30d',
-  initial_capital: 1000,
-  fee_rate: 0.1,
-  slippage: 0.5,
-  mode: 'fast'
+  time_range: '90d',
+  start_date: '',
+  end_date: '',
+  initial_capital: 10000,
+  timeframe: '4h',
+  exit_strategy: 'fixed',
+  take_profit_pct: 5.0,
+  stop_loss_pct: 2.0,
+  max_holding_hours: 24
 })
+
+// 更新日期范围
+const updateDateRange = () => {
+  if (config.value.time_range === 'custom') {
+    return
+  }
+
+  const now = new Date()
+  const end = now.toISOString().split('T')[0]
+  let start = new Date()
+
+  switch (config.value.time_range) {
+    case '7d':
+      start.setDate(now.getDate() - 7)
+      break
+    case '30d':
+      start.setDate(now.getDate() - 30)
+      break
+    case '90d':
+      start.setDate(now.getDate() - 90)
+      break
+    case '180d':
+      start.setDate(now.getDate() - 180)
+      break
+    case '1y':
+      start.setFullYear(now.getFullYear() - 1)
+      break
+  }
+
+  config.value.start_date = start.toISOString().split('T')[0]
+  config.value.end_date = end
+}
 
 // 加载机器人列表
 const loadBots = async () => {
@@ -331,51 +523,121 @@ const startBacktest = async () => {
     return
   }
 
+  // 更新日期范围
+  updateDateRange()
+
   running.value = true
   progress.value = 0
+  result.value = null
 
   try {
-    // 模拟回测进度
+    // 准备回测参数
+    const backtestData = {
+      signal_bot: config.value.bot_id,
+      start_date: config.value.start_date,
+      end_date: config.value.end_date,
+      initial_capital: config.value.initial_capital,
+      timeframe: config.value.timeframe,
+      exit_strategy: config.value.exit_strategy
+    }
+
+    // 根据退出策略添加相应参数
+    if (config.value.exit_strategy === 'fixed') {
+      backtestData.take_profit_pct = config.value.take_profit_pct
+      backtestData.stop_loss_pct = config.value.stop_loss_pct
+    } else if (config.value.exit_strategy === 'time') {
+      backtestData.max_holding_hours = config.value.max_holding_hours
+    }
+
+    console.log('创建回测:', backtestData)
+
+    // 创建回测
+    const response = await botAPI.createBacktest(backtestData)
+    backtestId.value = response.id || response.data?.id
+
+    console.log('回测已创建，ID:', backtestId.value)
+
+    // 模拟进度（实际应该轮询后端状态）
     const progressInterval = setInterval(() => {
       if (progress.value < 90) {
         progress.value += 10
       }
-    }, 500)
+    }, 1000)
 
-    // 模拟回测API调用
-    await new Promise(resolve => setTimeout(resolve, 5000))
+    // 轮询回测状态
+    let attempts = 0
+    const maxAttempts = 60  // 最多等待60秒
 
-    clearInterval(progressInterval)
-    progress.value = 100
+    while (attempts < maxAttempts) {
+      await new Promise(resolve => setTimeout(resolve, 1000))
 
-    // 模拟回测结果
-    result.value = {
-      total_profit: 234.56,
-      profit_rate: 23.46,
-      win_rate: 68.5,
-      total_trades: 45,
-      winning_trades: 31,
-      losing_trades: 14,
-      sharpe_ratio: 1.85,
-      max_drawdown: 12.5,
-      final_capital: config.value.initial_capital + 234.56,
-      max_profit: 45.67,
-      max_loss: -23.45,
-      profit_loss_ratio: 1.95,
-      avg_holding_time: 18.5,
-      trades: Array.from({ length: 45 }, (_, i) => ({
-        time: new Date(Date.now() - i * 86400000).toLocaleDateString(),
-        side: Math.random() > 0.5 ? 'buy' : 'sell',
-        price: 50000 + Math.random() * 10000,
-        quantity: 0.001 + Math.random() * 0.01,
-        profit: (Math.random() - 0.3) * 50
-      }))
+      try {
+        const statusResponse = await botAPI.getBacktestDetail(backtestId.value)
+        console.log('回测状态:', statusResponse.status)
+
+        if (statusResponse.status === 'completed') {
+          clearInterval(progressInterval)
+          progress.value = 100
+
+          // 获取完整结果
+          result.value = {
+            // 传统交易指标
+            total_profit: parseFloat(statusResponse.total_return || 0) * config.value.initial_capital / 100,
+            profit_rate: parseFloat(statusResponse.total_return || 0),
+            win_rate: parseFloat(statusResponse.win_rate || 0),
+            total_trades: statusResponse.total_trades || 0,
+            winning_trades: statusResponse.winning_trades || 0,
+            losing_trades: statusResponse.losing_trades || 0,
+            sharpe_ratio: parseFloat(statusResponse.sharpe_ratio || 0),
+            max_drawdown: Math.abs(parseFloat(statusResponse.max_drawdown || 0)),
+            final_capital: config.value.initial_capital * (1 + parseFloat(statusResponse.total_return || 0) / 100),
+            max_profit: parseFloat(statusResponse.max_profit || 0),
+            max_loss: parseFloat(statusResponse.max_loss || 0),
+            profit_loss_ratio: parseFloat(statusResponse.profit_factor || 0),
+            avg_holding_time: parseFloat(statusResponse.avg_holding_time || 0),
+            // 信号质量指标
+            signal_accuracy: parseFloat(statusResponse.signal_accuracy || 0),
+            false_signal_rate: parseFloat(statusResponse.false_signal_rate || 0),
+            avg_signal_interval_hours: parseFloat(statusResponse.avg_signal_interval_hours || 0),
+            signal_quality_score: parseInt(statusResponse.signal_quality_score || 0),
+            trades: []
+          }
+
+          // 获取交易明细
+          try {
+            const tradesResponse = await botAPI.getBacktestTrades(backtestId.value)
+            result.value.trades = (tradesResponse.results || tradesResponse.data || []).map(trade => ({
+              time: new Date(trade.entry_time).toLocaleString(),
+              side: trade.signal_type,
+              price: parseFloat(trade.entry_price),
+              quantity: 1,  // 简化显示
+              profit: parseFloat(trade.profit_loss || 0)
+            }))
+          } catch (err) {
+            console.error('获取交易明细失败:', err)
+          }
+
+          showSuccess('回测完成')
+          break
+        } else if (statusResponse.status === 'failed') {
+          clearInterval(progressInterval)
+          showError('回测失败: ' + (statusResponse.error_message || '未知错误'))
+          break
+        }
+      } catch (err) {
+        console.error('获取回测状态失败:', err)
+      }
+
+      attempts++
     }
 
-    showSuccess('回测完成')
+    if (attempts >= maxAttempts) {
+      clearInterval(progressInterval)
+      showError('回测超时，请稍后查看结果')
+    }
   } catch (error) {
     console.error('回测失败:', error)
-    showError('回测失败')
+    showError(error.message || '回测失败')
   } finally {
     running.value = false
   }

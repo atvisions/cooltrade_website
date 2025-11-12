@@ -79,13 +79,30 @@
           </div>
 
           <!-- 标签页 -->
-          <Tabs 
-            :tabs="tabs" 
-            v-model:active-index="activeTab"
-            class="mb-6"
-          >
+          <div class="mb-8">
+            <!-- TAB 导航 -->
+            <div class="flex gap-2 mb-6 border-b border-slate-200">
+              <button
+                v-for="(tab, index) in tabs"
+                :key="index"
+                @click="activeTab = index"
+                :class="[
+                  'px-6 py-3 font-medium text-sm transition-all duration-300 relative',
+                  activeTab === index
+                    ? 'text-slate-900'
+                    : 'text-slate-500 hover:text-slate-700'
+                ]"
+              >
+                <span>{{ tab.label }}</span>
+                <div
+                  v-if="activeTab === index"
+                  class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-blue-400 rounded-t"
+                ></div>
+              </button>
+            </div>
+
             <!-- 机器人列表 TAB -->
-            <template v-if="activeTab === 0">
+            <div v-if="activeTab === 0">
               <div class="space-y-4">
                 <!-- 筛选栏 -->
                 <Card variant="default">
@@ -183,10 +200,10 @@
                   </Table>
                 </Card>
               </div>
-            </template>
+            </div>
 
             <!-- 信号监控 TAB -->
-            <template v-if="activeTab === 1">
+            <div v-if="activeTab === 1">
               <div class="space-y-4">
                 <!-- 信号表格 -->
                 <Card variant="default">
@@ -221,10 +238,10 @@
                   </Table>
                 </Card>
               </div>
-            </template>
+            </div>
 
             <!-- 统计数据 TAB -->
-            <template v-if="activeTab === 2">
+            <div v-if="activeTab === 2">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- 信号类型分布 -->
                 <Card variant="default">
@@ -261,8 +278,13 @@
                   </div>
                 </Card>
               </div>
-            </template>
-          </Tabs>
+            </div>
+
+            <!-- 集群回测 TAB -->
+            <div v-if="activeTab === 3">
+              <BacktestPanel />
+            </div>
+          </div>
         </main>
       </div>
     </div>
@@ -280,7 +302,7 @@ import Select from '../../common/ui/Select.vue'
 import Card from '../../common/ui/Card.vue'
 import Badge from '../../common/ui/Badge.vue'
 import Table from '../../common/ui/Table.vue'
-import Tabs from '../../common/ui/Tabs.vue'
+import BacktestPanel from '../components/BacktestPanel.vue'
 import { CpuChipIcon, BellIcon, PlusIcon, ChartBarIcon } from '@heroicons/vue/24/outline'
 import { botAPI } from '../../../utils/api'
 import { showSuccess, showError } from '../../../utils/notification'
@@ -319,7 +341,8 @@ const exchangeOptions = ref([])
 const tabs = [
   { label: '机器人列表', content: 'bots' },
   { label: '信号监控', content: 'signals' },
-  { label: '统计数据', content: 'statistics' }
+  { label: '统计数据', content: 'statistics' },
+  { label: '集群回测', content: 'backtest' }
 ]
 
 const botColumns = [

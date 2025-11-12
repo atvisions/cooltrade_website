@@ -719,6 +719,11 @@
                 </div>
               </div>
             </div>
+
+            <!-- TAB 4: 集群回测 -->
+            <div v-if="activeTab === 3">
+              <BacktestPanel />
+            </div>
           </div>
         </main>
       </div>
@@ -780,6 +785,7 @@ import { PlayIcon as PlayIconSolid, StopIcon as StopIconSolid } from '@heroicons
 import { botAPI } from '../../../utils/api'
 import { showSuccess, showError } from '../../../utils/notification'
 import ConfirmModal from '../../common/ConfirmModal.vue'
+import BacktestPanel from '../components/BacktestPanel.vue'
 
 const router = useRouter()
 
@@ -788,7 +794,8 @@ const activeTab = ref(0)
 const tabs = ref([
   { label: '机器人列表', icon: 'list' },
   { label: '信号监控', icon: 'bell' },
-  { label: '数据统计', icon: 'chart-bar' }
+  { label: '数据统计', icon: 'chart-bar' },
+  { label: '集群回测', icon: 'chart-line' }
 ])
 
 const loading = ref(false)

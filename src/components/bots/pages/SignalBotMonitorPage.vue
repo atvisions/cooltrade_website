@@ -232,8 +232,33 @@
                       <p class="text-sm text-slate-600">{{ formatTime(row.created_at) }}</p>
                     </template>
 
-                    <template #col-status>
-                      <Badge variant="success">已发送</Badge>
+                    <template #col-expires_at="{ row }">
+                      <div v-if="row.expires_at">
+                        <span
+                          :class="[
+                            'text-sm font-medium',
+                            getTimeRemaining(row.expires_at).isExpired ? 'text-red-600' :
+                            getTimeRemaining(row.expires_at).isExpiringSoon ? 'text-amber-600' :
+                            'text-slate-600'
+                          ]"
+                        >
+                          {{ getTimeRemaining(row.expires_at).text }}
+                        </span>
+                      </div>
+                      <span v-else class="text-sm text-slate-400">无期限</span>
+                    </template>
+
+                    <template #col-status="{ row }">
+                      <Badge
+                        :variant="row.status === 'expired' ? 'danger' :
+                                 row.status === 'executed' ? 'success' :
+                                 'info'"
+                      >
+                        {{ row.status === 'active' ? '活跃' :
+                           row.status === 'expired' ? '已过期' :
+                           row.status === 'executed' ? '已执行' :
+                           row.status }}
+                      </Badge>
                     </template>
                   </Table>
                 </Card>
@@ -306,6 +331,7 @@ import BacktestPanel from '../components/BacktestPanel.vue'
 import { CpuChipIcon, BellIcon, PlusIcon, ChartBarIcon } from '@heroicons/vue/24/outline'
 import { botAPI } from '../../../utils/api'
 import { showSuccess, showError } from '../../../utils/notification'
+import { getTimeRemaining, formatRelativeTime } from '../../../utils/timeUtils'
 
 const router = useRouter()
 const activeTab = ref(0)
@@ -357,6 +383,7 @@ const signalColumns = [
   { field: 'signal_type', header: '信号类型' },
   { field: 'price', header: '价格' },
   { field: 'created_at', header: '时间' },
+  { field: 'expires_at', header: '剩余时间' },
   { field: 'status', header: '状态' }
 ]
 
@@ -502,7 +529,7 @@ const getSignalTypeVariant = (type) => {
 }
 
 const formatTime = (dateString) => {
-  return new Date(dateString).toLocaleString('zh-CN')
+  return formatRelativeTime(dateString)
 }
 
 const getPercentage = (count) => {

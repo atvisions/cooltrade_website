@@ -225,10 +225,31 @@
 
               <!-- 时间周期 -->
               <div>
-                <label class="block text-sm font-medium text-slate-700 mb-3">
-                  时间周期
-                </label>
-                <div class="flex flex-wrap gap-2 mb-2">
+                <div class="flex items-baseline gap-2 mb-3">
+                  <label class="block text-sm font-medium text-slate-700">
+                    时间周期
+                  </label>
+                  <div class="relative">
+                    <button
+                      @mouseenter="showTimeframeTooltip = true"
+                      @mouseleave="showTimeframeTooltip = false"
+                      class="p-1 text-slate-400 hover:text-slate-600 transition-colors"
+                    >
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </button>
+                    <div
+                      v-if="showTimeframeTooltip"
+                      class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg z-50 pointer-events-none"
+                    >
+                      <div class="whitespace-nowrap">周期越短信号越频繁</div>
+                      <div class="whitespace-nowrap">周期越长信号越稳定</div>
+                      <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex flex-wrap gap-2">
                   <button
                     v-for="tf in timeframes"
                     :key="tf.value"
@@ -244,7 +265,6 @@
                     {{ tf.label }}
                   </button>
                 </div>
-                <p class="text-xs text-slate-500 pl-1">周期越短信号越频繁，周期越长信号越稳定</p>
               </div>
 
               <!-- 检查间隔 -->
@@ -253,7 +273,25 @@
                   <label class="block text-sm font-medium text-slate-700">
                     检查间隔
                   </label>
-                  <span class="text-xs text-slate-500">系统多久检查一次信号条件（独立于时间周期）</span>
+                  <div class="relative">
+                    <button
+                      @mouseenter="showCheckIntervalTooltip = true"
+                      @mouseleave="showCheckIntervalTooltip = false"
+                      class="p-1 text-slate-400 hover:text-slate-600 transition-colors"
+                    >
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </button>
+                    <div
+                      v-if="showCheckIntervalTooltip"
+                      class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg z-50 pointer-events-none"
+                    >
+                      <div class="whitespace-nowrap">系统多久检查一次信号条件</div>
+                      <div class="whitespace-nowrap">独立于时间周期</div>
+                      <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
+                    </div>
+                  </div>
                 </div>
                 <div class="flex flex-wrap gap-2">
                   <button
@@ -725,89 +763,50 @@
 
           <!-- AI 分析模式 -->
           <Card variant="default" class="mb-6">
-            <!-- 标题和开关 -->
-            <div class="flex items-center justify-between mb-6">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
-                  <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                  </svg>
-                </div>
-                <div>
-                  <div class="flex items-center gap-2">
-                    <h2 class="text-lg font-semibold text-slate-900">AI 分析模式</h2>
-                    <span class="px-1.5 py-0.5 text-xs font-medium bg-purple-100 text-purple-700 rounded">AI</span>
-                  </div>
-                  <p class="text-sm text-slate-500">使用 AI 深度分析市场</p>
-                </div>
+            <div class="flex items-center gap-3 py-3">
+              <div class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
               </div>
-
-              <label class="inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  v-model="formData.use_advanced_analysis"
-                  class="sr-only peer"
-                />
-                <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                <span class="ml-3 text-sm font-medium text-slate-700">
-                  {{ formData.use_advanced_analysis ? '已启用' : '未启用' }}
-                </span>
-              </label>
-            </div>
-
-            <!-- 对比说明 -->
-            <div class="space-y-3">
-              <!-- 系统分析 -->
-              <div class="p-4 bg-slate-50 rounded-lg border border-slate-200">
-                <div class="flex items-center gap-2 mb-2">
-                  <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
-                  </svg>
-                  <span class="font-medium text-slate-900">系统分析（未开启 AI）</span>
+              <div class="flex-1">
+                <div class="flex items-center gap-2">
+                  <h2 class="text-lg font-semibold text-slate-900">AI 分析模式</h2>
+                  <div class="relative">
+                    <button
+                      @mouseenter="showAITooltip = true"
+                      @mouseleave="showAITooltip = false"
+                      class="p-1 text-slate-400 hover:text-slate-600 transition-colors"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </button>
+                    <div
+                      v-if="showAITooltip"
+                      class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg z-50 pointer-events-none"
+                    >
+                      <div class="whitespace-nowrap">调用 AI 模型进行深度分析</div>
+                      <div class="whitespace-nowrap">提供详细的市场洞察和操作建议</div>
+                      <div class="whitespace-nowrap">包括：市场趋势、风险评估、入场建议等</div>
+                      <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
+                    </div>
+                  </div>
                 </div>
-                <p class="text-sm text-slate-600 ml-7">
-                  基于技术指标的规则分析，给出看多/看空建议
-                </p>
+                <p class="text-sm text-slate-500">使用 AI 深度分析市场</p>
               </div>
-
-              <!-- AI 分析 -->
-              <div class="p-4 bg-purple-50 rounded-lg border border-purple-200">
-                <div class="flex items-center gap-2 mb-2">
-                  <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                  </svg>
-                  <span class="font-medium text-purple-900">AI 深度分析（开启 AI）</span>
-                </div>
-                <p class="text-sm text-purple-700 ml-7 mb-3">
-                  调用 AI 模型进行深度分析，提供详细的市场洞察和操作建议
-                </p>
-                <div class="flex flex-wrap gap-x-4 gap-y-2 text-sm ml-7">
-                  <div class="flex items-center gap-1.5">
-                    <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span class="text-purple-700">市场趋势判断</span>
-                  </div>
-                  <div class="flex items-center gap-1.5">
-                    <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span class="text-purple-700">风险评估</span>
-                  </div>
-                  <div class="flex items-center gap-1.5">
-                    <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span class="text-purple-700">入场/止损/止盈建议</span>
-                  </div>
-                  <div class="flex items-center gap-1.5">
-                    <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span class="text-purple-700">市场背景分析</span>
-                  </div>
-                </div>
-              </div>
+              <button
+                @click="formData.use_advanced_analysis = !formData.use_advanced_analysis"
+                :class="[
+                  'relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 flex-shrink-0',
+                  formData.use_advanced_analysis ? 'bg-blue-600' : 'bg-gray-200'
+                ]"
+              >
+                <span :class="[
+                  'inline-block h-4 w-4 transform rounded-full bg-white transition-transform duration-200',
+                  formData.use_advanced_analysis ? 'translate-x-6' : 'translate-x-1'
+                ]"></span>
+              </button>
             </div>
           </Card>
 
@@ -913,10 +912,30 @@
               </div>
 
               <div class="mt-4">
-                <label class="block text-sm font-medium text-slate-700 mb-2">
-                  冷却时间（分钟）
-                  <span class="text-xs text-slate-500 ml-2">两次提醒之间的最小间隔</span>
-                </label>
+                <div class="flex items-baseline gap-2 mb-2">
+                  <label class="block text-sm font-medium text-slate-700">
+                    冷却时间（分钟）
+                  </label>
+                  <div class="relative">
+                    <button
+                      @mouseenter="showCooldownTooltip = true"
+                      @mouseleave="showCooldownTooltip = false"
+                      class="p-1 text-slate-400 hover:text-slate-600 transition-colors"
+                    >
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </button>
+                    <div
+                      v-if="showCooldownTooltip"
+                      class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg z-50 pointer-events-none"
+                    >
+                      <div class="whitespace-nowrap">两次提醒之间的最小间隔</div>
+                      <div class="whitespace-nowrap">新手 60 分钟 | 短期 15-30 分钟 | 专业 30 分钟</div>
+                      <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
+                    </div>
+                  </div>
+                </div>
                 <Input
                   v-model.number="alertConfig.cooldown_minutes"
                   type="number"
@@ -924,9 +943,47 @@
                   max="1440"
                   placeholder="30"
                 />
-                <p class="text-xs text-slate-500 mt-1">
-                  建议：新手用户 60 分钟，短期交易 15-30 分钟，专业用户 30 分钟
-                </p>
+              </div>
+
+              <!-- 信号过期时间 -->
+              <div class="mt-6 pt-6 border-t border-slate-200">
+                <div class="flex items-baseline gap-2 mb-3">
+                  <label class="block text-sm font-medium text-slate-700">
+                    信号有效期
+                  </label>
+                  <div class="relative">
+                    <button
+                      @mouseenter="showSignalExpirationTooltip = true"
+                      @mouseleave="showSignalExpirationTooltip = false"
+                      class="p-1 text-slate-400 hover:text-slate-600 transition-colors"
+                    >
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </button>
+                    <div
+                      v-if="showSignalExpirationTooltip"
+                      class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg z-50 pointer-events-none"
+                    >
+                      <div class="whitespace-nowrap">防止过时信号被执行</div>
+                      <div class="whitespace-nowrap">短期：1-4小时 | 中期：12-24小时 | 长期：48-72小时</div>
+                      <div class="whitespace-nowrap">每5分钟自动检查一次</div>
+                      <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex items-end gap-3">
+                  <div class="flex-1">
+                    <Input
+                      v-model.number="alertConfig.signal_expiration_hours"
+                      type="number"
+                      min="1"
+                      max="720"
+                      placeholder="24"
+                    />
+                  </div>
+                  <div class="text-sm text-slate-600 font-medium pb-3">小时</div>
+                </div>
               </div>
             </div>
           </Card>
@@ -1179,6 +1236,46 @@
                     </div>
                   </div>
                 </div>
+
+                <!-- 提醒配置 -->
+                <div class="border-t border-slate-200 pt-4">
+                  <div class="text-xs font-semibold text-slate-700 mb-3">提醒配置</div>
+                  <div class="space-y-2.5">
+                    <div class="flex items-center justify-between text-xs">
+                      <div class="flex items-center gap-2">
+                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                        </svg>
+                        <span class="text-slate-600">提醒模式</span>
+                      </div>
+                      <span class="font-medium text-slate-900">
+                        {{ alertModes?.find(m => m.value === alertConfig.mode)?.label || '-' }}
+                      </span>
+                    </div>
+                    <div class="flex items-center justify-between text-xs">
+                      <div class="flex items-center gap-2">
+                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span class="text-slate-600">冷却时间</span>
+                      </div>
+                      <span class="font-medium text-slate-900">
+                        {{ alertConfig.cooldown_minutes }} 分钟
+                      </span>
+                    </div>
+                    <div class="flex items-center justify-between text-xs">
+                      <div class="flex items-center gap-2">
+                        <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span class="text-slate-600">信号有效期</span>
+                      </div>
+                      <span class="font-medium text-slate-900">
+                        {{ alertConfig.signal_expiration_hours }} 小时
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <!-- 操作按钮 -->
@@ -1252,6 +1349,13 @@ const ChartSquareIcon = () => h('svg', { class: 'w-6 h-6', fill: 'none', stroke:
 ])
 const submitting = ref(false)
 const loading = ref(false)
+
+// Tooltip 状态
+const showAITooltip = ref(false)
+const showTimeframeTooltip = ref(false)
+const showCheckIntervalTooltip = ref(false)
+const showCooldownTooltip = ref(false)
+const showSignalExpirationTooltip = ref(false)
 
 // 选中的交易所
 const selectedExchange = computed(() => {
@@ -1361,7 +1465,8 @@ const kdjConfig = ref({
 // 提醒模式配置
 const alertConfig = ref({
   mode: 'state_change',  // 默认：状态变化提醒
-  cooldown_minutes: 30   // 默认：30分钟冷却
+  cooldown_minutes: 30,   // 默认：30分钟冷却
+  signal_expiration_hours: 24  // 默认：24小时过期
 })
 
 // 提醒模式选项
@@ -1833,9 +1938,10 @@ const loadBotData = async () => {
     // 加载 AI 分析模式配置
     formData.value.use_advanced_analysis = config.use_advanced_analysis || false
 
-    // 加载提醒模式和冷却时间
+    // 加载提醒模式、冷却时间和过期时间
     alertConfig.value.mode = config.alert_mode || 'one_shot'
     alertConfig.value.cooldown_minutes = config.cooldown_minutes || 30
+    alertConfig.value.signal_expiration_hours = config.signal_expiration_hours || 24
 
     if (formData.value.signal_type === 'price_alert') {
       // 从 config.price_alert 中读取价格提醒配置
@@ -1936,7 +2042,8 @@ const handleSubmit = async () => {
     let config = {
       use_advanced_analysis: formData.value.use_advanced_analysis,  // 添加专业分析标志
       alert_mode: alertConfig.value.mode,  // 提醒模式
-      cooldown_minutes: alertConfig.value.cooldown_minutes  // 冷却时间
+      cooldown_minutes: alertConfig.value.cooldown_minutes,  // 冷却时间
+      signal_expiration_hours: alertConfig.value.signal_expiration_hours  // 信号过期时间
     }
 
     switch (formData.value.signal_type) {

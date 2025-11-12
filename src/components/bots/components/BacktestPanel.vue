@@ -1,5 +1,41 @@
 <template>
   <div class="space-y-6">
+    <!-- 标签页切换 -->
+    <div class="flex gap-2 mb-6 border-b border-slate-200">
+      <button
+        @click="activeTab = 'new'"
+        :class="[
+          'px-6 py-3 font-medium text-sm transition-all duration-300 relative',
+          activeTab === 'new'
+            ? 'text-slate-900'
+            : 'text-slate-500 hover:text-slate-700'
+        ]"
+      >
+        <span>新建回测</span>
+        <div
+          v-if="activeTab === 'new'"
+          class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-blue-400 rounded-t"
+        ></div>
+      </button>
+      <button
+        @click="activeTab = 'history'"
+        :class="[
+          'px-6 py-3 font-medium text-sm transition-all duration-300 relative',
+          activeTab === 'history'
+            ? 'text-slate-900'
+            : 'text-slate-500 hover:text-slate-700'
+        ]"
+      >
+        <span>历史回测</span>
+        <div
+          v-if="activeTab === 'history'"
+          class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-blue-400 rounded-t"
+        ></div>
+      </button>
+    </div>
+
+    <!-- 新建回测 TAB -->
+    <div v-if="activeTab === 'new'">
     <!-- 回测配置卡片 -->
     <div class="bg-white rounded-xl p-6 border border-slate-200">
       <h3 class="text-lg font-semibold text-slate-900 mb-4 flex items-center gap-2">
@@ -346,8 +382,20 @@
           <h3 class="text-lg font-semibold text-slate-900 mb-4">交易统计</h3>
           <div class="space-y-3">
             <div class="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
-              <span class="text-sm text-slate-600">总交易数</span>
-              <span class="text-lg font-semibold text-slate-900">{{ result.total_trades }}</span>
+              <span class="text-sm text-slate-600">检测信号数</span>
+              <span class="text-lg font-semibold text-slate-900">{{ result.total_signals }}</span>
+            </div>
+            <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+              <span class="text-sm text-blue-600">执行交易数</span>
+              <span class="text-lg font-semibold text-blue-700">{{ result.total_trades }}</span>
+            </div>
+            <div class="flex justify-between items-center p-3 bg-amber-50 rounded-lg">
+              <span class="text-sm text-amber-600">被忽略信号</span>
+              <span class="text-lg font-semibold text-amber-700">{{ result.ignored_signals }} ({{ result.signal_ignored_rate }}%)</span>
+            </div>
+            <div class="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
+              <span class="text-sm text-purple-600">信号执行率</span>
+              <span class="text-lg font-semibold text-purple-700">{{ result.signal_execution_rate }}%</span>
             </div>
             <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg">
               <span class="text-sm text-green-600">盈利交易</span>
@@ -446,6 +494,159 @@
       <h3 class="text-lg font-medium text-slate-900 mb-2">开始回测</h3>
       <p class="text-slate-600">配置回测参数并点击"开始回测"按钮</p>
     </div>
+    </div>
+
+    <!-- 历史回测 TAB -->
+    <div v-if="activeTab === 'history'">
+      <div class="bg-white rounded-xl p-6 border border-slate-200">
+        <div class="flex items-center justify-between mb-6">
+          <h3 class="text-lg font-semibold text-slate-900">历史回测记录</h3>
+          <button
+            @click="loadBacktestHistory"
+            class="px-4 py-2 text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-2"
+          >
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            刷新
+          </button>
+        </div>
+
+        <!-- 加载中 -->
+        <div v-if="loadingHistory" class="flex items-center justify-center py-12">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+
+        <!-- 历史记录列表 -->
+        <div v-else-if="backtestHistory.length > 0" class="space-y-4">
+          <div
+            v-for="backtest in backtestHistory"
+            :key="backtest.id"
+            class="border border-slate-200 rounded-lg p-4 hover:border-blue-300 transition-colors"
+          >
+            <div class="flex items-start justify-between mb-3">
+              <div class="flex-1">
+                <div class="flex items-center gap-3 mb-2">
+                  <h4 class="font-semibold text-slate-900">{{ backtest.signal_bot_name }}</h4>
+                  <span
+                    :class="[
+                      'px-2 py-1 text-xs font-medium rounded',
+                      backtest.status === 'completed' ? 'bg-green-100 text-green-700' :
+                      backtest.status === 'running' ? 'bg-blue-100 text-blue-700' :
+                      backtest.status === 'failed' ? 'bg-red-100 text-red-700' :
+                      'bg-slate-100 text-slate-700'
+                    ]"
+                  >
+                    {{ getStatusText(backtest.status) }}
+                  </span>
+                </div>
+                <p class="text-sm text-slate-600">
+                  {{ formatDate(backtest.start_date) }} ~ {{ formatDate(backtest.end_date) }}
+                  · 初始资金: ${{ backtest.initial_capital }}
+                  · 时间周期: {{ backtest.timeframe }}
+                </p>
+              </div>
+              <div class="flex items-center gap-2">
+                <button
+                  v-if="backtest.status === 'completed'"
+                  @click="viewBacktestDetail(backtest)"
+                  class="px-3 py-1.5 text-sm text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                >
+                  查看详情
+                </button>
+                <button
+                  @click="deleteBacktest(backtest.id)"
+                  class="px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                >
+                  删除
+                </button>
+              </div>
+            </div>
+
+            <!-- 回测结果摘要 -->
+            <div v-if="backtest.status === 'completed'" class="space-y-3 pt-3 border-t border-slate-100">
+              <!-- 第一行：核心指标 -->
+              <div class="grid grid-cols-4 gap-4">
+                <div>
+                  <p class="text-xs text-slate-500 mb-1">总收益率</p>
+                  <p :class="[
+                    'text-sm font-semibold',
+                    parseFloat(backtest.total_return || 0) >= 0 ? 'text-green-600' : 'text-red-600'
+                  ]">
+                    {{ parseFloat(backtest.total_return || 0).toFixed(2) }}%
+                  </p>
+                </div>
+                <div>
+                  <p class="text-xs text-slate-500 mb-1">胜率</p>
+                  <p class="text-sm font-semibold text-slate-900">
+                    {{ parseFloat(backtest.win_rate || 0).toFixed(1) }}%
+                  </p>
+                </div>
+                <div>
+                  <p class="text-xs text-slate-500 mb-1">执行交易</p>
+                  <p class="text-sm font-semibold text-slate-900">
+                    {{ backtest.total_trades || 0 }}
+                  </p>
+                </div>
+                <div>
+                  <p class="text-xs text-slate-500 mb-1">最大回撤</p>
+                  <p class="text-sm font-semibold text-red-600">
+                    {{ Math.abs(parseFloat(backtest.max_drawdown || 0)).toFixed(2) }}%
+                  </p>
+                </div>
+              </div>
+
+              <!-- 第二行：信号执行情况 -->
+              <div class="grid grid-cols-3 gap-4 p-3 bg-blue-50 rounded-lg border border-blue-100">
+                <div>
+                  <p class="text-xs text-slate-600 mb-1">检测信号</p>
+                  <p class="text-sm font-semibold text-slate-900">
+                    {{ backtest.total_signals || 0 }}
+                  </p>
+                </div>
+                <div>
+                  <p class="text-xs text-slate-600 mb-1">被忽略信号</p>
+                  <p class="text-sm font-semibold text-amber-600">
+                    {{ backtest.ignored_signals || 0 }}
+                    <span class="text-xs text-slate-500">({{ backtest.signal_ignored_rate || 0 }}%)</span>
+                  </p>
+                </div>
+                <div>
+                  <p class="text-xs text-slate-600 mb-1">执行率</p>
+                  <p class="text-sm font-semibold text-blue-600">
+                    {{ backtest.signal_execution_rate || 0 }}%
+                  </p>
+                </div>
+              </div>
+
+              <!-- 说明文字 -->
+              <p class="text-xs text-slate-500 italic">
+                💡 提示：检测信号 = 执行交易 + 被忽略信号。被忽略的信号是因为持仓中而无法执行的信号。
+              </p>
+            </div>
+
+            <!-- 错误信息 -->
+            <div v-if="backtest.status === 'failed' && backtest.error_message" class="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p class="text-sm text-red-700">{{ backtest.error_message }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 空状态 -->
+        <div v-else class="py-12 text-center">
+          <svg class="mx-auto h-12 w-12 text-slate-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <p class="text-slate-600">暂无回测记录</p>
+          <button
+            @click="activeTab = 'new'"
+            class="mt-4 px-4 py-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
+          >
+            创建第一个回测
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -453,13 +654,17 @@
 import { ref, onMounted } from 'vue'
 import { botAPI } from '../../../utils/api'
 import { showSuccess, showError } from '../../../utils/notification'
+import { formatDate, formatDateTime } from '../../../utils/timeUtils'
 
+const activeTab = ref('new') // 'new' or 'history'
 const running = ref(false)
 const progress = ref(0)
 const bots = ref([])
 const result = ref(null)
 const backtestId = ref(null)
 const metricType = ref('quality') // 'quality' or 'trading'
+const backtestHistory = ref([])
+const loadingHistory = ref(false)
 
 const config = ref({
   bot_id: '',
@@ -588,18 +793,23 @@ const startBacktest = async () => {
             total_trades: statusResponse.total_trades || 0,
             winning_trades: statusResponse.winning_trades || 0,
             losing_trades: statusResponse.losing_trades || 0,
-            sharpe_ratio: parseFloat(statusResponse.sharpe_ratio || 0),
-            max_drawdown: Math.abs(parseFloat(statusResponse.max_drawdown || 0)),
+            sharpe_ratio: parseFloat(statusResponse.sharpe_ratio || 0) || 0,
+            max_drawdown: Math.abs(parseFloat(statusResponse.max_drawdown) || 0),
             final_capital: config.value.initial_capital * (1 + parseFloat(statusResponse.total_return || 0) / 100),
             max_profit: parseFloat(statusResponse.max_profit || 0),
             max_loss: parseFloat(statusResponse.max_loss || 0),
-            profit_loss_ratio: parseFloat(statusResponse.profit_factor || 0),
-            avg_holding_time: parseFloat(statusResponse.avg_holding_time || 0),
+            profit_loss_ratio: parseFloat(statusResponse.profit_factor || 0) || 0,
+            avg_holding_time: parseFloat(statusResponse.avg_holding_time || 0) || 0,
             // 信号质量指标
-            signal_accuracy: parseFloat(statusResponse.signal_accuracy || 0),
-            false_signal_rate: parseFloat(statusResponse.false_signal_rate || 0),
-            avg_signal_interval_hours: parseFloat(statusResponse.avg_signal_interval_hours || 0),
-            signal_quality_score: parseInt(statusResponse.signal_quality_score || 0),
+            signal_accuracy: parseFloat(statusResponse.signal_accuracy || 0) || 0,
+            false_signal_rate: parseFloat(statusResponse.false_signal_rate || 0) || 0,
+            avg_signal_interval_hours: parseFloat(statusResponse.avg_signal_interval_hours || 0) || 0,
+            signal_quality_score: parseInt(statusResponse.signal_quality_score || 0) || 0,
+            // 信号统计
+            total_signals: statusResponse.total_signals || 0,
+            ignored_signals: statusResponse.ignored_signals || 0,
+            signal_execution_rate: parseFloat(statusResponse.signal_execution_rate || 0) || 0,
+            signal_ignored_rate: parseFloat(statusResponse.signal_ignored_rate || 0) || 0,
             trades: []
           }
 
@@ -649,8 +859,107 @@ const clearResult = () => {
   progress.value = 0
 }
 
+// 加载回测历史
+const loadBacktestHistory = async () => {
+  loadingHistory.value = true
+  try {
+    const response = await botAPI.getBacktestList({ page_size: 50 })
+    backtestHistory.value = response.results || response.data || []
+    console.log('回测历史:', backtestHistory.value)
+  } catch (error) {
+    console.error('加载回测历史失败:', error)
+    showError('加载回测历史失败')
+  } finally {
+    loadingHistory.value = false
+  }
+}
+
+// 查看回测详情
+const viewBacktestDetail = (backtest) => {
+  // 切换到新建回测标签页，并显示该回测的结果
+  activeTab.value = 'new'
+  backtestId.value = backtest.id
+
+  // 设置结果数据
+  result.value = {
+    // 传统交易指标
+    total_profit: parseFloat(backtest.total_return || 0) * backtest.initial_capital / 100,
+    profit_rate: parseFloat(backtest.total_return || 0),
+    win_rate: parseFloat(backtest.win_rate || 0),
+    total_signals: backtest.total_signals || 0,
+    ignored_signals: backtest.ignored_signals || 0,
+    total_trades: backtest.total_trades || 0,
+    winning_trades: backtest.winning_trades || 0,
+    losing_trades: backtest.losing_trades || 0,
+    signal_execution_rate: parseFloat(backtest.signal_execution_rate || 0),
+    signal_ignored_rate: parseFloat(backtest.signal_ignored_rate || 0),
+    sharpe_ratio: parseFloat(backtest.sharpe_ratio || 0),
+    max_drawdown: Math.abs(parseFloat(backtest.max_drawdown || 0)),
+    final_capital: backtest.initial_capital * (1 + parseFloat(backtest.total_return || 0) / 100),
+    max_profit: parseFloat(backtest.max_profit || 0),
+    max_loss: parseFloat(backtest.max_loss || 0),
+
+    // 信号质量指标
+    signal_accuracy: parseFloat(backtest.signal_accuracy || 0),
+    false_signal_rate: parseFloat(backtest.false_signal_rate || 0),
+    avg_signal_interval_hours: parseFloat(backtest.avg_signal_interval_hours || 0),
+    signal_quality_score: parseFloat(backtest.signal_quality_score || 0),
+
+    trades: []
+  }
+
+  // 加载交易明细
+  loadBacktestTrades(backtest.id)
+
+  showSuccess('已加载回测结果')
+}
+
+// 加载回测交易明细
+const loadBacktestTrades = async (backtestId) => {
+  try {
+    const tradesResponse = await botAPI.getBacktestTrades(backtestId)
+    result.value.trades = (tradesResponse.results || tradesResponse.data || []).map(trade => ({
+      time: new Date(trade.entry_time).toLocaleString(),
+      side: trade.signal_type,
+      price: parseFloat(trade.entry_price),
+      quantity: 1,
+      profit: parseFloat(trade.profit_loss || 0)
+    }))
+  } catch (err) {
+    console.error('获取交易明细失败:', err)
+  }
+}
+
+// 删除回测
+const deleteBacktest = async (backtestId) => {
+  if (!confirm('确定要删除这个回测记录吗？')) {
+    return
+  }
+
+  try {
+    await botAPI.deleteBacktest(backtestId)
+    showSuccess('回测记录已删除')
+    await loadBacktestHistory()
+  } catch (error) {
+    console.error('删除回测失败:', error)
+    showError('删除回测失败')
+  }
+}
+
+// 获取状态文本
+const getStatusText = (status) => {
+  const map = {
+    'pending': '待处理',
+    'running': '运行中',
+    'completed': '已完成',
+    'failed': '失败'
+  }
+  return map[status] || status
+}
+
 onMounted(() => {
   loadBots()
+  loadBacktestHistory()
 })
 </script>
 

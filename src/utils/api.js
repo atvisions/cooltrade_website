@@ -65,6 +65,7 @@ export const API_ENDPOINTS = {
   BOT_TRADES: (id) => `${API_BASE_URL}/trading/bots/${id}/trades/`,
   BOT_SIGNALS: (id) => `${API_BASE_URL}/trading/bots/${id}/signals/`,
   BOT_STATISTICS: `${API_BASE_URL}/trading/bots/statistics/`,
+  TRADING_PAIRS: `${API_BASE_URL}/trading/trading-pairs/`,
   EXCHANGE_API_SYNC: (id) => `${API_BASE_URL}/auth/exchange-apis/${id}/sync/`,
   EXCHANGE_API_TEST: `${API_BASE_URL}/auth/exchange-apis/test/`,
 

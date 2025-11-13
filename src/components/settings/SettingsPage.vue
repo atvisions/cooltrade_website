@@ -74,7 +74,7 @@ import Header from '../common/Header.vue'
 import UserSidebar from '../common/UserSidebar.vue'
 import ParamsComparisonModal from './ParamsComparisonModal.vue'
 import notification from '../../utils/notification.js'
-import { userAPI, apiRequest } from '../../utils/api.js'
+import { userAPI, botAPI, apiRequest } from '../../utils/api.js'
 import { useUserStore } from '../../utils/userStore.js'
 
 const route = useRoute()
@@ -309,10 +309,14 @@ const tradingPreferences = ref({
   maxSingleInvestment: 10,      // 单币种最大仓位 (%)
   maxTotalPositions: 5,          // 最大持仓数量
   minPositionSize: 100,          // 最小建仓金额 (USDT)
+  maxPositionSize: 5000,         // 最大头寸大小 (USDT)
   stopLoss: 5,                   // 止损比例 (%)
   takeProfit: 15,                // 止盈比例 (%)
   slippageTolerance: 1,          // 滑点容忍度 (%)
   maxDailyTrades: 10,            // 每日最大交易次数
+  maxLeverage: 5,                // 最大杠杆倍数
+  circuitBreakerEnabled: true,   // 熔断机制启用
+  circuitBreakerLoss: 1000,      // 熔断触发亏损 (USDT)
   frequency: 'moderate'          // 交易频率
 })
 
@@ -324,28 +328,37 @@ const riskBasedLimits = {
     maxSingleInvestment: { min: 1, max: 10, recommended: 5 },
     maxTotalPositions: { min: 1, max: 3, recommended: 2 },
     minPositionSize: { min: 100, max: 1000, recommended: 500 },
+    maxPositionSize: { min: 1000, max: 5000, recommended: 2000 },
     stopLoss: { min: 1, max: 5, recommended: 3 },
     takeProfit: { min: 5, max: 15, recommended: 10 },
     slippageTolerance: { min: 0.5, max: 1, recommended: 0.5 },
-    maxDailyTrades: { min: 1, max: 5, recommended: 2 }
+    maxDailyTrades: { min: 1, max: 5, recommended: 2 },
+    maxLeverage: { min: 1, max: 5, recommended: 2 },
+    circuitBreakerLoss: { min: 500, max: 2000, recommended: 1000 }
   },
   moderate: {
     maxSingleInvestment: { min: 5, max: 20, recommended: 10 },
     maxTotalPositions: { min: 2, max: 5, recommended: 3 },
     minPositionSize: { min: 100, max: 1000, recommended: 300 },
+    maxPositionSize: { min: 2000, max: 10000, recommended: 5000 },
     stopLoss: { min: 3, max: 10, recommended: 5 },
     takeProfit: { min: 10, max: 30, recommended: 15 },
     slippageTolerance: { min: 0.5, max: 2, recommended: 1 },
-    maxDailyTrades: { min: 2, max: 10, recommended: 5 }
+    maxDailyTrades: { min: 2, max: 10, recommended: 5 },
+    maxLeverage: { min: 2, max: 10, recommended: 5 },
+    circuitBreakerLoss: { min: 1000, max: 5000, recommended: 2000 }
   },
   aggressive: {
     maxSingleInvestment: { min: 10, max: 50, recommended: 25 },
     maxTotalPositions: { min: 3, max: 10, recommended: 5 },
     minPositionSize: { min: 50, max: 1000, recommended: 100 },
+    maxPositionSize: { min: 5000, max: 50000, recommended: 20000 },
     stopLoss: { min: 5, max: 30, recommended: 15 },
     takeProfit: { min: 20, max: 100, recommended: 50 },
     slippageTolerance: { min: 1, max: 3, recommended: 2 },
-    maxDailyTrades: { min: 5, max: 20, recommended: 10 }
+    maxDailyTrades: { min: 5, max: 20, recommended: 10 },
+    maxLeverage: { min: 5, max: 125, recommended: 25 },
+    circuitBreakerLoss: { min: 2000, max: 10000, recommended: 5000 }
   }
 }
 
@@ -803,6 +816,7 @@ const restoreRecommendedSettings = () => {
     takeProfit: limits.takeProfit.recommended,
     slippageTolerance: limits.slippageTolerance.recommended,
     maxDailyTrades: limits.maxDailyTrades.recommended,
+    maxLeverage: limits.maxLeverage.recommended,
     frequency: riskLevel === 'conservative' ? 'conservative' : riskLevel === 'aggressive' ? 'aggressive' : 'moderate'
   }
 
@@ -979,10 +993,57 @@ const calculateRiskProfile = async () => {
 const saveTradingPreferences = async () => {
   tradingPreferencesLoading.value = true
   try {
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    // 1. 保存到 localStorage（用户交易偏好）
     localStorage.setItem('trading_preferences', JSON.stringify(tradingPreferences.value))
+
+    // 2. 同时保存到后端 API（系统风控配置）
+    // 需要获取当前的风控配置 ID
+    try {
+      const riskConfigResponse = await botAPI.getRiskConfig()
+      const riskConfig = riskConfigResponse.data?.data || riskConfigResponse.data || riskConfigResponse
+
+      if (riskConfig && riskConfig.id) {
+        // 构建要更新的数据
+        const updateData = {
+          min_position_size: tradingPreferences.value.minPositionSize,
+          max_leverage: tradingPreferences.value.maxLeverage,
+          max_trades_per_day: tradingPreferences.value.maxDailyTrades,
+          max_open_positions: tradingPreferences.value.maxTotalPositions,
+          max_position_per_bot: tradingPreferences.value.maxPositionSize,
+          circuit_breaker_enabled: tradingPreferences.value.circuitBreakerEnabled,
+          circuit_breaker_loss: tradingPreferences.value.circuitBreakerLoss,
+          // 保留其他字段不变
+          max_total_position: riskConfig.max_total_position,
+          max_daily_loss: riskConfig.max_daily_loss,
+          max_drawdown_percentage: riskConfig.max_drawdown_percentage,
+        }
+
+        console.log('📤 更新系统风控配置:', { id: riskConfig.id, data: updateData })
+        await botAPI.updateRiskConfig(riskConfig.id, updateData)
+        console.log('✅ 系统风控配置已更新到后端')
+      }
+    } catch (apiError) {
+      console.warn('⚠️ 保存到后端 API 失败，但本地设置已保存:', apiError)
+      // 不中断流程，因为本地设置已保存
+    }
+
     notification.success('交易偏好设置已保存', '保存成功')
+
+    // 获取返回页面（从 query 参数）
+    const returnUrl = route.query.return
+    console.log('Return URL from query:', returnUrl)
+
+    // 延迟跳转，让用户看到成功提示
+    if (returnUrl) {
+      console.log('Navigating to:', decodeURIComponent(returnUrl))
+      setTimeout(() => {
+        router.push(decodeURIComponent(returnUrl))
+      }, 500)
+    } else {
+      console.log('No return URL provided')
+    }
   } catch (error) {
+    console.error('Save error:', error)
     notification.error('保存失败，请重试', '错误')
   } finally {
     tradingPreferencesLoading.value = false

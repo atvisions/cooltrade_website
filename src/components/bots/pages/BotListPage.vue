@@ -382,18 +382,13 @@
               <TradeList />
             </div>
 
-            <!-- TAB 6: 风控配置 -->
+            <!-- TAB 6: 策略回测 -->
             <div v-if="activeTab === 5">
-              <RiskConfigPanel />
-            </div>
-
-            <!-- TAB 7: 策略回测 -->
-            <div v-if="activeTab === 6">
               <BacktestPanel />
             </div>
 
-            <!-- TAB 8: 性能分析 -->
-            <div v-if="activeTab === 7">
+            <!-- TAB 7: 性能分析 -->
+            <div v-if="activeTab === 6">
               <PerformanceAnalysis />
             </div>
           </div>
@@ -422,7 +417,6 @@ import PositionList from '../components/PositionList.vue'
 import OrderList from '../components/OrderList.vue'
 import RecommendationList from '../components/RecommendationList.vue'
 import TradeList from '../components/TradeList.vue'
-import RiskConfigPanel from '../components/RiskConfigPanel.vue'
 import BacktestPanel from '../components/BacktestPanel.vue'
 import PerformanceAnalysis from '../components/PerformanceAnalysis.vue'
 import { CpuChipIcon, PlayIcon, BellIcon, ChartBarIcon, StopIcon, PencilIcon, EyeIcon, TrashIcon } from '@heroicons/vue/24/outline'
@@ -473,7 +467,6 @@ const tabs = ref([
   { label: '委托订单', icon: 'document-text' },
   { label: '交易审批', icon: 'bolt' },
   { label: '交易记录', icon: 'clock' },
-  { label: '风控配置', icon: 'shield-check' },
   { label: '策略回测', icon: 'chart-bar' },
   { label: '性能分析', icon: 'chart-line' }
 ])

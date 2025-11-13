@@ -98,9 +98,7 @@
                       'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium',
                       bot.trading_mode === 'signal_only'
                         ? 'bg-blue-100 text-blue-700'
-                        : bot.trading_mode === 'semi_auto'
-                        ? 'bg-purple-100 text-purple-700'
-                        : 'bg-orange-100 text-orange-700'
+                        : 'bg-green-100 text-green-700'
                     ]">
                       {{ getTradingModeLabel(bot.trading_mode) }}
                     </span>
@@ -303,8 +301,7 @@ const getStatusLabel = (status) => {
 const getTradingModeLabel = (mode) => {
   const map = {
     signal_only: '仅信号通知',
-    semi_auto: '半自动交易',
-    full_auto: '全自动交易'
+    signal_trigger: '信号触发交易'
   }
   return map[mode] || mode
 }

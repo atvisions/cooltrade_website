@@ -34,7 +34,12 @@ export interface SignalBot extends Bot {
 
 export interface TrendFollowingBot extends Bot {
   bot_type: 'trend_following'
+  market_type?: 'spot' | 'linear' | 'inverse'  // 问题2修复
   max_position_size: number
+  leverage?: number
+  max_concurrent_positions?: number  // 问题1修复
+  max_trades_per_day?: number  // 问题1修复
+  max_daily_loss?: number  // 问题1修复
   stop_loss_percentage: number
   take_profit_percentage?: number
   take_profit_targets?: number
@@ -107,7 +112,12 @@ export interface CreateBotPayload {
   notify_app?: boolean
   check_interval?: number
   // Trend Following Bot 特定字段
+  market_type?: 'spot' | 'linear' | 'inverse'  // 问题2修复
   max_position_size?: number
+  leverage?: number
+  max_concurrent_positions?: number  // 问题1修复
+  max_trades_per_day?: number  // 问题1修复
+  max_daily_loss?: number  // 问题1修复
   stop_loss_percentage?: number
   take_profit_percentage?: number
   take_profit_targets?: number

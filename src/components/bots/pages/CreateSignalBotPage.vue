@@ -223,108 +223,6 @@
                 <p v-if="errors.signal_type" class="mt-1 text-sm text-red-500">{{ errors.signal_type }}</p>
               </div>
 
-              <!-- 时间周期 -->
-              <div>
-                <div class="flex items-baseline gap-2 mb-3">
-                  <label class="block text-sm font-medium text-slate-700">
-                    时间周期
-                  </label>
-                  <div class="relative">
-                    <button
-                      @mouseenter="showTimeframeTooltip = true"
-                      @mouseleave="showTimeframeTooltip = false"
-                      class="p-1 text-slate-400 hover:text-slate-600 transition-colors"
-                    >
-                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </button>
-                    <div
-                      v-if="showTimeframeTooltip"
-                      class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg z-50 pointer-events-none"
-                    >
-                      <div class="whitespace-nowrap">周期越短信号越频繁</div>
-                      <div class="whitespace-nowrap">周期越长信号越稳定</div>
-                      <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
-                    </div>
-                  </div>
-                </div>
-                <div class="flex flex-wrap gap-2">
-                  <button
-                    v-for="tf in timeframes"
-                    :key="tf.value"
-                    type="button"
-                    @click="formData.timeframe = tf.value"
-                    :class="[
-                      'px-4 py-2 rounded-lg text-sm font-medium transition-all',
-                      formData.timeframe === tf.value
-                        ? 'bg-blue-600 text-white shadow-sm'
-                        : 'bg-white text-slate-700 border border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-                    ]"
-                  >
-                    {{ tf.label }}
-                  </button>
-                </div>
-              </div>
-
-              <!-- 检查间隔 -->
-              <div>
-                <div class="flex items-baseline gap-2 mb-3">
-                  <label class="block text-sm font-medium text-slate-700">
-                    检查间隔
-                  </label>
-                  <div class="relative">
-                    <button
-                      @mouseenter="showCheckIntervalTooltip = true"
-                      @mouseleave="showCheckIntervalTooltip = false"
-                      class="p-1 text-slate-400 hover:text-slate-600 transition-colors"
-                    >
-                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </button>
-                    <div
-                      v-if="showCheckIntervalTooltip"
-                      class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg z-50 pointer-events-none"
-                    >
-                      <div class="whitespace-nowrap">系统多久检查一次信号条件</div>
-                      <div class="whitespace-nowrap">独立于时间周期</div>
-                      <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
-                    </div>
-                  </div>
-                </div>
-                <div class="flex flex-wrap gap-2">
-                  <button
-                    v-for="interval in checkIntervals"
-                    :key="interval.value"
-                    type="button"
-                    @click="formData.check_interval = interval.value"
-                    :class="[
-                      'px-4 py-2 rounded-lg text-sm font-medium transition-all',
-                      formData.check_interval === interval.value
-                        ? 'bg-blue-600 text-white shadow-sm'
-                        : 'bg-white text-slate-700 border border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-                    ]"
-                  >
-                    {{ interval.label }}
-                  </button>
-                </div>
-              </div>
-
-              <!-- 说明提示 -->
-              <div class="p-4 bg-blue-50 border border-blue-100 rounded-lg">
-                <div class="flex gap-3">
-                  <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <div class="text-sm text-slate-700 space-y-1.5">
-                    <p><span class="font-semibold text-slate-900">时间周期</span>：决定用哪种 K 线计算指标（如 1 小时 K 线）</p>
-                    <p><span class="font-semibold text-slate-900">检查间隔</span>：决定多久检查一次信号（如每 5 分钟检查一次）</p>
-                    <p class="text-blue-700 font-medium">💡 推荐：检查间隔 ≤ 时间周期，避免错过信号</p>
-                  </div>
-                </div>
-              </div>
-
               <!-- 价格提醒配置 -->
               <div v-if="formData.signal_type === 'price_alert'" class="p-6 bg-slate-50 rounded-lg border border-slate-200">
                 <div class="flex items-center gap-2 mb-4">
@@ -481,6 +379,108 @@
                 </div>
               </div>
 
+              <!-- 时间周期 -->
+              <div>
+                <div class="flex items-baseline gap-2 mb-3">
+                  <label class="block text-sm font-medium text-slate-700">
+                    时间周期
+                  </label>
+                  <div class="relative">
+                    <button
+                      @mouseenter="showTimeframeTooltip = true"
+                      @mouseleave="showTimeframeTooltip = false"
+                      class="p-1 text-slate-400 hover:text-slate-600 transition-colors"
+                    >
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </button>
+                    <div
+                      v-if="showTimeframeTooltip"
+                      class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg z-50 pointer-events-none"
+                    >
+                      <div class="whitespace-nowrap">周期越短信号越频繁</div>
+                      <div class="whitespace-nowrap">周期越长信号越稳定</div>
+                      <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  <button
+                    v-for="tf in timeframes"
+                    :key="tf.value"
+                    type="button"
+                    @click="formData.timeframe = tf.value"
+                    :class="[
+                      'px-4 py-2 rounded-lg text-sm font-medium transition-all',
+                      formData.timeframe === tf.value
+                        ? 'bg-blue-600 text-white shadow-sm'
+                        : 'bg-white text-slate-700 border border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                    ]"
+                  >
+                    {{ tf.label }}
+                  </button>
+                </div>
+              </div>
+
+              <!-- 检查间隔 -->
+              <div>
+                <div class="flex items-baseline gap-2 mb-3">
+                  <label class="block text-sm font-medium text-slate-700">
+                    检查间隔
+                  </label>
+                  <div class="relative">
+                    <button
+                      @mouseenter="showCheckIntervalTooltip = true"
+                      @mouseleave="showCheckIntervalTooltip = false"
+                      class="p-1 text-slate-400 hover:text-slate-600 transition-colors"
+                    >
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    </button>
+                    <div
+                      v-if="showCheckIntervalTooltip"
+                      class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg z-50 pointer-events-none"
+                    >
+                      <div class="whitespace-nowrap">系统多久检查一次信号条件</div>
+                      <div class="whitespace-nowrap">独立于时间周期</div>
+                      <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  <button
+                    v-for="interval in checkIntervals"
+                    :key="interval.value"
+                    type="button"
+                    @click="formData.check_interval = interval.value"
+                    :class="[
+                      'px-4 py-2 rounded-lg text-sm font-medium transition-all',
+                      formData.check_interval === interval.value
+                        ? 'bg-blue-600 text-white shadow-sm'
+                        : 'bg-white text-slate-700 border border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                    ]"
+                  >
+                    {{ interval.label }}
+                  </button>
+                </div>
+              </div>
+
+              <!-- 说明提示 -->
+              <div class="p-4 bg-blue-50 border border-blue-100 rounded-lg">
+                <div class="flex gap-3">
+                  <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div class="text-sm text-slate-700 space-y-1.5">
+                    <p><span class="font-semibold text-slate-900">时间周期</span>：决定用哪种 K 线计算指标（如 1 小时 K 线）</p>
+                    <p><span class="font-semibold text-slate-900">检查间隔</span>：决定多久检查一次信号（如每 5 分钟检查一次）</p>
+                    <p class="text-blue-700 font-medium">💡 推荐：检查间隔 ≤ 时间周期，避免错过信号</p>
+                  </div>
+                </div>
+              </div>
+
               <!-- RSI配置 -->
               <div v-if="formData.signal_type === 'rsi'" class="p-6 bg-slate-50 rounded-lg border border-slate-200">
                 <div class="flex items-center gap-2 mb-4">
@@ -617,25 +617,231 @@
                 </div>
               </div>
 
-              <!-- 成交量配置 -->
+              <!-- 成交量/持仓提醒配置 -->
               <div v-if="formData.signal_type === 'volume'" class="p-6 bg-slate-50 rounded-lg border border-slate-200">
                 <div class="flex items-center gap-2 mb-4">
                   <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
-                  <h3 class="text-base font-semibold text-slate-900">成交量设置</h3>
+                  <h3 class="text-base font-semibold text-slate-900">成交量/持仓提醒设置</h3>
                 </div>
                 <div class="space-y-4">
                   <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">
-                      异常倍数
-                      <span class="text-xs text-slate-500 ml-2">当前成交量 ÷ 平均成交量 > 此值时触发</span>
+                      提醒类型
+                      <span class="text-xs text-slate-500 block">选择要监控的指标</span>
+                    </label>
+                    <div class="grid grid-cols-2 gap-2">
+                      <button
+                        v-for="type in ['volume', 'open_interest']"
+                        :key="type"
+                        type="button"
+                        @click="volumeAlertType = type"
+                        :class="[
+                          'p-3 border-2 rounded-lg text-sm font-medium transition-all',
+                          volumeAlertType === type
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-slate-200 hover:border-slate-300 bg-white'
+                        ]"
+                      >
+                        {{ type === 'volume' ? '成交量' : '未平仓量' }}
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- 成交量参数 -->
+                  <div v-if="volumeAlertType === 'volume'" class="space-y-4">
+                    <div>
+                      <label class="block text-sm font-medium text-slate-700 mb-2">
+                        异常倍数
+                        <span class="text-xs text-slate-500 ml-2">当前成交量 ÷ 平均成交量 > 此值时触发</span>
+                      </label>
+                      <Input
+                        v-model="volumeConfig.threshold"
+                        type="number"
+                        placeholder="2.0"
+                        step="0.1"
+                      />
+                    </div>
+                    <div class="bg-white rounded-lg p-3 text-xs text-slate-600 border border-slate-200">
+                      <div class="flex items-start gap-2">
+                        <svg class="w-4 h-4 text-slate-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>成交量异常放大通常预示价格即将发生较大波动</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 未平仓量参数 -->
+                  <div v-if="volumeAlertType === 'open_interest'" class="space-y-4">
+                    <div>
+                      <label class="block text-sm font-medium text-slate-700 mb-2">
+                        异常倍数
+                        <span class="text-xs text-slate-500 ml-2">当前未平仓量 ÷ 平均未平仓量 > 此值时触发</span>
+                      </label>
+                      <Input
+                        v-model="openInterestConfig.threshold"
+                        type="number"
+                        placeholder="1.5"
+                        step="0.1"
+                      />
+                    </div>
+                    <div class="bg-white rounded-lg p-3 text-xs text-slate-600 border border-slate-200">
+                      <div class="flex items-start gap-2">
+                        <svg class="w-4 h-4 text-slate-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>未平仓量激增预示市场参与者增加，可能预示价格大幅波动</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 指标信号提醒配置 -->
+              <div v-if="formData.signal_type === 'indicator_alert'" class="p-6 bg-slate-50 rounded-lg border border-slate-200">
+                <div class="flex items-center gap-2 mb-4">
+                  <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                  </svg>
+                  <h3 class="text-base font-semibold text-slate-900">指标信号提醒设置</h3>
+                </div>
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                      指标类型
+                      <span class="text-xs text-slate-500 block">选择用于生成信号的技术指标</span>
+                    </label>
+                    <div class="grid grid-cols-3 gap-2">
+                      <button
+                        v-for="indicator in ['rsi', 'macd', 'ma_crossover']"
+                        :key="indicator"
+                        type="button"
+                        @click="indicatorAlertType = indicator"
+                        :class="[
+                          'p-3 border-2 rounded-lg text-sm font-medium transition-all',
+                          indicatorAlertType === indicator
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-slate-200 hover:border-slate-300 bg-white'
+                        ]"
+                      >
+                        {{ indicator === 'rsi' ? 'RSI' : indicator === 'macd' ? 'MACD' : 'MA交叉' }}
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- RSI 参数 -->
+                  <div v-if="indicatorAlertType === 'rsi'" class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-sm font-medium text-slate-700 mb-2">
+                        周期
+                        <span class="text-xs text-slate-500 block">推荐 14</span>
+                      </label>
+                      <Input
+                        v-model="rsiConfig.period"
+                        type="number"
+                        placeholder="14"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-slate-700 mb-2">
+                        超买阈值
+                        <span class="text-xs text-slate-500 block">推荐 70</span>
+                      </label>
+                      <Input
+                        v-model="rsiConfig.overbought"
+                        type="number"
+                        placeholder="70"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- MACD 参数 -->
+                  <div v-if="indicatorAlertType === 'macd'" class="grid grid-cols-3 gap-4">
+                    <div>
+                      <label class="block text-sm font-medium text-slate-700 mb-2">
+                        快线周期
+                        <span class="text-xs text-slate-500 block">推荐 12</span>
+                      </label>
+                      <Input
+                        v-model="macdConfig.fast"
+                        type="number"
+                        placeholder="12"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-slate-700 mb-2">
+                        慢线周期
+                        <span class="text-xs text-slate-500 block">推荐 26</span>
+                      </label>
+                      <Input
+                        v-model="macdConfig.slow"
+                        type="number"
+                        placeholder="26"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-slate-700 mb-2">
+                        信号线周期
+                        <span class="text-xs text-slate-500 block">推荐 9</span>
+                      </label>
+                      <Input
+                        v-model="macdConfig.signal"
+                        type="number"
+                        placeholder="9"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- MA交叉 参数 -->
+                  <div v-if="indicatorAlertType === 'ma_crossover'" class="grid grid-cols-2 gap-4">
+                    <div>
+                      <label class="block text-sm font-medium text-slate-700 mb-2">
+                        快线周期
+                        <span class="text-xs text-slate-500 block">推荐 7</span>
+                      </label>
+                      <Input
+                        v-model="maCrossConfig.fast"
+                        type="number"
+                        placeholder="7"
+                      />
+                    </div>
+                    <div>
+                      <label class="block text-sm font-medium text-slate-700 mb-2">
+                        慢线周期
+                        <span class="text-xs text-slate-500 block">推荐 25</span>
+                      </label>
+                      <Input
+                        v-model="maCrossConfig.slow"
+                        type="number"
+                        placeholder="25"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 波动性提醒配置 -->
+              <div v-if="formData.signal_type === 'volatility'" class="p-6 bg-slate-50 rounded-lg border border-slate-200">
+                <div class="flex items-center gap-2 mb-4">
+                  <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
+                  <h3 class="text-base font-semibold text-slate-900">波动性提醒设置</h3>
+                </div>
+                <div class="space-y-4">
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                      波动性阈值 (%)
+                      <span class="text-xs text-slate-500 ml-2">当价格波动超过此百分比时触发</span>
                     </label>
                     <Input
-                      v-model="volumeConfig.threshold"
+                      v-model.number="volatilityThreshold"
                       type="number"
-                      placeholder="2.0"
+                      placeholder="5"
                       step="0.1"
+                      min="0.1"
                     />
                   </div>
                   <div class="bg-white rounded-lg p-3 text-xs text-slate-600 border border-slate-200">
@@ -643,7 +849,7 @@
                       <svg class="w-4 h-4 text-slate-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
-                      <span>成交量异常放大通常预示价格即将发生较大波动</span>
+                      <span>高波动性通常预示市场机会或风险，适合短期交易者</span>
                     </div>
                   </div>
                 </div>
@@ -1093,7 +1299,7 @@
                   <div class="text-xs font-semibold text-slate-700 mb-3">信号类型</div>
                   <div class="flex items-center gap-2">
                     <div v-if="formData.signal_type" class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">
-                      {{ signalTypes?.find(t => t.value === formData.signal_type)?.label }}
+                      {{ getSignalTypeLabel(formData.signal_type) }}
                     </div>
                     <div v-else class="text-xs text-slate-400">未选择</div>
                   </div>
@@ -1174,11 +1380,55 @@
                     </div>
                   </div>
 
-                  <!-- 成交量 -->
+                  <!-- 指标信号提醒 -->
+                  <div v-if="formData.signal_type === 'indicator_alert'" class="space-y-2">
+                    <div class="flex justify-between text-xs">
+                      <span class="text-slate-500">指标类型</span>
+                      <span class="font-medium text-slate-900">
+                        {{ indicatorAlertType === 'rsi' ? 'RSI' : indicatorAlertType === 'macd' ? 'MACD' : 'MA交叉' }}
+                      </span>
+                    </div>
+                    <div v-if="indicatorAlertType === 'rsi'" class="flex justify-between text-xs">
+                      <span class="text-slate-500">周期/超买超卖</span>
+                      <span class="font-medium text-slate-900">
+                        {{ rsiConfig.period }}/{{ rsiConfig.oversold }}-{{ rsiConfig.overbought }}
+                      </span>
+                    </div>
+                    <div v-if="indicatorAlertType === 'macd'" class="flex justify-between text-xs">
+                      <span class="text-slate-500">参数</span>
+                      <span class="font-medium text-slate-900">
+                        {{ macdConfig.fast }}/{{ macdConfig.slow }}/{{ macdConfig.signal }}
+                      </span>
+                    </div>
+                    <div v-if="indicatorAlertType === 'ma_crossover'" class="flex justify-between text-xs">
+                      <span class="text-slate-500">快线/慢线周期</span>
+                      <span class="font-medium text-slate-900">
+                        {{ maCrossConfig.fast }}/{{ maCrossConfig.slow }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- 波动性提醒 -->
+                  <div v-if="formData.signal_type === 'volatility'" class="space-y-2">
+                    <div class="flex justify-between text-xs">
+                      <span class="text-slate-500">波动性阈值</span>
+                      <span class="font-medium text-slate-900">{{ volatilityThreshold }}%</span>
+                    </div>
+                  </div>
+
+                  <!-- 成交量/持仓提醒 -->
                   <div v-if="formData.signal_type === 'volume'" class="space-y-2">
                     <div class="flex justify-between text-xs">
-                      <span class="text-slate-500">倍数阈值</span>
-                      <span class="font-medium text-slate-900">{{ volumeConfig.multiplier || 2 }}x</span>
+                      <span class="text-slate-500">提醒类型</span>
+                      <span class="font-medium text-slate-900">
+                        {{ volumeAlertType === 'volume' ? '成交量' : '未平仓量' }}
+                      </span>
+                    </div>
+                    <div class="flex justify-between text-xs">
+                      <span class="text-slate-500">异常倍数</span>
+                      <span class="font-medium text-slate-900">
+                        {{ volumeAlertType === 'volume' ? volumeConfig.threshold : openInterestConfig.threshold }}x
+                      </span>
                     </div>
                   </div>
 
@@ -1328,10 +1578,6 @@ const PriceIcon = () => h('svg', { class: 'w-6 h-6', fill: 'none', stroke: 'curr
   h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-width': '2', d: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z' })
 ])
 
-const ChartBarIcon = () => h('svg', { class: 'w-6 h-6', fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' }, [
-  h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-width': '2', d: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' })
-])
-
 const TrendingUpIcon = () => h('svg', { class: 'w-6 h-6', fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' }, [
   h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-width': '2', d: 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6' })
 ])
@@ -1344,9 +1590,6 @@ const VolumeIcon = () => h('svg', { class: 'w-6 h-6', fill: 'none', stroke: 'cur
   h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-width': '2', d: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z' })
 ])
 
-const ChartSquareIcon = () => h('svg', { class: 'w-6 h-6', fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' }, [
-  h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-width': '2', d: 'M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z' })
-])
 const submitting = ref(false)
 const loading = ref(false)
 
@@ -1399,12 +1642,9 @@ const errors = ref({})
 
 const signalTypes = [
   { label: '价格提醒', value: 'price_alert', icon: PriceIcon },
-  { label: 'RSI指标', value: 'rsi', icon: ChartBarIcon },
-  { label: 'MA交叉', value: 'ma_crossover', icon: ChartLineIcon },
-  { label: '布林带', value: 'bollinger', icon: TrendingUpIcon },
-  { label: '成交量', value: 'volume', icon: VolumeIcon },
-  { label: 'MACD', value: 'macd', icon: ChartLineIcon },
-  { label: 'KDJ', value: 'kdj', icon: ChartSquareIcon }
+  { label: '指标信号提醒', value: 'indicator_alert', icon: ChartLineIcon },
+  { label: '波动性提醒', value: 'volatility', icon: TrendingUpIcon },
+  { label: '成交量/持仓提醒', value: 'volume', icon: VolumeIcon }
 ]
 
 // 检查间隔选项
@@ -1449,6 +1689,16 @@ const bollingerConfig = ref({
 const volumeConfig = ref({
   threshold: 2.0
 })
+
+const volumeAlertType = ref('volume')
+
+const openInterestConfig = ref({
+  threshold: 1.5
+})
+
+const volatilityThreshold = ref(5)
+
+const indicatorAlertType = ref('rsi')
 
 const macdConfig = ref({
   fast: 12,
@@ -1792,12 +2042,9 @@ const autoGeneratedName = computed(() => {
   if (formData.value.signal_type) {
     const signalTypeLabels = {
       price_alert: '价格提醒',
-      rsi: 'RSI指标',
-      ma_crossover: 'MA交叉',
-      bollinger: '布林带',
-      volume: '成交量',
-      macd: 'MACD',
-      kdj: 'KDJ'
+      indicator_alert: '指标信号提醒',
+      volatility: '波动性提醒',
+      volume: '成交量/持仓提醒'
     }
     parts.push(signalTypeLabels[formData.value.signal_type] || formData.value.signal_type)
   }
@@ -1824,18 +2071,22 @@ const autoGeneratedDescription = computed(() => {
     }
     const condition = conditionLabels[priceAlertConfig.value.condition] || priceAlertConfig.value.condition
     parts.push(`当${condition} $${priceAlertConfig.value.target_price} 时触发通知`)
-  } else if (formData.value.signal_type === 'rsi') {
-    parts.push(`使用 RSI(${rsiConfig.value.period}) 指标，超买阈值 ${rsiConfig.value.overbought}，超卖阈值 ${rsiConfig.value.oversold}`)
-  } else if (formData.value.signal_type === 'ma_crossover') {
-    parts.push(`监控 MA(${maCrossConfig.value.fast}) 和 MA(${maCrossConfig.value.slow}) 交叉信号`)
-  } else if (formData.value.signal_type === 'bollinger') {
-    parts.push(`使用布林带(${bollingerConfig.value.period}, ${bollingerConfig.value.std}) 指标`)
+  } else if (formData.value.signal_type === 'indicator_alert') {
+    if (indicatorAlertType.value === 'rsi') {
+      parts.push(`使用 RSI(${rsiConfig.value.period}) 指标，超买阈值 ${rsiConfig.value.overbought}，超卖阈值 ${rsiConfig.value.oversold}`)
+    } else if (indicatorAlertType.value === 'macd') {
+      parts.push(`使用 MACD(${macdConfig.value.fast}, ${macdConfig.value.slow}, ${macdConfig.value.signal}) 指标`)
+    } else if (indicatorAlertType.value === 'ma_crossover') {
+      parts.push(`监控 MA(${maCrossConfig.value.fast}) 和 MA(${maCrossConfig.value.slow}) 交叉信号`)
+    }
+  } else if (formData.value.signal_type === 'volatility') {
+    parts.push(`当价格波动超过 ${volatilityThreshold.value}% 时触发通知`)
   } else if (formData.value.signal_type === 'volume') {
-    parts.push(`当成交量超过平均值 ${volumeConfig.value.threshold} 倍时触发`)
-  } else if (formData.value.signal_type === 'macd') {
-    parts.push(`使用 MACD(${macdConfig.value.fast}, ${macdConfig.value.slow}, ${macdConfig.value.signal}) 指标`)
-  } else if (formData.value.signal_type === 'kdj') {
-    parts.push(`使用 KDJ(${kdjConfig.value.period}) 指标，超买阈值 ${kdjConfig.value.overbought}，超卖阈值 ${kdjConfig.value.oversold}`)
+    if (volumeAlertType.value === 'volume') {
+      parts.push(`当成交量超过平均值 ${volumeConfig.value.threshold} 倍时触发`)
+    } else if (volumeAlertType.value === 'open_interest') {
+      parts.push(`当未平仓量超过平均值 ${openInterestConfig.value.threshold} 倍时触发`)
+    }
   }
 
   // 检查间隔
@@ -1861,6 +2112,17 @@ const useAutoGeneratedName = () => {
 // 使用自动生成的描述
 const useAutoGeneratedDescription = () => {
   formData.value.description = autoGeneratedDescription.value
+}
+
+// 获取信号类型的中文标签
+const getSignalTypeLabel = (signalType) => {
+  const signalTypeMap = {
+    'price_alert': '价格提醒',
+    'indicator_alert': '指标信号提醒',
+    'volatility': '波动性提醒',
+    'volume': '成交量/持仓提醒'
+  }
+  return signalTypeMap[signalType] || signalType
 }
 
 // 加载交易所列表和机器人数据
@@ -2060,7 +2322,7 @@ const handleSubmit = async () => {
         }
 
         config = {
-          ...config,  // 保留 use_advanced_analysis, alert_mode, cooldown_minutes
+          ...config,
           signal_type: 'price_alert',
           price_alert: {
             condition: priceAlertConfig.value.condition,
@@ -2069,77 +2331,63 @@ const handleSubmit = async () => {
         }
         break
 
-      case 'rsi':
+      case 'indicator_alert':
+        let indicatorConfig = {}
+        if (indicatorAlertType.value === 'rsi') {
+          indicatorConfig = {
+            indicator_type: 'rsi',
+            period: rsiConfig.value.period,
+            overbought: rsiConfig.value.overbought,
+            oversold: rsiConfig.value.oversold
+          }
+        } else if (indicatorAlertType.value === 'macd') {
+          indicatorConfig = {
+            indicator_type: 'macd',
+            fast: macdConfig.value.fast,
+            slow: macdConfig.value.slow,
+            signal: macdConfig.value.signal
+          }
+        } else if (indicatorAlertType.value === 'ma_crossover') {
+          indicatorConfig = {
+            indicator_type: 'ma_crossover',
+            fast: maCrossConfig.value.fast,
+            slow: maCrossConfig.value.slow
+          }
+        }
         config = {
           ...config,
-          signal_type: 'rsi',
-          rsi: {
-            enabled: true,
-            period: parseInt(rsiConfig.value.period) || 14,
-            overbought: parseInt(rsiConfig.value.overbought) || 70,
-            oversold: parseInt(rsiConfig.value.oversold) || 30
-          }
+          signal_type: 'indicator_alert',
+          indicator_alert: indicatorConfig
         }
         break
 
-      case 'ma_crossover':
+      case 'volatility':
         config = {
           ...config,
-          signal_type: 'ma_crossover',
-          ma_cross: {
-            enabled: true,
-            fast: parseInt(maCrossConfig.value.fast) || 7,
-            slow: parseInt(maCrossConfig.value.slow) || 25
-          }
-        }
-        break
-
-      case 'bollinger':
-        config = {
-          ...config,
-          signal_type: 'bollinger',
-          bollinger: {
-            enabled: true,
-            period: parseInt(bollingerConfig.value.period) || 20,
-            std: parseFloat(bollingerConfig.value.std) || 2
+          signal_type: 'volatility',
+          volatility: {
+            threshold_percentage: parseFloat(volatilityThreshold.value) || 5
           }
         }
         break
 
       case 'volume':
+        let volumeAlertConfig = {}
+        if (volumeAlertType.value === 'volume') {
+          volumeAlertConfig = {
+            type: 'volume',
+            threshold: parseFloat(volumeConfig.value.threshold) || 2.0
+          }
+        } else if (volumeAlertType.value === 'open_interest') {
+          volumeAlertConfig = {
+            type: 'open_interest',
+            threshold: parseFloat(openInterestConfig.value.threshold) || 1.5
+          }
+        }
         config = {
           ...config,
           signal_type: 'volume',
-          volume: {
-            enabled: true,
-            threshold: parseFloat(volumeConfig.value.threshold) || 2.0
-          }
-        }
-        break
-
-      case 'macd':
-        config = {
-          ...config,
-          signal_type: 'macd',
-          macd: {
-            enabled: true,
-            fast: parseInt(macdConfig.value.fast) || 12,
-            slow: parseInt(macdConfig.value.slow) || 26,
-            signal: parseInt(macdConfig.value.signal) || 9
-          }
-        }
-        break
-
-      case 'kdj':
-        config = {
-          ...config,
-          signal_type: 'kdj',
-          kdj: {
-            enabled: true,
-            period: parseInt(kdjConfig.value.period) || 9,
-            overbought: parseInt(kdjConfig.value.overbought) || 80,
-            oversold: parseInt(kdjConfig.value.oversold) || 20
-          }
+          volume: volumeAlertConfig
         }
         break
     }

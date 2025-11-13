@@ -73,39 +73,39 @@
       <div class="p-6">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-          <!-- 止盈比例 -->
+          <!-- 止损百分比 -->
           <div class="bg-white rounded-lg border border-gray-200 p-5 hover:border-gray-300 transition-colors">
             <div class="flex items-start justify-between mb-4">
               <div class="flex-1">
                 <label class="text-sm font-semibold text-gray-900 flex items-center">
                   <svg class="w-4 h-4 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/>
                   </svg>
-                  止盈比例
+                  止损百分比
                 </label>
-                <p class="text-xs text-gray-500 mt-1 ml-6">触发自动止盈的盈利目标</p>
+                <p class="text-xs text-gray-500 mt-1 ml-6">触发自动止损的亏损百分比</p>
               </div>
               <div class="flex items-center space-x-2">
                 <input
-                  v-model.number="tradingPreferences.takeProfit"
+                  v-model.number="tradingPreferences.stopLoss"
                   type="number"
-                  min="5"
-                  max="100"
+                  min="1"
+                  max="50"
                   class="w-16 px-2 py-1 text-sm font-bold text-gray-900 bg-gray-50 border border-gray-300 rounded text-right focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
                 />
                 <span class="text-sm font-medium text-gray-600">%</span>
               </div>
             </div>
             <input
-              v-model.number="tradingPreferences.takeProfit"
+              v-model.number="tradingPreferences.stopLoss"
               type="range"
-              min="5"
-              max="100"
+              min="1"
+              max="50"
               class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-gray"
             />
             <div class="flex justify-between text-xs text-gray-400 mt-2">
-              <span>5%</span>
-              <span>100%</span>
+              <span>1%</span>
+              <span>50%</span>
             </div>
           </div>
 
@@ -183,6 +183,44 @@
             </div>
           </div>
 
+          <!-- 最大头寸大小 -->
+          <div class="bg-white rounded-lg border border-gray-200 p-5 hover:border-gray-300 transition-colors">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex-1">
+                <label class="text-sm font-semibold text-gray-900 flex items-center">
+                  <svg class="w-4 h-4 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  最大头寸大小
+                </label>
+                <p class="text-xs text-gray-500 mt-1 ml-6">单个机器人的最大仓位金额</p>
+              </div>
+              <div class="flex items-center space-x-2">
+                <input
+                  v-model.number="tradingPreferences.maxPositionSize"
+                  type="number"
+                  min="1000"
+                  max="50000"
+                  step="1000"
+                  class="w-20 px-2 py-1 text-sm font-bold text-gray-900 bg-gray-50 border border-gray-300 rounded text-right focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                />
+                <span class="text-xs font-medium text-gray-600">USDT</span>
+              </div>
+            </div>
+            <input
+              v-model.number="tradingPreferences.maxPositionSize"
+              type="range"
+              min="1000"
+              max="50000"
+              step="1000"
+              class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-gray"
+            />
+            <div class="flex justify-between text-xs text-gray-400 mt-2">
+              <span>1000</span>
+              <span>50000</span>
+            </div>
+          </div>
+
           <!-- 滑点容忍度 -->
           <div class="bg-white rounded-lg border border-gray-200 p-5 hover:border-gray-300 transition-colors">
             <div class="flex items-start justify-between mb-4">
@@ -254,6 +292,114 @@
             <div class="flex justify-between text-xs text-gray-400 mt-2">
               <span>1次</span>
               <span>20次</span>
+            </div>
+          </div>
+
+          <!-- 最大杠杆倍数 -->
+          <div class="bg-white rounded-lg border border-gray-200 p-5 hover:border-gray-300 transition-colors">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex-1">
+                <label class="text-sm font-semibold text-gray-900 flex items-center">
+                  <svg class="w-4 h-4 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                  </svg>
+                  最大杠杆倍数
+                </label>
+                <p class="text-xs text-gray-500 mt-1 ml-6">允许使用的最大杠杆倍数</p>
+              </div>
+              <div class="flex items-center space-x-2">
+                <input
+                  v-model.number="tradingPreferences.maxLeverage"
+                  type="number"
+                  min="1"
+                  max="125"
+                  class="w-16 px-2 py-1 text-sm font-bold text-gray-900 bg-gray-50 border border-gray-300 rounded text-right focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                />
+                <span class="text-sm font-medium text-gray-600">x</span>
+              </div>
+            </div>
+            <input
+              v-model.number="tradingPreferences.maxLeverage"
+              type="range"
+              min="1"
+              max="125"
+              class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-gray"
+            />
+            <div class="flex justify-between text-xs text-gray-400 mt-2">
+              <span>1x</span>
+              <span>125x</span>
+            </div>
+          </div>
+
+          <!-- 熔断机制启用 -->
+          <div class="bg-white rounded-lg border border-gray-200 p-5 hover:border-gray-300 transition-colors">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex-1">
+                <label class="text-sm font-semibold text-gray-900 flex items-center">
+                  <svg class="w-4 h-4 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4v2m0 5v1m7-13a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  熔断机制
+                </label>
+                <p class="text-xs text-gray-500 mt-1 ml-6">当亏损达到限额时自动停止交易</p>
+              </div>
+              <div class="flex items-center space-x-2">
+                <button
+                  @click="tradingPreferences.circuitBreakerEnabled = !tradingPreferences.circuitBreakerEnabled"
+                  :class="[
+                    'relative inline-flex h-6 w-11 items-center rounded-full transition-colors',
+                    tradingPreferences.circuitBreakerEnabled ? 'bg-gray-900' : 'bg-gray-300'
+                  ]"
+                >
+                  <span
+                    :class="[
+                      'inline-block h-4 w-4 transform rounded-full bg-white transition-transform',
+                      tradingPreferences.circuitBreakerEnabled ? 'translate-x-6' : 'translate-x-1'
+                    ]"
+                  />
+                </button>
+                <span class="text-sm font-medium text-gray-600">{{ tradingPreferences.circuitBreakerEnabled ? '启用' : '禁用' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- 熔断触发亏损 -->
+          <div class="bg-white rounded-lg border border-gray-200 p-5 hover:border-gray-300 transition-colors">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex-1">
+                <label class="text-sm font-semibold text-gray-900 flex items-center">
+                  <svg class="w-4 h-4 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  熔断触发亏损
+                </label>
+                <p class="text-xs text-gray-500 mt-1 ml-6">亏损达到此金额时触发熔断</p>
+              </div>
+              <div class="flex items-center space-x-2">
+                <input
+                  v-model.number="tradingPreferences.circuitBreakerLoss"
+                  type="number"
+                  min="500"
+                  max="10000"
+                  step="500"
+                  :disabled="!tradingPreferences.circuitBreakerEnabled"
+                  class="w-20 px-2 py-1 text-sm font-bold text-gray-900 bg-gray-50 border border-gray-300 rounded text-right focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                />
+                <span class="text-xs font-medium text-gray-600">USDT</span>
+              </div>
+            </div>
+            <input
+              v-model.number="tradingPreferences.circuitBreakerLoss"
+              type="range"
+              min="500"
+              max="10000"
+              step="500"
+              :disabled="!tradingPreferences.circuitBreakerEnabled"
+              class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-gray disabled:opacity-50 disabled:cursor-not-allowed"
+            />
+            <div class="flex justify-between text-xs text-gray-400 mt-2">
+              <span>500</span>
+              <span>10000</span>
             </div>
           </div>
         </div>

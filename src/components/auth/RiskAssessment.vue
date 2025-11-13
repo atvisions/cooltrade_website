@@ -686,7 +686,27 @@ const completeAssessment = async () => {
     )
 
     if (response.status === 'success') {
-      notification.success('风险偏好设置已保存，交易参数已自动更新', '保存成功')
+      notification.success('风险偏好设置已保存，系统风控参数已自动更新', '保存成功')
+
+      // 🆕 显示推荐的系统风控参数
+      const riskProfile = response.data?.risk_profile
+      if (riskProfile) {
+        const riskLevel = riskProfile.risk_level
+        const recommendedConfig = getRecommendedRiskConfig(riskLevel)
+
+        console.log('✅ 系统风控参数已自动配置:')
+        console.log('  风险等级:', riskLevel)
+        console.log('  最小建仓金额:', recommendedConfig.min_position_size, 'USDT')
+        console.log('  最大总仓位:', recommendedConfig.max_total_position, 'USDT')
+        console.log('  单个机器人最大仓位:', recommendedConfig.max_position_per_bot, 'USDT')
+        console.log('  最大杠杆倍数:', recommendedConfig.max_leverage, 'x')
+        console.log('  最大持仓数:', recommendedConfig.max_open_positions, '个')
+        console.log('  日内最大交易次数:', recommendedConfig.max_trades_per_day, '次')
+        console.log('  日内最大亏损:', recommendedConfig.max_daily_loss, 'USDT')
+        console.log('  最大回撤百分比:', recommendedConfig.max_drawdown_percentage, '%')
+        console.log('  熔断机制启用:', recommendedConfig.circuit_breaker_enabled)
+        console.log('  熔断触发亏损:', recommendedConfig.circuit_breaker_loss, 'USDT')
+      }
 
       // 直接跳转到市场推荐页面
       setTimeout(() => {
@@ -700,6 +720,49 @@ const completeAssessment = async () => {
     console.error('保存风险评估失败:', error)
     notification.error(error.message || '保存失败，请重试', '错误')
   }
+}
+
+// 🆕 根据风险等级获取推荐的系统风控配置
+const getRecommendedRiskConfig = (riskLevel) => {
+  const configs = {
+    'conservative': {
+      min_position_size: 100,
+      max_total_position: 5000,
+      max_position_per_bot: 2000,
+      max_leverage: 1,
+      max_daily_loss: 500,
+      max_drawdown_percentage: 20,
+      max_open_positions: 3,
+      max_trades_per_day: 10,
+      circuit_breaker_enabled: true,
+      circuit_breaker_loss: 1000
+    },
+    'moderate': {
+      min_position_size: 50,
+      max_total_position: 10000,
+      max_position_per_bot: 3000,
+      max_leverage: 3,
+      max_daily_loss: 1000,
+      max_drawdown_percentage: 30,
+      max_open_positions: 5,
+      max_trades_per_day: 20,
+      circuit_breaker_enabled: true,
+      circuit_breaker_loss: 2000
+    },
+    'aggressive': {
+      min_position_size: 50,
+      max_total_position: 20000,
+      max_position_per_bot: 5000,
+      max_leverage: 5,
+      max_daily_loss: 2000,
+      max_drawdown_percentage: 40,
+      max_open_positions: 10,
+      max_trades_per_day: 50,
+      circuit_breaker_enabled: true,
+      circuit_breaker_loss: 4000
+    }
+  }
+  return configs[riskLevel] || configs['moderate']
 }
 
 // 组件挂载时加载现有评估

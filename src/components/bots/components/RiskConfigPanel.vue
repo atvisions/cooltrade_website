@@ -103,11 +103,24 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-slate-700 mb-2">
-                  最大持仓数量
+                  单个机器人最大仓位 (USDT)
                 </label>
                 <input
                   type="number"
-                  v-model.number="formData.max_open_positions"
+                  v-model.number="formData.max_position_per_bot"
+                  min="0"
+                  step="10"
+                  class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-2">
+                  最大杠杆倍数
+                </label>
+                <input
+                  type="number"
+                  v-model.number="formData.max_leverage"
                   min="1"
                   class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
@@ -115,26 +128,12 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-slate-700 mb-2">
-                  单笔最大仓位 (USDT)
+                  最大持仓数量
                 </label>
                 <input
                   type="number"
-                  v-model.number="formData.max_position_per_trade"
-                  min="0"
-                  step="10"
-                  class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">
-                  单币种最大仓位 (USDT)
-                </label>
-                <input
-                  type="number"
-                  v-model.number="formData.max_position_per_symbol"
-                  min="0"
-                  step="10"
+                  v-model.number="formData.max_open_positions"
+                  min="1"
                   class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
@@ -158,18 +157,6 @@
                 <input
                   type="number"
                   v-model.number="formData.max_trades_per_day"
-                  min="1"
-                  class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">
-                  每小时最大交易次数
-                </label>
-                <input
-                  type="number"
-                  v-model.number="formData.max_trades_per_hour"
                   min="1"
                   class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
@@ -202,13 +189,13 @@
               </div>
               <div>
                 <label class="block text-sm font-medium text-slate-700 mb-2">
-                  单笔最大亏损 (USDT)
+                  最大回撤百分比 (%)
                 </label>
                 <input
                   type="number"
-                  v-model.number="formData.max_loss_per_trade"
+                  v-model.number="formData.max_drawdown_percentage"
                   min="0"
-                  step="10"
+                  step="0.1"
                   class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   required
                 />
@@ -224,16 +211,31 @@
               </svg>
               熔断机制
             </h3>
-            <div class="flex items-center gap-3 p-4 bg-slate-50 rounded-lg">
-              <input
-                type="checkbox"
-                id="enable_circuit_breaker"
-                v-model="formData.enable_circuit_breaker"
-                class="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-              />
-              <label for="enable_circuit_breaker" class="text-sm text-slate-700 cursor-pointer">
-                启用熔断机制（当触发风控条件时自动暂停所有交易）
-              </label>
+            <div class="space-y-4">
+              <div class="flex items-center gap-3 p-4 bg-slate-50 rounded-lg">
+                <input
+                  type="checkbox"
+                  id="circuit_breaker_enabled"
+                  v-model="formData.circuit_breaker_enabled"
+                  class="w-5 h-5 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
+                />
+                <label for="circuit_breaker_enabled" class="text-sm text-slate-700 cursor-pointer">
+                  启用熔断机制（当触发风控条件时自动暂停所有交易）
+                </label>
+              </div>
+              <div v-if="formData.circuit_breaker_enabled">
+                <label class="block text-sm font-medium text-slate-700 mb-2">
+                  熔断触发亏损 (USDT)
+                </label>
+                <input
+                  type="number"
+                  v-model.number="formData.circuit_breaker_loss"
+                  min="0"
+                  step="10"
+                  class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -286,15 +288,19 @@ const resetLoading = ref(false)
 const config = ref(null)
 
 const formData = ref({
+  // 仓位限制
   max_total_position: 10000,
+  max_position_per_bot: 2000,
+  max_leverage: 1,
+  // 交易限制
   max_open_positions: 5,
-  max_position_per_trade: 1000,
-  max_position_per_symbol: 2000,
   max_trades_per_day: 50,
-  max_trades_per_hour: 10,
+  // 亏损限制
   max_daily_loss: 500,
-  max_loss_per_trade: 100,
-  enable_circuit_breaker: true
+  max_drawdown_percentage: 20,
+  // 熔断机制
+  circuit_breaker_enabled: true,
+  circuit_breaker_loss: 1000
 })
 
 // 加载配置

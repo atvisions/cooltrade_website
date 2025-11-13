@@ -842,12 +842,9 @@ const statusOptionsWithAll = [
 
 const signalTypeOptions = [
   { label: '价格提醒', value: 'price_alert' },
-  { label: 'RSI指标', value: 'rsi' },
-  { label: 'MA交叉', value: 'ma_cross' },
-  { label: '布林带', value: 'bollinger' },
-  { label: '成交量', value: 'volume' },
-  { label: 'MACD', value: 'macd' },
-  { label: 'KDJ', value: 'kdj' }
+  { label: '指标信号提醒', value: 'indicator_alert' },
+  { label: '波动性提醒', value: 'volatility' },
+  { label: '成交量/持仓提醒', value: 'volume' }
 ]
 
 const signalTypeOptionsWithAll = [
@@ -880,10 +877,7 @@ const filteredBots = computed(() => {
       if (!bot.signal_type) {
         return false
       }
-
-      // MA交叉的兼容性处理：后端是 ma_crossover，前端筛选器是 ma_cross
-      const botSignalType = bot.signal_type === 'ma_crossover' ? 'ma_cross' : bot.signal_type
-      return botSignalType === filters.value.signalType
+      return bot.signal_type === filters.value.signalType
     })
   }
 
@@ -1172,10 +1166,12 @@ const getStatusLabel = (status) => {
 const getSignalTypeLabel = (signalType) => {
   const labels = {
     'price_alert': '价格提醒',
+    'indicator_alert': '指标信号提醒',
+    'volatility': '波动性提醒',
+    'volume': '成交量/持仓提醒',
     'rsi': 'RSI指标',
     'ma_crossover': 'MA交叉',
     'bollinger': '布林带',
-    'volume': '成交量',
     'macd': 'MACD',
     'kdj': 'KDJ',
     'custom': '自定义'

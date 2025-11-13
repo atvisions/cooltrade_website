@@ -265,6 +265,7 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import Header from '../../common/Header.vue'
 import UserSidebar from '../../common/UserSidebar.vue'
 import Button from '../../common/ui/Button.vue'
@@ -272,6 +273,9 @@ import InputNumber from 'primevue/inputnumber'
 import Checkbox from 'primevue/checkbox'
 import { botAPI } from '../../../utils/api'
 import { showSuccess, showError } from '../../../utils/notification'
+
+const router = useRouter()
+const route = useRoute()
 
 // 状态
 const loading = ref(false)
@@ -295,8 +299,16 @@ const loadConfig = async () => {
   try {
     loading.value = true
     const response = await botAPI.getRiskConfig()
-    config.value = response.data || response
-    
+
+    console.log('📊 API 原始响应:', response)
+    console.log('📊 response.data:', response.data)
+    console.log('📊 response.data?.data:', response.data?.data)
+
+    // 处理 API 返回格式：{ success: true, data: {...} }
+    config.value = response.data?.data || response.data || response
+
+    console.log('✅ 风控配置已加载:', config.value)
+
     // 更新表单数据
     formData.value = {
       max_total_position: parseFloat(config.value.max_total_position),
@@ -321,11 +333,28 @@ const loadConfig = async () => {
 const handleSubmit = async () => {
   try {
     submitting.value = true
-    await botAPI.updateRiskConfig(formData.value)
+
+    // 获取配置 ID（从 config 对象中获取）
+    const configId = config.value?.id
+    if (!configId) {
+      showError('无法获取风控配置 ID')
+      return
+    }
+
+    console.log('📤 更新风控配置:', { id: configId, data: formData.value })
+    await botAPI.updateRiskConfig(configId, formData.value)
+    console.log('✅ 风控配置已更新')
     showSuccess('风控配置已更新')
-    await loadConfig()
+
+    // 获取返回页面（从 query 参数或默认返回创建页面）
+    const returnUrl = route.query.return || '/bots/create'
+
+    // 延迟跳转，让用户看到成功提示
+    setTimeout(() => {
+      router.push(returnUrl)
+    }, 500)
   } catch (error) {
-    console.error('更新失败:', error)
+    console.error('❌ 更新失败:', error)
     showError(error.message || '更新失败')
   } finally {
     submitting.value = false

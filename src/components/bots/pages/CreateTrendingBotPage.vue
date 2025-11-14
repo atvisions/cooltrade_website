@@ -182,7 +182,7 @@
                   <div class="relative">
                     <ListboxButton class="relative w-full cursor-default rounded-xl bg-slate-50 py-3 pl-4 pr-10 text-left border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                       <span class="block truncate text-slate-700">
-                        {{ signalBots.find(bot => bot.id === formData.signal_bot)?.name || '选择信号机器人' }}
+                        {{ signalBots.find(bot => bot.signal_bot_id === formData.signal_bot)?.name || '选择信号机器人' }}
                       </span>
                       <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
                         <ChevronUpDownIcon class="h-5 w-5 text-slate-400" aria-hidden="true" />
@@ -193,8 +193,8 @@
                         <ListboxOption
                           v-slot="{ active, selected }"
                           v-for="bot in signalBots"
-                          :key="bot.id"
-                          :value="bot.id"
+                          :key="bot.signal_bot_id"
+                          :value="bot.signal_bot_id"
                           as="template"
                         >
                           <li :class="[active ? 'bg-slate-100 text-slate-900' : 'text-slate-700', 'relative cursor-default select-none py-3 pl-4 pr-4']">
@@ -206,7 +206,9 @@
                               </div>
                               <div class="flex-1 min-w-0">
                                 <div :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">{{ bot.name }}</div>
-                                <div class="text-xs text-slate-500 truncate">{{ bot.exchange_name }} • {{ bot.token }}/{{ bot.trading_pair }}</div>
+                                <div class="text-xs text-slate-500 truncate">
+                                  {{ bot.exchange_display || bot.exchange_name }} • {{ bot.token_symbol || bot.token?.symbol }}/{{ bot.trading_pair }}
+                                </div>
                               </div>
                             </div>
                             <span v-if="selected" class="absolute inset-y-0 right-0 flex items-center pr-3 text-blue-600">
@@ -1530,7 +1532,7 @@
                     <div class="flex justify-between text-xs">
                       <span class="text-slate-500">信号机器人</span>
                       <span class="font-medium text-slate-900">
-                        {{ signalBots.find(b => b.id === formData.signal_bot)?.name || '-' }}
+                        {{ signalBots.find(b => b.signal_bot_id === formData.signal_bot)?.name || '-' }}
                       </span>
                     </div>
                     <div class="flex justify-between text-xs">
@@ -1826,16 +1828,34 @@ const loadUserRiskConfig = async () => {
 
     // 处理 API 返回格式：{ success: true, data: {...} }
     // 优先级：response.data.data > response.data > response
+    let config = null
     if (response.data?.data) {
-      userRiskConfig.value = response.data.data
+      config = response.data.data
     } else if (response.data) {
-      userRiskConfig.value = response.data
+      config = response.data
     } else {
-      userRiskConfig.value = response
+      config = response
+    }
+
+    // 确保所有数字字段都转换为 Number 类型，避免字符串比较问题
+    if (config) {
+      userRiskConfig.value = {
+        ...config,
+        max_total_position: Number(config.max_total_position),
+        max_position_per_bot: Number(config.max_position_per_bot),
+        max_leverage: Number(config.max_leverage),
+        max_daily_loss: Number(config.max_daily_loss),
+        max_drawdown_percentage: Number(config.max_drawdown_percentage),
+        max_open_positions: Number(config.max_open_positions),
+        max_trades_per_day: Number(config.max_trades_per_day),
+        circuit_breaker_loss: Number(config.circuit_breaker_loss),
+      }
     }
 
     console.log('✅ 系统风控配置已加载:', userRiskConfig.value)
-    console.log('✅ max_leverage:', userRiskConfig.value?.max_leverage)
+    console.log('✅ max_leverage:', userRiskConfig.value?.max_leverage, typeof userRiskConfig.value?.max_leverage)
+    console.log('✅ max_daily_loss:', userRiskConfig.value?.max_daily_loss, typeof userRiskConfig.value?.max_daily_loss)
+    console.log('✅ max_position_per_bot:', userRiskConfig.value?.max_position_per_bot, typeof userRiskConfig.value?.max_position_per_bot)
   } catch (error) {
     console.error('❌ 加载系统风控配置失败:', error)
     console.error('❌ 错误详情:', error.message)
@@ -1849,15 +1869,40 @@ const loadUserRiskConfig = async () => {
 const loadSignalBots = async () => {
   try {
     console.log('开始加载信号机器人列表...')
+    // 不过滤状态，加载所有信号机器人（包括已停止的）
+    // 这样编辑时能找到之前选择的信号机器人
+    // 加载所有页面的数据（设置 page_size 为 100）
     const response = await botAPI.getBotList({
       bot_type: 'signal',
-      status: 'running'  // 只显示运行中的信号机器人
+      page_size: 100  // 加载更多数据
     })
     console.log('信号机器人API响应:', response)
+    console.log('   - count:', response.count)
+    console.log('   - results 数量:', response.results?.length)
+    console.log('   - results:', response.results)
 
     const data = response.results || response.data || response
-    signalBots.value = Array.isArray(data) ? data.filter(bot => bot.bot_type === 'signal') : []
-    console.log('加载的信号机器人数量:', signalBots.value.length, signalBots.value)
+    const bots = Array.isArray(data) ? data.filter(bot => bot.bot_type === 'signal') : []
+
+    // 转换：后端返回的是 TradingBot 对象，signal_bot 字段是 SignalBot ID
+    signalBots.value = bots.map(bot => {
+      // signal_bot 字段是 SignalBot ID（数字）
+      const signalBotId = bot.signal_bot
+
+      return {
+        ...bot,
+        signal_bot_id: signalBotId,  // SignalBot 的 ID
+        trading_bot_id: bot.id  // TradingBot 的 ID
+      }
+    })
+
+    console.log('加载的信号机器人数量:', signalBots.value.length)
+    console.log('信号机器人列表:', signalBots.value.map(bot => ({
+      id: bot.id,
+      signal_bot_id: bot.signal_bot_id,
+      trading_bot_id: bot.trading_bot_id,
+      name: bot.name
+    })))
   } catch (error) {
     console.error('加载信号机器人失败:', error)
     signalBots.value = []
@@ -2134,8 +2179,14 @@ const isFormValid = computed(() => {
 
   if (!hasBasicFields) return false
 
-  // 趋势跟踪机器人只做信号触发，必须选择信号机器人
-  return !!formData.value.signal_bot
+  // 创建模式下，信号机器人必填
+  // 编辑模式下，信号机器人可选（允许用户更新其他参数）
+  if (isEditMode.value) {
+    return true
+  } else {
+    // 创建模式下，信号机器人必填
+    return !!formData.value.signal_bot
+  }
 })
 
 // 获取系统风控的止损百分比
@@ -2394,7 +2445,11 @@ const isFieldExceedingLimit = (fieldName) => {
 
   switch (fieldName) {
     case 'max_position_size':
-      return formData.value.max_position_size > userRiskConfig.value.max_position_per_bot
+      const positionExceeds = formData.value.max_position_size > userRiskConfig.value.max_position_per_bot
+      if (positionExceeds) {
+        console.log(`🔍 [max_position_size] 超过限制: ${formData.value.max_position_size} > ${userRiskConfig.value.max_position_per_bot}`)
+      }
+      return positionExceeds
     case 'leverage':
       return formData.value.leverage > userRiskConfig.value.max_leverage
     case 'max_concurrent_positions':
@@ -2404,7 +2459,11 @@ const isFieldExceedingLimit = (fieldName) => {
     case 'max_trades_per_day':
       return formData.value.max_trades_per_day && formData.value.max_trades_per_day > userRiskConfig.value.max_trades_per_day
     case 'max_daily_loss':
-      return formData.value.max_daily_loss && formData.value.max_daily_loss > userRiskConfig.value.max_daily_loss
+      const lossExceeds = formData.value.max_daily_loss && formData.value.max_daily_loss > userRiskConfig.value.max_daily_loss
+      if (lossExceeds) {
+        console.log(`🔍 [max_daily_loss] 超过限制: ${formData.value.max_daily_loss} > ${userRiskConfig.value.max_daily_loss}`)
+      }
+      return lossExceeds
     default:
       return false
   }
@@ -2439,8 +2498,8 @@ const handleSubmit = async () => {
     return
   }
 
-  // 趋势跟踪机器人必须选择信号机器人
-  if (!formData.value.signal_bot) {
+  // 创建模式下，趋势跟踪机器人必须选择信号机器人
+  if (!isEditMode.value && !formData.value.signal_bot) {
     showError('请选择信号机器人')
     return
   }
@@ -2516,6 +2575,8 @@ const handleSubmit = async () => {
       max_position_size: formData.value.max_position_size,
       leverage: formData.value.leverage,
       max_concurrent_positions: formData.value.max_concurrent_positions,
+      max_trades_per_day: formData.value.max_trades_per_day,
+      max_daily_loss: formData.value.max_daily_loss,
       stop_loss_percentage: formData.value.stop_loss_percentage,
       take_profit_percentage: takeProfitMode.value === 'single' ? formData.value.take_profit_percentage : null,
       take_profit_targets: takeProfitMode.value === 'multiple' ? formData.value.take_profit_targets : [],
@@ -2555,6 +2616,47 @@ const handleSubmit = async () => {
       config: formData.value.config
     }
 
+    // 打印发送的数据用于调试
+    console.log('📤 发送的数据:')
+    console.log('   基础信息:', {
+      name: submitData.name,
+      exchange_api: submitData.exchange_api,
+      trading_pair: submitData.trading_pair,
+      market_type: submitData.market_type,
+      signal_bot: submitData.signal_bot
+    })
+    console.log('   风险管理:', {
+      max_position_size: submitData.max_position_size,
+      stop_loss_percentage: submitData.stop_loss_percentage,
+      take_profit_percentage: submitData.take_profit_percentage
+    })
+    console.log('   执行策略:', {
+      entry_mode: submitData.entry_mode,
+      entry_price_offset: submitData.entry_price_offset,
+      slippage_limit: submitData.slippage_limit,
+      order_retry: submitData.order_retry,
+      order_expire_time: submitData.order_expire_time
+    })
+    console.log('   仓位管理:', {
+      position_size_type: submitData.position_size_type,
+      position_size_value: submitData.position_size_value,
+      auto_reverse: submitData.auto_reverse,
+      max_position_time: submitData.max_position_time
+    })
+    console.log('   高级功能:', {
+      funding_fee_check: submitData.funding_fee_check,
+      pause_on_high_volatility: submitData.pause_on_high_volatility,
+      volatility_threshold: submitData.volatility_threshold,
+      allow_partial_close: submitData.allow_partial_close,
+      smart_exit: submitData.smart_exit
+    })
+    console.log('   通知设置:', {
+      alert_channels: submitData.alert_channels,
+      alert_on_entry: submitData.alert_on_entry,
+      alert_on_exit: submitData.alert_on_exit,
+      alert_on_error: submitData.alert_on_error
+    })
+
     let createdBot = null
     if (isEditMode.value) {
       await botAPI.updateBot(botId.value, submitData)
@@ -2568,12 +2670,16 @@ const handleSubmit = async () => {
     // 如果是信号触发模式，创建 SignalTrigger
     if (formData.value.trading_mode === 'signal_trigger' && formData.value.signal_bot && createdBot) {
       try {
-        await botAPI.createTrigger({
-          signal_bot: formData.value.signal_bot,
-          trend_bot: createdBot.id,
-          is_active: true
-        })
-        console.log('信号触发器创建成功')
+        // 获取选中的信号机器人的 TradingBot ID
+        const selectedSignalBot = signalBots.value.find(sb => sb.signal_bot_id === formData.value.signal_bot)
+        if (selectedSignalBot) {
+          await botAPI.createTrigger({
+            signal_bot: selectedSignalBot.trading_bot_id,  // 使用 TradingBot ID
+            trend_bot: createdBot.id,
+            is_active: true
+          })
+          console.log('信号触发器创建成功')
+        }
       } catch (error) {
         console.error('创建信号触发器失败:', error)
         showError('机器人创建成功，但信号触发器创建失败')
@@ -2621,29 +2727,35 @@ const navigateToRiskPreference = () => {
 
 // 监听交易所 API 变化，重新加载交易对
 watch(() => selectedExchangeAPI.value, () => {
-  if (selectedExchangeAPI.value) {
+  if (selectedExchangeAPI.value && selectedExchangeAPI.value.id) {
     loadTradingPairs()
-    // 重置交易对选择
-    formData.value.trading_pair = null
-    // 重置信号机器人
-    formData.value.signal_bot = null
+    // 只在非编辑模式下重置交易对选择（编辑模式下应该保留原有选择）
+    if (!isEditMode.value) {
+      formData.value.trading_pair = null
+      // 重置信号机器人
+      formData.value.signal_bot = null
+    }
   }
 })
 
 // 监听市场类型变化，重新加载交易对
 watch(() => formData.value.market_type, () => {
-  if (selectedExchangeAPI.value) {
+  if (selectedExchangeAPI.value && selectedExchangeAPI.value.id) {
     loadTradingPairs()
-    // 重置交易对选择
-    formData.value.trading_pair = null
-    // 重置信号机器人
-    formData.value.signal_bot = null
+    // 只在非编辑模式下重置交易对选择（编辑模式下应该保留原有选择）
+    if (!isEditMode.value) {
+      formData.value.trading_pair = null
+      // 重置信号机器人
+      formData.value.signal_bot = null
+    }
   }
 })
 
 // 监听交易对变化，重新加载信号机器人
 watch(() => formData.value.trading_pair, () => {
-  if (formData.value.trading_pair) {
+  // 只在创建模式下重新加载信号机器人
+  // 编辑模式下应该保留原有的信号机器人选择
+  if (formData.value.trading_pair && !isEditMode.value) {
     loadSignalBots()
   }
 })
@@ -2651,7 +2763,7 @@ watch(() => formData.value.trading_pair, () => {
 // 监听信号机器人变化，自动填充交易对、时间周期和趋势指标
 watch(() => formData.value.signal_bot, (newSignalBotId) => {
   if (newSignalBotId) {
-    const selectedBot = signalBots.value.find(bot => bot.id === newSignalBotId)
+    const selectedBot = signalBots.value.find(bot => bot.signal_bot_id === newSignalBotId)
     if (selectedBot) {
       console.log('📊 选择的信号机器人:', selectedBot)
 
@@ -2683,38 +2795,88 @@ watch(() => formData.value.signal_bot, (newSignalBotId) => {
 })
 
 onMounted(async () => {
+  // 第一步：加载交易所 API 列表（必须先加载，以便后续能找到对应的 API 对象）
   await loadExchangeAPIs()
-  await loadSignalBots()  // 加载信号机器人列表
-  await loadUserRiskConfig()  // 加载系统风控配置
 
-  // 如果是编辑模式，加载机器人数据
+  // 第二步：加载信号机器人列表和系统风控配置
+  await Promise.all([
+    loadSignalBots(),
+    loadUserRiskConfig()
+  ])
+
+  // 第三步：如果是编辑模式，加载机器人数据
   if (isEditMode.value) {
     try {
       loading.value = true
       const response = await botAPI.getBotDetail(botId.value)
-      // 处理不同的响应格式
-      const bot = response.data || response
+      // DRF 直接返回数据对象，不需要取 .data
+      const bot = response
+
+      console.log('📥 从后端加载的原始数据:', {
+        exchange_api: bot.exchange_api,
+        exchange_api_type: typeof bot.exchange_api,
+        trading_pair: bot.trading_pair,
+        market_type: bot.market_type,
+        market_type_type: typeof bot.market_type,
+        trend_following_bot: bot.trend_following_bot
+      })
+
+      // 先设置交易所类型和 API
+      // 注意：exchange_api 现在是一个 ID（整数），不是对象
+      if (bot.exchange_api) {
+        // 从 exchangeAPIs 中找到对应的 API 对象
+        const exchangeAPI = exchangeAPIs.value.find(api => api.id === bot.exchange_api)
+        if (exchangeAPI) {
+          selectedExchangeType.value = exchangeAPI.exchange
+          selectedExchangeAPI.value = exchangeAPI
+          console.log('✅ 找到交易所 API:', exchangeAPI)
+        } else {
+          console.warn('⚠️ 找不到交易所 API，ID:', bot.exchange_api)
+        }
+      }
 
       // 填充表单数据
       formData.value.name = bot.name
       formData.value.description = bot.description
-      formData.value.exchange_api = bot.exchange_api?.id
+      formData.value.exchange_api = bot.exchange_api  // 直接使用 ID
       formData.value.token = bot.token  // 存储完整的 token 对象
       formData.value.trading_pair = bot.trading_pair
       formData.value.timeframe = bot.timeframe
-      formData.value.leverage = bot.leverage || 1
+      // 确保数字字段转换为 Number 类型
+      formData.value.leverage = Number(bot.leverage) || 1
       formData.value.market_type = bot.market_type || 'spot'  // 添加市场类型
-      formData.value.max_concurrent_positions = bot.max_concurrent_positions || 1  // 添加最大并发持仓数
-      formData.value.max_trades_per_day = bot.max_trades_per_day || 10  // 添加每日最大交易次数
-      formData.value.max_daily_loss = bot.max_daily_loss || 500  // 添加每日最大亏损
+      formData.value.max_concurrent_positions = bot.max_concurrent_positions ? Number(bot.max_concurrent_positions) : 1
+      formData.value.max_trades_per_day = bot.max_trades_per_day ? Number(bot.max_trades_per_day) : null
+      formData.value.max_daily_loss = bot.max_daily_loss ? Number(bot.max_daily_loss) : null
+
+      console.log('📥 [编辑模式] 加载的表单数据:')
+      console.log(`   - max_daily_loss: ${formData.value.max_daily_loss} (${typeof formData.value.max_daily_loss})`)
+      console.log(`   - userRiskConfig.max_daily_loss: ${userRiskConfig.value?.max_daily_loss} (${typeof userRiskConfig.value?.max_daily_loss})`)
+      console.log(`   - 是否超过限制: ${formData.value.max_daily_loss > userRiskConfig.value?.max_daily_loss}`)
 
       // 填充趋势跟踪机器人特定字段
       if (bot.trend_following_bot) {
         const trendBot = bot.trend_following_bot
-        formData.value.max_position_size = trendBot.max_position_size
-        formData.value.stop_loss_percentage = trendBot.stop_loss_percentage
-        formData.value.take_profit_percentage = trendBot.take_profit_percentage
+        // 基础字段 - 确保数字类型转换
+        formData.value.max_position_size = Number(trendBot.max_position_size)
+        formData.value.stop_loss_percentage = Number(trendBot.stop_loss_percentage)
+        formData.value.take_profit_percentage = trendBot.take_profit_percentage ? Number(trendBot.take_profit_percentage) : null
         formData.value.take_profit_targets = trendBot.take_profit_targets || []
+        formData.value.trend_indicator = trendBot.trend_indicator || 'ma_crossover'
+
+        // 检查信号机器人是否存在
+        if (trendBot.signal_bot) {
+          const signalBotExists = signalBots.value.find(sb => sb.signal_bot_id === trendBot.signal_bot)
+          if (signalBotExists) {
+            formData.value.signal_bot = trendBot.signal_bot
+            console.log('✅ 找到信号机器人:', trendBot.signal_bot)
+          } else {
+            console.warn('⚠️ 信号机器人不存在，ID:', trendBot.signal_bot)
+            console.warn('   可用的信号机器人:', signalBots.value.map(sb => ({ signal_bot_id: sb.signal_bot_id, name: sb.name })))
+            formData.value.signal_bot = null
+            showError(`原来选择的信号机器人（ID: ${trendBot.signal_bot}）已被删除，请重新选择`)
+          }
+        }
 
         // 根据数据设置止盈模式
         if (trendBot.take_profit_targets && trendBot.take_profit_targets.length > 0) {
@@ -2723,28 +2885,96 @@ onMounted(async () => {
           takeProfitMode.value = 'single'
         }
 
+        // 风险管理字段 - 确保数字类型转换
         formData.value.trailing_stop_enabled = trendBot.trailing_stop_enabled
-        formData.value.trailing_stop_trigger = trendBot.trailing_stop_trigger
-        formData.value.trailing_stop_distance = trendBot.trailing_stop_distance
+        formData.value.trailing_stop_trigger = trendBot.trailing_stop_trigger ? Number(trendBot.trailing_stop_trigger) : null
+        formData.value.trailing_stop_distance = trendBot.trailing_stop_distance ? Number(trendBot.trailing_stop_distance) : null
         formData.value.breakeven_enabled = trendBot.breakeven_enabled
-        formData.value.breakeven_trigger = trendBot.breakeven_trigger
-        formData.value.breakeven_offset = trendBot.breakeven_offset
+        formData.value.breakeven_trigger = trendBot.breakeven_trigger ? Number(trendBot.breakeven_trigger) : null
+        formData.value.breakeven_offset = trendBot.breakeven_offset ? Number(trendBot.breakeven_offset) : null
+
+        // 订单配置字段 - 确保数字类型转换
         formData.value.entry_order_type = trendBot.entry_order_type
         formData.value.exit_order_type = trendBot.exit_order_type
-        formData.value.limit_price_offset = trendBot.limit_price_offset
+        formData.value.limit_price_offset = trendBot.limit_price_offset ? Number(trendBot.limit_price_offset) : null
         formData.value.amount_type = trendBot.amount_type
-        formData.value.amount_value = trendBot.amount_value
+        formData.value.amount_value = trendBot.amount_value ? Number(trendBot.amount_value) : null
+
+        // ============ 执行策略参数（新增）============
+        formData.value.entry_mode = trendBot.entry_mode || 'market'
+        formData.value.entry_price_offset = trendBot.entry_price_offset || 0
+        formData.value.slippage_limit = trendBot.slippage_limit || 0.2
+        formData.value.order_retry = trendBot.order_retry || 3
+        formData.value.order_expire_time = trendBot.order_expire_time || 300
+
+        // ============ 仓位管理参数（新增）============
+        formData.value.position_size_type = trendBot.position_size_type || 'fixed'
+        formData.value.position_size_value = trendBot.position_size_value || null
+        formData.value.auto_reverse = trendBot.auto_reverse || false
+        formData.value.max_position_time = trendBot.max_position_time || 86400
+
+        // ============ 高级功能参数（新增）============
+        formData.value.funding_fee_check = trendBot.funding_fee_check !== undefined ? trendBot.funding_fee_check : true
+        formData.value.pause_on_high_volatility = trendBot.pause_on_high_volatility || false
+        formData.value.volatility_threshold = trendBot.volatility_threshold || 5
+        formData.value.allow_partial_close = trendBot.allow_partial_close !== undefined ? trendBot.allow_partial_close : true
+        formData.value.smart_exit = trendBot.smart_exit || false
+
+        // ============ 通知设置参数（新增）============
+        formData.value.alert_channels = trendBot.alert_channels || []
+        formData.value.alert_on_entry = trendBot.alert_on_entry !== undefined ? trendBot.alert_on_entry : true
+        formData.value.alert_on_exit = trendBot.alert_on_exit !== undefined ? trendBot.alert_on_exit : true
+        formData.value.alert_on_error = trendBot.alert_on_error !== undefined ? trendBot.alert_on_error : true
       }
 
-      // 设置选中的交易所 API
-      if (bot.exchange_api) {
-        selectedExchangeAPI.value = bot.exchange_api
-      }
+      // 代币搜索已废弃，改为直接选择交易对，所以不需要设置 selectedToken
 
-      // 设置选中的代币
-      if (bot.token) {
-        selectedToken.value = bot.token
-        tokenSearchQuery.value = bot.token.symbol
+      // 打印加载的数据用于调试
+      console.log('✅ 编辑模式 - 加载的机器人数据:')
+      console.log('📊 基础信息:', {
+        name: formData.value.name,
+        exchange_api: formData.value.exchange_api,
+        trading_pair: formData.value.trading_pair,
+        market_type: formData.value.market_type,
+        signal_bot: formData.value.signal_bot
+      })
+      console.log('📊 风险管理:', {
+        max_position_size: formData.value.max_position_size,
+        stop_loss_percentage: formData.value.stop_loss_percentage,
+        take_profit_percentage: formData.value.take_profit_percentage
+      })
+      console.log('📊 执行策略:', {
+        entry_mode: formData.value.entry_mode,
+        entry_price_offset: formData.value.entry_price_offset,
+        slippage_limit: formData.value.slippage_limit,
+        order_retry: formData.value.order_retry,
+        order_expire_time: formData.value.order_expire_time
+      })
+      console.log('📊 仓位管理:', {
+        position_size_type: formData.value.position_size_type,
+        position_size_value: formData.value.position_size_value,
+        auto_reverse: formData.value.auto_reverse,
+        max_position_time: formData.value.max_position_time
+      })
+      console.log('📊 高级功能:', {
+        funding_fee_check: formData.value.funding_fee_check,
+        pause_on_high_volatility: formData.value.pause_on_high_volatility,
+        volatility_threshold: formData.value.volatility_threshold,
+        allow_partial_close: formData.value.allow_partial_close,
+        smart_exit: formData.value.smart_exit
+      })
+      console.log('📊 通知设置:', {
+        alert_channels: formData.value.alert_channels,
+        alert_on_entry: formData.value.alert_on_entry,
+        alert_on_exit: formData.value.alert_on_exit,
+        alert_on_error: formData.value.alert_on_error
+      })
+
+      // 第四步：加载交易对列表（必须在设置了 selectedExchangeAPI 之后）
+      if (selectedExchangeAPI.value) {
+        console.log('📥 开始加载交易对列表...')
+        await loadTradingPairs()
+        console.log('✅ 交易对列表加载完成')
       }
     } catch (error) {
       console.error('加载机器人数据失败:', error)
@@ -2758,19 +2988,29 @@ onMounted(async () => {
 
 // 监听交易所类型变化
 watch(() => selectedExchangeType.value, () => {
-  // 清空之前选择的账号
-  formData.value.exchange_api = null
-  selectedExchangeAPI.value = null
-  // 清空交易对选择
-  availableTradingPairs.value = []
-  formData.value.trading_pair = null
-  tradingPairSearchQuery.value = ''
+  // 只在非编辑模式下清空数据（编辑模式下应该保留原有选择）
+  if (!isEditMode.value) {
+    // 清空之前选择的账号
+    formData.value.exchange_api = null
+    selectedExchangeAPI.value = null
+    // 清空交易对选择
+    availableTradingPairs.value = []
+    formData.value.trading_pair = null
+    tradingPairSearchQuery.value = ''
+  }
 })
 
 // 监听交易所账号变化
 watch(() => formData.value.exchange_api, (newApiId) => {
   if (newApiId) {
-    selectedExchangeAPI.value = filteredExchangeAPIs.value.find(api => api.id === newApiId) || null
+    // 从 filteredExchangeAPIs 中查找对应的 API
+    const foundApi = filteredExchangeAPIs.value.find(api => api.id === newApiId)
+    if (foundApi) {
+      selectedExchangeAPI.value = foundApi
+    } else if (!isEditMode.value) {
+      // 只在创建模式下设置为 null，编辑模式下保留原有值
+      selectedExchangeAPI.value = null
+    }
   }
 })
 

@@ -297,62 +297,113 @@
                         <td class="px-6 py-4">
                           <div class="flex items-center justify-center gap-1">
                             <!-- 启动/停止按钮 -->
-                            <button
-                              v-if="bot.status !== 'running'"
-                              @click="handleStartBot(bot.id)"
-                              :disabled="loadingBotId === bot.id"
-                              class="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors duration-200"
-                              title="启动机器人"
-                            >
-                              <PlayIcon class="h-4 w-4" />
-                            </button>
-                            <button
-                              v-else
-                              @click="handleStopBot(bot.id)"
-                              :disabled="loadingBotId === bot.id"
-                              class="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors duration-200"
-                              title="停止机器人"
-                            >
-                              <StopIcon class="h-4 w-4" />
-                            </button>
+                            <div class="relative">
+                              <button
+                                v-if="bot.status !== 'running'"
+                                @click="handleStartBot(bot.id)"
+                                @mouseenter="showTooltip(`start-${bot.id}`)"
+                                @mouseleave="hideTooltip"
+                                :disabled="loadingBotId === bot.id"
+                                class="p-2 text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg transition-colors duration-200"
+                              >
+                                <PlayIcon class="h-4 w-4" />
+                              </button>
+                              <button
+                                v-else
+                                @click="handleStopBot(bot.id)"
+                                @mouseenter="showTooltip(`stop-${bot.id}`)"
+                                @mouseleave="hideTooltip"
+                                :disabled="loadingBotId === bot.id"
+                                class="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                              >
+                                <StopIcon class="h-4 w-4" />
+                              </button>
+                              <div
+                                v-if="hoveredButton === `start-${bot.id}` || hoveredButton === `stop-${bot.id}`"
+                                class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-slate-900 text-white text-xs rounded-lg whitespace-nowrap z-50 pointer-events-none"
+                              >
+                                {{ hoveredButton === `start-${bot.id}` ? '启动机器人' : '停止机器人' }}
+                                <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
+                              </div>
+                            </div>
 
                             <!-- 编辑按钮 -->
-                            <button
-                              @click="handleEditBot(bot.id)"
-                              class="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors duration-200"
-                              title="编辑机器人"
-                            >
-                              <PencilIcon class="h-4 w-4" />
-                            </button>
+                            <div class="relative">
+                              <button
+                                @click="handleEditBot(bot.id)"
+                                @mouseenter="showTooltip(`edit-${bot.id}`)"
+                                @mouseleave="hideTooltip"
+                                class="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors duration-200"
+                              >
+                                <PencilIcon class="h-4 w-4" />
+                              </button>
+                              <div
+                                v-if="hoveredButton === `edit-${bot.id}`"
+                                class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-slate-900 text-white text-xs rounded-lg whitespace-nowrap z-50 pointer-events-none"
+                              >
+                                编辑机器人
+                                <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
+                              </div>
+                            </div>
 
                             <!-- 分享按钮 -->
-                            <button
-                              @click="handleShareBot(bot)"
-                              class="p-2 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors duration-200"
-                              title="分享机器人"
-                            >
-                              <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                              </svg>
-                            </button>
+                            <div class="relative">
+                              <button
+                                @click="handleShareBot(bot)"
+                                @mouseenter="showTooltip(`share-${bot.id}`)"
+                                @mouseleave="hideTooltip"
+                                class="p-2 text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 rounded-lg transition-colors duration-200"
+                              >
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+                                </svg>
+                              </button>
+                              <div
+                                v-if="hoveredButton === `share-${bot.id}`"
+                                class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-slate-900 text-white text-xs rounded-lg whitespace-nowrap z-50 pointer-events-none"
+                              >
+                                分享机器人
+                                <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
+                              </div>
+                            </div>
 
                             <!-- 详情按钮 -->
-                            <button
-                              @click="handleViewBot(bot.id)"
-                              class="p-2 text-gray-600 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-200"
-                              title="查看详情"
-                            >
-                              <EyeIcon class="h-4 w-4" />
-                            </button>
+                            <div class="relative">
+                              <button
+                                @click="handleViewBot(bot.id)"
+                                @mouseenter="showTooltip(`view-${bot.id}`)"
+                                @mouseleave="hideTooltip"
+                                class="p-2 text-gray-600 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors duration-200"
+                              >
+                                <EyeIcon class="h-4 w-4" />
+                              </button>
+                              <div
+                                v-if="hoveredButton === `view-${bot.id}`"
+                                class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-slate-900 text-white text-xs rounded-lg whitespace-nowrap z-50 pointer-events-none"
+                              >
+                                查看详情
+                                <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
+                              </div>
+                            </div>
 
                             <!-- 删除按钮 -->
-                            <button
-                              @click="handleDeleteBot(bot.id)"
-                              class="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors duration-200"
-                              title="删除机器人"
-                            >
-                              <TrashIcon class="h-4 w-4" />
-                            </button>
+                            <div class="relative">
+                              <button
+                                @click="handleDeleteBot(bot.id)"
+                                @mouseenter="showTooltip(`delete-${bot.id}`)"
+                                @mouseleave="hideTooltip"
+                                class="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors duration-200"
+                              >
+                                <TrashIcon class="h-4 w-4" />
+                              </button>
+                              <div
+                                v-if="hoveredButton === `delete-${bot.id}`"
+                                class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-slate-900 text-white text-xs rounded-lg whitespace-nowrap z-50 pointer-events-none"
+                              >
+                                删除机器人
+                                <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
+                              </div>
+                            </div>
                           </div>
                         </td>
                       </tr>
@@ -403,6 +454,30 @@
       @confirm="handleConfirmShare"
       @cancel="handleCancelShare"
     />
+
+    <!-- 停止机器人确认对话框 -->
+    <ConfirmModal
+      v-if="showStopConfirm"
+      type="warning"
+      title="停止机器人"
+      message="该机器人正在运行中。编辑运行中的机器人需要先停止它。是否停止机器人并继续编辑？"
+      confirm-text="停止并编辑"
+      cancel-text="取消"
+      @confirm="handleConfirmStopAndEdit"
+      @cancel="handleCancelStopAndEdit"
+    />
+
+    <!-- 删除机器人确认对话框 -->
+    <ConfirmModal
+      v-if="showDeleteConfirm"
+      type="danger"
+      title="删除机器人"
+      message="确定要删除这个机器人吗？此操作不可撤销。删除后将自动平仓所有持仓，取消所有未成交订单，所有相关数据将被永久删除。"
+      confirm-text="确认删除"
+      cancel-text="取消"
+      @confirm="handleConfirmDelete"
+      @cancel="handleCancelDelete"
+    />
   </div>
 </template>
 
@@ -413,6 +488,7 @@ import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headless
 import { CheckIcon, ChevronUpDownIcon, MagnifyingGlassIcon } from '@heroicons/vue/20/solid'
 import Header from '../../common/Header.vue'
 import ShareBotModal from '../../common/ShareBotModal.vue'
+import ConfirmModal from '../../common/ConfirmModal.vue'
 import PositionList from '../components/PositionList.vue'
 import OrderList from '../components/OrderList.vue'
 import RecommendationList from '../components/RecommendationList.vue'
@@ -482,6 +558,15 @@ const statistics = ref({
   total_trades: 0,
   win_rate: 0
 })
+
+// 确认对话框状态
+const showStopConfirm = ref(false)
+const pendingEditBotId = ref(null)
+const showDeleteConfirm = ref(false)
+const pendingDeleteBotId = ref(null)
+
+// Tooltip 状态
+const hoveredButton = ref(null)
 
 const filters = ref({
   status: '',
@@ -639,17 +724,67 @@ const handleStopBot = async (botId) => {
 }
 
 const handleEditBot = (botId) => {
-  router.push(`/bots/edit/${botId}`)
+  // 查找机器人
+  const bot = bots.value.find(b => b.id === botId)
+
+  // 如果机器人正在运行，显示确认对话框
+  if (bot && bot.status === 'running') {
+    pendingEditBotId.value = botId
+    showStopConfirm.value = true
+  } else {
+    // 直接跳转到编辑页面
+    router.push(`/bots/edit/${botId}`)
+  }
+}
+
+// 确认停止并编辑
+const handleConfirmStopAndEdit = async () => {
+  const botId = pendingEditBotId.value
+
+  try {
+    loadingBotId.value = botId
+    await botAPI.stopBot(botId)
+
+    // 更新本地状态
+    const botIndex = bots.value.findIndex(b => b.id === botId)
+    if (botIndex !== -1) {
+      bots.value[botIndex].status = 'stopped'
+      bots.value[botIndex].is_active = false
+    }
+
+    showSuccess('机器人已停止，现在可以编辑')
+
+    // 关闭对话框
+    showStopConfirm.value = false
+
+    // 跳转到编辑页面
+    router.push(`/bots/edit/${botId}`)
+  } catch (error) {
+    showError('停止机器人失败: ' + (error.message || '未知错误'))
+  } finally {
+    loadingBotId.value = null
+    pendingEditBotId.value = null
+  }
+}
+
+// 取消停止并编辑
+const handleCancelStopAndEdit = () => {
+  showStopConfirm.value = false
+  pendingEditBotId.value = null
 }
 
 const handleViewBot = (botId) => {
   router.push(`/bots/${botId}`)
 }
 
-const handleDeleteBot = async (botId) => {
-  if (!confirm('确定要删除这个机器人吗？此操作不可撤销。')) {
-    return
-  }
+const handleDeleteBot = (botId) => {
+  pendingDeleteBotId.value = botId
+  showDeleteConfirm.value = true
+}
+
+// 确认删除
+const handleConfirmDelete = async () => {
+  const botId = pendingDeleteBotId.value
 
   try {
     loadingBotId.value = botId
@@ -661,12 +796,22 @@ const handleDeleteBot = async (botId) => {
     if (botIndex !== -1) {
       bots.value.splice(botIndex, 1)
     }
+
+    // 关闭对话框
+    showDeleteConfirm.value = false
   } catch (error) {
     console.error('删除机器人失败:', error)
-    showError(error.response?.data?.message || '删除机器人失败')
+    showError(error.message || '删除机器人失败')
   } finally {
     loadingBotId.value = null
+    pendingDeleteBotId.value = null
   }
+}
+
+// 取消删除
+const handleCancelDelete = () => {
+  showDeleteConfirm.value = false
+  pendingDeleteBotId.value = null
 }
 
 // 分享弹窗状态
@@ -774,7 +919,14 @@ const formatDate = (dateString) => {
   })
 }
 
+// Tooltip 显示和隐藏
+const showTooltip = (buttonId) => {
+  hoveredButton.value = buttonId
+}
 
+const hideTooltip = () => {
+  hoveredButton.value = null
+}
 
 // 监听路由变化，重新加载数据
 watch(() => route.query.type, async () => {

@@ -248,6 +248,7 @@
                       v-model="tokenSearchQuery"
                       @input="handleTokenSearch"
                       @focus="handleTokenInputFocus"
+                      @blur="handleTokenInputBlur"
                       type="text"
                       :placeholder="selectedExchangeType ? '搜索代币 (如: BTC, ETH)' : '请先选择交易所'"
                       :disabled="!selectedExchangeType"
@@ -263,6 +264,7 @@
                     <div
                       v-if="showTokenResults && tokenSearchResults.length > 0"
                       class="absolute z-10 mt-1 w-full bg-white border border-slate-200 rounded-xl shadow-lg max-h-60 overflow-auto"
+                      @mousedown.prevent
                     >
                       <button
                         v-for="token in tokenSearchResults"
@@ -1990,6 +1992,14 @@ const handleTokenInputFocus = () => {
     // 如果有输入内容，显示现有结果
     showTokenResults.value = true
   }
+}
+
+// 处理代币输入框失去焦点
+const handleTokenInputBlur = () => {
+  // 延迟隐藏，以便点击下拉框中的选项时能够正常触发
+  setTimeout(() => {
+    showTokenResults.value = false
+  }, 200)
 }
 
 // 加载热门代币列表

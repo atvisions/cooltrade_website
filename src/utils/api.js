@@ -37,6 +37,7 @@ export const API_ENDPOINTS = {
 
   // 代币搜索
   TOKEN_SEARCH: `${API_BASE_URL}/market/tokens/search/`,
+  TOKEN_LIST: `${API_BASE_URL}/market/tokens/`,
 
   // AI 策略相关
   AI_STRATEGY_SEARCH_TOKEN: `${API_BASE_URL}/market/tokens/search/`,  // 兼容旧代码

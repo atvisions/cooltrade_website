@@ -352,263 +352,14 @@
             </div>
           </Card>
 
-          <!-- 第3步: 趋势指标 -->
+          <!-- 第3步: 趋势指标（多选） -->
           <Card variant="default" class="mb-6">
-            <div class="flex items-center gap-3 mb-6">
-              <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
-                <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                </svg>
-              </div>
-              <div>
-                <div class="text-lg font-semibold text-slate-900">趋势指标</div>
-                <div class="text-xs text-slate-500">选择用于执行交易的技术指标</div>
-              </div>
-            </div>
-
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-              <button
-                v-for="indicator in trendIndicators"
-                :key="indicator.value"
-                type="button"
-                @click="formData.trend_indicator = indicator.value"
-                :class="[
-                  'flex flex-col items-center p-4 border-2 rounded-lg transition-all',
-                  formData.trend_indicator === indicator.value
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-slate-200 hover:border-slate-300 bg-white'
-                ]"
-              >
-                <div class="w-6 h-6 mb-2 text-slate-600">
-                  <!-- MA 交叉 - 两条线交叉 -->
-                  <svg v-if="indicator.value === 'ma_crossover'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                  </svg>
-                  <!-- EMA 交叉 - 平滑曲线 -->
-                  <svg v-else-if="indicator.value === 'ema_crossover'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 13a9 9 0 0118 0m0 0a9 9 0 01-18 0m18 0h-5.5m-5.5 0H3" />
-                  </svg>
-                  <!-- MACD - 柱状图 -->
-                  <svg v-else-if="indicator.value === 'macd'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                  </svg>
-                  <!-- RSI - 波形 -->
-                  <svg v-else-if="indicator.value === 'rsi'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12a5 5 0 1110 0 5 5 0 01-10 0z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7v10" />
-                  </svg>
-                  <!-- 布林带 - 上下边界 -->
-                  <svg v-else-if="indicator.value === 'bollinger'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6h18M3 12h18M3 18h18" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v18" />
-                  </svg>
-                </div>
-                <span class="text-sm font-medium text-slate-900">{{ indicator.label }}</span>
-                <span class="text-xs text-slate-500 mt-1 text-center">{{ indicator.description }}</span>
-              </button>
-            </div>
-
-            <!-- 趋势指标参数配置 -->
-            <div v-if="formData.trend_indicator" class="mt-6 p-6 bg-slate-50 rounded-lg border border-slate-200">
-              <h3 class="text-base font-semibold text-slate-900 mb-4">📊 指标参数配置</h3>
-
-              <!-- MA/EMA 交叉参数 -->
-              <div v-if="['ma_crossover', 'ema_crossover'].includes(formData.trend_indicator)" class="space-y-4">
-                <div class="grid grid-cols-2 gap-4">
-                  <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
-                      快线周期
-                      <span class="text-xs text-slate-500 block">短期均线，推荐 12</span>
-                    </label>
-                    <input
-                      v-model.number="formData.config.fast_period"
-                      type="number"
-                      min="1"
-                      max="100"
-                      placeholder="12"
-                      class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
-                      慢线周期
-                      <span class="text-xs text-slate-500 block">长期均线，推荐 26</span>
-                    </label>
-                    <input
-                      v-model.number="formData.config.slow_period"
-                      type="number"
-                      min="1"
-                      max="200"
-                      placeholder="26"
-                      class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                </div>
-                <div class="bg-white rounded-lg p-3 text-xs text-slate-600 border border-slate-200">
-                  <div class="flex items-start gap-2">
-                    <svg class="w-4 h-4 text-slate-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>快线上穿慢线产生买入信号，快线下穿慢线产生卖出信号</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- MACD 参数 -->
-              <div v-if="formData.trend_indicator === 'macd'" class="space-y-4">
-                <div class="grid grid-cols-3 gap-4">
-                  <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
-                      快线周期
-                      <span class="text-xs text-slate-500 block">推荐 12</span>
-                    </label>
-                    <input
-                      v-model.number="formData.config.fast_period"
-                      type="number"
-                      min="1"
-                      max="100"
-                      placeholder="12"
-                      class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
-                      慢线周期
-                      <span class="text-xs text-slate-500 block">推荐 26</span>
-                    </label>
-                    <input
-                      v-model.number="formData.config.slow_period"
-                      type="number"
-                      min="1"
-                      max="200"
-                      placeholder="26"
-                      class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
-                      信号线周期
-                      <span class="text-xs text-slate-500 block">推荐 9</span>
-                    </label>
-                    <input
-                      v-model.number="formData.config.signal_period"
-                      type="number"
-                      min="1"
-                      max="50"
-                      placeholder="9"
-                      class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                </div>
-                <div class="bg-white rounded-lg p-3 text-xs text-slate-600 border border-slate-200">
-                  <div class="flex items-start gap-2">
-                    <svg class="w-4 h-4 text-slate-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>MACD 线上穿信号线产生买入信号，下穿产生卖出信号</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- RSI 参数 -->
-              <div v-if="formData.trend_indicator === 'rsi'" class="space-y-4">
-                <div class="grid grid-cols-3 gap-4">
-                  <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
-                      周期
-                      <span class="text-xs text-slate-500 block">推荐 14</span>
-                    </label>
-                    <input
-                      v-model.number="formData.config.rsi_period"
-                      type="number"
-                      min="1"
-                      max="50"
-                      placeholder="14"
-                      class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
-                      超卖阈值
-                      <span class="text-xs text-slate-500 block">推荐 30</span>
-                    </label>
-                    <input
-                      v-model.number="formData.config.rsi_oversold"
-                      type="number"
-                      min="0"
-                      max="50"
-                      placeholder="30"
-                      class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
-                      超买阈值
-                      <span class="text-xs text-slate-500 block">推荐 70</span>
-                    </label>
-                    <input
-                      v-model.number="formData.config.rsi_overbought"
-                      type="number"
-                      min="50"
-                      max="100"
-                      placeholder="70"
-                      class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                </div>
-                <div class="bg-white rounded-lg p-3 text-xs text-slate-600 border border-slate-200">
-                  <div class="flex items-start gap-2">
-                    <svg class="w-4 h-4 text-slate-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>RSI < 超卖阈值产生买入信号，RSI > 超买阈值产生卖出信号</span>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 布林带参数 -->
-              <div v-if="formData.trend_indicator === 'bollinger'" class="space-y-4">
-                <div class="grid grid-cols-2 gap-4">
-                  <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
-                      周期
-                      <span class="text-xs text-slate-500 block">推荐 20</span>
-                    </label>
-                    <input
-                      v-model.number="formData.config.bollinger_period"
-                      type="number"
-                      min="1"
-                      max="100"
-                      placeholder="20"
-                      class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
-                      标准差倍数
-                      <span class="text-xs text-slate-500 block">推荐 2</span>
-                    </label>
-                    <input
-                      v-model.number="formData.config.bollinger_std"
-                      type="number"
-                      min="0.1"
-                      max="5"
-                      step="0.1"
-                      placeholder="2"
-                      class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                </div>
-                <div class="bg-white rounded-lg p-3 text-xs text-slate-600 border border-slate-200">
-                  <div class="flex items-start gap-2">
-                    <svg class="w-4 h-4 text-slate-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <span>价格触及上轨产生卖出信号，触及下轨产生买入信号</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <MultiIndicatorSelector
+              v-model="formData.trend_indicators"
+              :available-indicators="availableIndicators"
+              :indicator-params="formData.indicator_params"
+              @update:indicator-params="formData.indicator_params = $event"
+            />
           </Card>
 
           <!-- 执行策略配置 -->
@@ -722,71 +473,6 @@
                 </div>
               </div>
 
-              <!-- 仓位管理 -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">
-                    仓位大小类型
-                  </label>
-                  <Listbox v-model="formData.position_size_type">
-                    <div class="relative">
-                      <ListboxButton class="relative w-full cursor-default rounded-xl bg-slate-50 py-3 pl-4 pr-10 text-left border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <span class="block truncate text-slate-700">
-                          {{ formData.position_size_type === 'fixed' ? '固定金额' : '百分比' }}
-                        </span>
-                        <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                          <ChevronUpDownIcon class="h-5 w-5 text-slate-400" aria-hidden="true" />
-                        </span>
-                      </ListboxButton>
-                      <transition leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
-                        <ListboxOptions class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                          <ListboxOption
-                            v-slot="{ active, selected }"
-                            value="fixed"
-                            as="template"
-                          >
-                            <li :class="[active ? 'bg-slate-100 text-slate-900' : 'text-slate-700', 'relative cursor-default select-none py-3 pl-4 pr-4']">
-                              <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">固定金额</span>
-                              <span v-if="selected" class="absolute inset-y-0 right-0 flex items-center pr-3 text-blue-600">
-                                <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                                </svg>
-                              </span>
-                            </li>
-                          </ListboxOption>
-                          <ListboxOption
-                            v-slot="{ active, selected }"
-                            value="percent"
-                            as="template"
-                          >
-                            <li :class="[active ? 'bg-slate-100 text-slate-900' : 'text-slate-700', 'relative cursor-default select-none py-3 pl-4 pr-4']">
-                              <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">百分比</span>
-                              <span v-if="selected" class="absolute inset-y-0 right-0 flex items-center pr-3 text-blue-600">
-                                <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                                </svg>
-                              </span>
-                            </li>
-                          </ListboxOption>
-                        </ListboxOptions>
-                      </transition>
-                    </div>
-                  </Listbox>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">
-                    仓位大小值
-                  </label>
-                  <input
-                    v-model.number="formData.position_size_value"
-                    type="number"
-                    min="0"
-                    placeholder="100"
-                    class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-              </div>
-
               <!-- 高级功能 -->
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="flex items-center gap-3">
@@ -850,50 +536,115 @@
             <div class="space-y-6">
               <!-- 第一行：仓位管理 -->
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- 最大头寸大小 -->
+                <!-- 左列：仓位类型 + 最大仓位 -->
                 <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">
-                    最大头寸大小 (USDT) <span class="text-red-500">*</span>
-                    <div class="relative inline-block ml-2">
-                      <button
-                        type="button"
-                        @mouseenter="showTooltips.maxPositionSize = true"
-                        @mouseleave="showTooltips.maxPositionSize = false"
-                        class="inline-flex items-center justify-center w-4 h-4 text-slate-400 hover:text-slate-600 transition-colors"
-                      >
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </button>
-                      <div
-                        v-if="showTooltips.maxPositionSize"
-                        class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg z-50 pointer-events-none whitespace-nowrap"
-                      >
-                        单次交易的最大金额
-                        <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
+                  <div class="flex gap-3">
+                    <!-- 仓位类型（占50%宽度） -->
+                    <div class="flex-1">
+                      <label class="block text-sm font-medium text-slate-700 mb-2">
+                        仓位类型
+                        <span class="text-red-500 ml-0.5">*</span>
+                      </label>
+                      <Listbox v-model="formData.position_size_type">
+                        <div class="relative">
+                          <ListboxButton class="relative w-full cursor-default rounded-xl bg-slate-50 py-3 pl-4 pr-10 text-left border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <span class="block truncate text-slate-700">
+                              {{ formData.position_size_type === 'fixed' ? '固定金额 (USDT)' : '账户百分比 (%)' }}
+                            </span>
+                            <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                              <ChevronUpDownIcon class="h-5 w-5 text-slate-400" aria-hidden="true" />
+                            </span>
+                          </ListboxButton>
+                          <transition leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
+                            <ListboxOptions class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                              <ListboxOption
+                                v-slot="{ active, selected }"
+                                value="fixed"
+                                as="template"
+                              >
+                                <li :class="[active ? 'bg-slate-100 text-slate-900' : 'text-slate-700', 'relative cursor-default select-none py-3 pl-4 pr-4']">
+                                  <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">固定金额 (USDT)</span>
+                                  <span v-if="selected" class="absolute inset-y-0 right-0 flex items-center pr-3 text-blue-600">
+                                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                    </svg>
+                                  </span>
+                                </li>
+                              </ListboxOption>
+                              <ListboxOption
+                                v-slot="{ active, selected }"
+                                value="percent"
+                                as="template"
+                              >
+                                <li :class="[active ? 'bg-slate-100 text-slate-900' : 'text-slate-700', 'relative cursor-default select-none py-3 pl-4 pr-4']">
+                                  <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">账户百分比 (%)</span>
+                                  <span v-if="selected" class="absolute inset-y-0 right-0 flex items-center pr-3 text-blue-600">
+                                    <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                    </svg>
+                                  </span>
+                                </li>
+                              </ListboxOption>
+                            </ListboxOptions>
+                          </transition>
+                        </div>
+                      </Listbox>
+                    </div>
+
+                    <!-- 最大仓位（占50%宽度） -->
+                    <div class="flex-1">
+                      <label class="block text-sm font-medium text-slate-700 mb-2">
+                        最大仓位
+                        <span class="text-red-500 ml-0.5">*</span>
+                        <div class="relative inline-block ml-1">
+                          <button
+                            type="button"
+                            @mouseenter="showTooltips.maxPositionSize = true"
+                            @mouseleave="showTooltips.maxPositionSize = false"
+                            class="inline-flex items-center justify-center w-4 h-4 text-slate-400 hover:text-slate-600 transition-colors"
+                          >
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </button>
+                          <div
+                            v-if="showTooltips.maxPositionSize"
+                            class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg z-50 pointer-events-none whitespace-nowrap"
+                          >
+                            {{ formData.position_size_type === 'percent' ? '账户余额的百分比' : '单次交易的最大金额' }}
+                            <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
+                          </div>
+                        </div>
+                      </label>
+                      <div class="relative">
+                        <input
+                          v-model.number="formData.max_position_size"
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          :max="formData.position_size_type === 'percent' ? 100 : undefined"
+                          :placeholder="formData.position_size_type === 'percent' ? '10' : '100'"
+                          :class="[
+                            'w-full px-3 py-2.5 border rounded-lg focus:outline-none focus:ring-2',
+                            isFieldExceedingLimit('max_position_size')
+                              ? 'border-red-500 focus:ring-red-500'
+                              : 'border-slate-300 focus:ring-blue-500'
+                          ]"
+                        />
+                        <span class="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-slate-500">
+                          {{ formData.position_size_type === 'percent' ? '%' : 'U' }}
+                        </span>
                       </div>
                     </div>
-                  </label>
-                  <input
-                    v-model.number="formData.max_position_size"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder="100"
-                    :class="[
-                      'w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2',
-                      isFieldExceedingLimit('max_position_size')
-                        ? 'border-red-500 focus:ring-red-500'
-                        : 'border-slate-300 focus:ring-blue-500'
-                    ]"
-                  />
+                  </div>
+                  <!-- 错误和提示信息 -->
                   <p v-if="errors.max_position_size" class="mt-1 text-sm text-red-500">{{ errors.max_position_size }}</p>
                   <!-- 超出限制提示 -->
                   <p v-if="isFieldExceedingLimit('max_position_size')" class="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded font-medium">
                     ⚠️ {{ getExceedingLimitText('max_position_size') }}
                   </p>
                   <!-- 系统风控限制提示 -->
-                  <p v-else-if="userRiskConfig" class="mt-2 text-xs text-slate-500 bg-slate-50 p-2 rounded">
+                  <p v-else-if="userRiskConfig && formData.position_size_type === 'fixed'" class="mt-2 text-xs text-slate-500 bg-slate-50 p-2 rounded">
                     <span class="font-medium">系统限制:</span> 最多 {{ userRiskConfig.max_position_per_bot }} USDT
                   </p>
                 </div>
@@ -1705,9 +1456,14 @@
                   <div class="text-xs font-semibold text-slate-700 mb-3">风险管理</div>
                   <div class="space-y-2">
                     <div class="flex justify-between text-xs">
-                      <span class="text-slate-500">最大头寸</span>
+                      <span class="text-slate-500">最大仓位</span>
                       <span class="font-medium text-slate-900">
-                        {{ formData.max_position_size ? `${formData.max_position_size} USDT` : '-' }}
+                        {{ formData.max_position_size ?
+                          (formData.position_size_type === 'percent' ?
+                            `${formData.max_position_size}%` :
+                            `${formData.max_position_size} USDT`) :
+                          '-'
+                        }}
                       </span>
                     </div>
                     <div class="flex justify-between text-xs">
@@ -1860,6 +1616,7 @@ import { ChevronUpDownIcon } from '@heroicons/vue/20/solid'
 import Header from '../../common/Header.vue'
 import Card from '../../common/ui/Card.vue'
 import Select from '../../common/ui/Select.vue'
+import MultiIndicatorSelector from '../components/MultiIndicatorSelector.vue'
 import { botAPI, exchangeAPI, apiRequest, API_ENDPOINTS } from '../../../utils/api'
 import { showSuccess, showError } from '../../../utils/notification'
 
@@ -1873,34 +1630,76 @@ const isLoadingBotData = ref(false)  // 标志：正在加载机器人数据
 const isEditMode = computed(() => !!route.params.id)
 const botId = computed(() => route.params.id)
 
-// 趋势指标选项
-const trendIndicators = ref([
+// 趋势指标选项（完整版，包含新增指标）
+const availableIndicators = ref([
   {
     value: 'ma_crossover',
+    name: 'MA 均线交叉',
     label: 'MA 交叉',
-    description: '移动平均线交叉策略'
+    description: '判断趋势方向、黄金交叉/死亡交叉',
+    usage: '在趋势中的作用：趋势跟踪，适合中长期交易',
+    params: 'MA 短期/长期周期'
   },
   {
     value: 'ema_crossover',
+    name: 'EMA 指数均线交叉',
     label: 'EMA 交叉',
-    description: '指数移动平均线交叉'
+    description: '比 MA 更快反应，捕捉更快趋势',
+    usage: '在趋势中的作用：短期交易，快速反应趋势变化',
+    params: 'EMA 短期/长期周期'
   },
   {
     value: 'macd',
+    name: 'MACD',
     label: 'MACD',
-    description: '平滑异同移动平均线'
+    description: '判断趋势强弱、动能变化、背离',
+    usage: '在趋势中的作用：趋势确认，动能分析',
+    params: 'MACD 快线/慢线/信号线周期'
   },
   {
     value: 'rsi',
+    name: 'RSI 相对强弱指标',
     label: 'RSI',
-    description: '相对强弱指标'
+    description: '判断超买/超卖，可用于趋势过滤',
+    usage: '在趋势中的作用：过滤假突破，确认趋势强度',
+    params: 'RSI 周期、超买/超卖阈值'
   },
   {
     value: 'bollinger',
+    name: 'Bollinger Bands 布林带',
     label: '布林带',
-    description: '布林带突破策略'
+    description: '判断是否超买/超卖，趋势突破',
+    usage: '在趋势中的作用：波动率交易，突破确认',
+    params: 'Bollinger 周期、标准差倍数'
+  },
+  {
+    value: 'adx',
+    name: 'ADX 趋势强度指标',
+    label: 'ADX',
+    description: '判断趋势强度（不判断方向）',
+    usage: '在趋势中的作用：过滤震荡市，只在强趋势时交易',
+    params: 'ADX 周期、强趋势阈值（通常 >25）'
+  },
+  {
+    value: 'supertrend',
+    name: 'SuperTrend 超级趋势',
+    label: 'SuperTrend',
+    description: '判断趋势方向和支撑/阻力位',
+    usage: '在趋势中的作用：趋势跟踪，动态止损设置',
+    params: 'ATR 周期、ATR 倍数'
+  },
+  {
+    value: 'volume',
+    name: 'Volume 成交量确认',
+    label: 'Volume',
+    description: '通过成交量确认趋势强度和突破有效性',
+    usage: '在趋势中的作用：确认趋势真实性，过滤虚假突破',
+    params: '成交量均线周期、放量倍数阈值'
   }
 ])
+
+// 向后兼容：保留旧的 trendIndicators
+const trendIndicators = computed(() => availableIndicators.value)
 
 // 代币搜索
 const tokenSearchQuery = ref('')
@@ -2153,10 +1952,12 @@ const formData = ref({
   token: null,
   trading_pair: null,  // 交易对 (如: BTC/USDT)
   timeframe: '1h',
-  trend_indicator: 'ma_crossover',  // 趋势指标 - 直接字段
+  trend_indicator: 'ma_crossover',  // 趋势指标 - 直接字段（向后兼容）
+  trend_indicators: ['ma_crossover'],  // 多选指标（新字段）
   // 市场类型 - 问题2修复
   market_type: 'spot',  // spot, linear, inverse
   // 仓位管理
+  position_size_type: 'fixed',  // 仓位类型：fixed=固定金额, percent=账户百分比
   max_position_size: 100,
   leverage: 1,  // 杠杆倍数
   // 持仓管理 - 问题1修复
@@ -2186,8 +1987,6 @@ const formData = ref({
   order_retry: 3,
   order_expire_time: 300,
   // ============ 仓位管理参数（新增）============
-  position_size_type: 'fixed',
-  position_size_value: null,
   auto_reverse: false,
   max_position_time: 86400,
   // ============ 高级功能参数（新增）============
@@ -2212,6 +2011,43 @@ const formData = ref({
     rsi_overbought: 70,
     bollinger_period: 20,
     bollinger_std: 2
+  },
+  // 指标参数配置（按指标类型分组）
+  indicator_params: {
+    ma_crossover: {
+      fast_period: 12,
+      slow_period: 26
+    },
+    ema_crossover: {
+      fast_period: 12,
+      slow_period: 26
+    },
+    macd: {
+      fast_period: 12,
+      slow_period: 26,
+      signal_period: 9
+    },
+    rsi: {
+      rsi_period: 14,
+      rsi_oversold: 30,
+      rsi_overbought: 70
+    },
+    bollinger: {
+      bollinger_period: 20,
+      bollinger_std: 2
+    },
+    adx: {
+      adx_period: 14,
+      adx_threshold: 25
+    },
+    supertrend: {
+      atr_period: 10,
+      atr_multiplier: 3.0
+    },
+    volume: {
+      volume_ma_period: 20,
+      volume_threshold: 1.5
+    }
   }
 })
 
@@ -2463,7 +2299,10 @@ const autoGeneratedDescription = computed(() => {
 
   // 仓位管理
   if (formData.value.max_position_size) {
-    parts.push(`最大仓位 ${formData.value.max_position_size} USDT`)
+    const sizeText = formData.value.position_size_type === 'percent'
+      ? `${formData.value.max_position_size}%`
+      : `${formData.value.max_position_size} USDT`
+    parts.push(`最大仓位 ${sizeText}`)
   }
 
   return parts.length > 0 ? parts.join('，') : '暂无描述'
@@ -2583,7 +2422,8 @@ watch(selectedToken, (newToken) => {
 // 监听市场类型变化，清空代币选择并重新加载计价币种
 watch(() => formData.value.market_type, (newMarketType, oldMarketType) => {
   // 只有在市场类型真正改变时才清空
-  if (oldMarketType && newMarketType !== oldMarketType) {
+  // 并且不在编辑模式加载数据期间清空
+  if (oldMarketType && newMarketType !== oldMarketType && !isLoadingBotData.value) {
     console.log('📊 市场类型变化:', oldMarketType, '->', newMarketType)
 
     // 清空代币选择
@@ -3029,7 +2869,8 @@ const handleSubmit = async () => {
       token: typeof formData.value.token === 'object' ? formData.value.token.id : formData.value.token,
       trading_pair: formData.value.trading_pair,
       timeframe: formData.value.timeframe,
-      trend_indicator: formData.value.trend_indicator,
+      trend_indicator: formData.value.trend_indicator,  // 向后兼容
+      trend_indicators: formData.value.trend_indicators,  // 新字段：多选指标
       market_type: formData.value.market_type,
       max_position_size: formData.value.max_position_size,
       leverage: formData.value.leverage,
@@ -3058,7 +2899,6 @@ const handleSubmit = async () => {
       order_expire_time: formData.value.order_expire_time,
       // ============ 仓位管理参数 ============
       position_size_type: formData.value.position_size_type,
-      position_size_value: formData.value.position_size_value,
       auto_reverse: formData.value.auto_reverse,
       max_position_time: formData.value.max_position_time,
       // ============ 高级功能参数 ============
@@ -3072,10 +2912,18 @@ const handleSubmit = async () => {
       alert_on_entry: formData.value.alert_on_entry,
       alert_on_exit: formData.value.alert_on_exit,
       alert_on_error: formData.value.alert_on_error,
-      config: formData.value.config
+      // 合并 config 和 indicator_params
+      config: {
+        ...formData.value.config,
+        ...formData.value.indicator_params
+      }
     }
 
     // 打印发送的数据用于调试
+    console.log('='*80)
+    console.log('📤 [提交前] formData.trend_indicators:', formData.value.trend_indicators)
+    console.log('📤 [提交前] submitData.trend_indicators:', submitData.trend_indicators)
+    console.log('='*80)
     console.log('📤 发送的数据:')
     console.log('   基础信息:', {
       name: submitData.name,
@@ -3084,6 +2932,21 @@ const handleSubmit = async () => {
       market_type: submitData.market_type,
       signal_bot: submitData.signal_bot
     })
+    console.log('   趋势指标:', {
+      trend_indicator: submitData.trend_indicator,
+      trend_indicators: submitData.trend_indicators,
+      trend_indicators_type: typeof submitData.trend_indicators,
+      trend_indicators_isArray: Array.isArray(submitData.trend_indicators),
+      trend_indicators_length: submitData.trend_indicators?.length,
+      trend_indicators_content: JSON.stringify(submitData.trend_indicators),
+      indicator_params: formData.value.indicator_params
+    })
+
+    // 如果 trend_indicators 不是预期的数组，暂停执行
+    if (!Array.isArray(submitData.trend_indicators) || submitData.trend_indicators.length === 0) {
+      console.error('❌ trend_indicators 数据异常！')
+      debugger  // 暂停执行，方便调试
+    }
     console.log('   风险管理:', {
       max_position_size: submitData.max_position_size,
       stop_loss_percentage: submitData.stop_loss_percentage,
@@ -3098,7 +2961,6 @@ const handleSubmit = async () => {
     })
     console.log('   仓位管理:', {
       position_size_type: submitData.position_size_type,
-      position_size_value: submitData.position_size_value,
       auto_reverse: submitData.auto_reverse,
       max_position_time: submitData.max_position_time
     })
@@ -3287,6 +3149,24 @@ onMounted(async () => {
         formData.value.take_profit_percentage = trendBot.take_profit_percentage ? Number(trendBot.take_profit_percentage) : null
         formData.value.take_profit_targets = trendBot.take_profit_targets || []
         formData.value.trend_indicator = trendBot.trend_indicator || 'ma_crossover'
+        // 加载多指标数据（向后兼容）
+        console.log('📥 [编辑模式] 原始 trend_indicators 数据:', {
+          trend_indicators: trendBot.trend_indicators,
+          trend_indicators_type: typeof trendBot.trend_indicators,
+          trend_indicators_isArray: Array.isArray(trendBot.trend_indicators),
+          trend_indicator: trendBot.trend_indicator
+        })
+
+        // 确保 trend_indicators 是数组
+        if (trendBot.trend_indicators && Array.isArray(trendBot.trend_indicators) && trendBot.trend_indicators.length > 0) {
+          formData.value.trend_indicators = trendBot.trend_indicators
+        } else if (trendBot.trend_indicator) {
+          formData.value.trend_indicators = [trendBot.trend_indicator]
+        } else {
+          formData.value.trend_indicators = ['ma_crossover']
+        }
+
+        console.log('✅ [编辑模式] 设置后的 trend_indicators:', formData.value.trend_indicators)
 
         // signal_bot 字段已移除，趋势跟踪机器人现在独立运行
         formData.value.signal_bot = null
@@ -3322,7 +3202,6 @@ onMounted(async () => {
 
         // ============ 仓位管理参数（新增）============
         formData.value.position_size_type = trendBot.position_size_type || 'fixed'
-        formData.value.position_size_value = trendBot.position_size_value || null
         formData.value.auto_reverse = trendBot.auto_reverse || false
         formData.value.max_position_time = trendBot.max_position_time || 86400
 
@@ -3338,6 +3217,65 @@ onMounted(async () => {
         formData.value.alert_on_entry = trendBot.alert_on_entry !== undefined ? trendBot.alert_on_entry : true
         formData.value.alert_on_exit = trendBot.alert_on_exit !== undefined ? trendBot.alert_on_exit : true
         formData.value.alert_on_error = trendBot.alert_on_error !== undefined ? trendBot.alert_on_error : true
+
+        // 加载 config（包含指标参数）
+        if (trendBot.config) {
+          formData.value.config = { ...formData.value.config, ...trendBot.config }
+        }
+
+        // 加载 indicator_params（从 config 中提取各指标的参数）
+        if (trendBot.config) {
+          // 为每个指标提取参数
+          const config = trendBot.config
+          if (config.fast_period !== undefined || config.slow_period !== undefined) {
+            formData.value.indicator_params.ma_crossover = {
+              fast_period: config.fast_period || 12,
+              slow_period: config.slow_period || 26
+            }
+            formData.value.indicator_params.ema_crossover = {
+              fast_period: config.fast_period || 12,
+              slow_period: config.slow_period || 26
+            }
+          }
+          if (config.signal_period !== undefined) {
+            formData.value.indicator_params.macd = {
+              fast_period: config.fast_period || 12,
+              slow_period: config.slow_period || 26,
+              signal_period: config.signal_period || 9
+            }
+          }
+          if (config.rsi_period !== undefined) {
+            formData.value.indicator_params.rsi = {
+              rsi_period: config.rsi_period || 14,
+              rsi_oversold: config.rsi_oversold || 30,
+              rsi_overbought: config.rsi_overbought || 70
+            }
+          }
+          if (config.bollinger_period !== undefined) {
+            formData.value.indicator_params.bollinger = {
+              bollinger_period: config.bollinger_period || 20,
+              bollinger_std: config.bollinger_std || 2
+            }
+          }
+          if (config.adx_period !== undefined) {
+            formData.value.indicator_params.adx = {
+              adx_period: config.adx_period || 14,
+              adx_threshold: config.adx_threshold || 25
+            }
+          }
+          if (config.atr_period !== undefined) {
+            formData.value.indicator_params.supertrend = {
+              atr_period: config.atr_period || 10,
+              atr_multiplier: config.atr_multiplier || 3.0
+            }
+          }
+          if (config.volume_ma_period !== undefined) {
+            formData.value.indicator_params.volume = {
+              volume_ma_period: config.volume_ma_period || 20,
+              volume_threshold: config.volume_threshold || 1.5
+            }
+          }
+        }
       }
 
       // 代币搜索已废弃，改为直接选择交易对，所以不需要设置 selectedToken
@@ -3350,6 +3288,10 @@ onMounted(async () => {
         trading_pair: formData.value.trading_pair,
         market_type: formData.value.market_type,
         signal_bot: formData.value.signal_bot
+      })
+      console.log('📊 趋势指标:', {
+        trend_indicators: formData.value.trend_indicators,
+        indicator_params: formData.value.indicator_params
       })
       console.log('📊 风险管理:', {
         max_position_size: formData.value.max_position_size,
@@ -3365,7 +3307,6 @@ onMounted(async () => {
       })
       console.log('📊 仓位管理:', {
         position_size_type: formData.value.position_size_type,
-        position_size_value: formData.value.position_size_value,
         auto_reverse: formData.value.auto_reverse,
         max_position_time: formData.value.max_position_time
       })

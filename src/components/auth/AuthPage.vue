@@ -453,8 +453,8 @@ const validateEmail = async () => {
     return
   }
 
-  // 邮箱格式验证
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  // 邮箱格式验证 - 支持用户名中包含点号，如 liu.zhao@qq.com
+  const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
   if (!emailRegex.test(email)) {
     validationErrors.email = '请输入有效的邮箱地址'
     return

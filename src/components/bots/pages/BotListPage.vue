@@ -933,6 +933,14 @@ watch(() => route.query.type, async () => {
   await loadBots()
 })
 
+// 监听 refresh 参数变化，强制刷新列表
+watch(() => route.query.refresh, async (newVal) => {
+  if (newVal) {
+    console.log('🔄 检测到 refresh 参数，重新加载机器人列表')
+    await loadBots()
+  }
+})
+
 onMounted(async () => {
   await loadBots()
 })

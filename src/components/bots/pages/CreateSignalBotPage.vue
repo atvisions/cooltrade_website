@@ -2205,6 +2205,7 @@ const loadBotData = async () => {
     alertConfig.value.cooldown_minutes = config.cooldown_minutes || 30
     alertConfig.value.signal_expiration_hours = config.signal_expiration_hours || 24
 
+    // 根据信号类型加载配置
     if (formData.value.signal_type === 'price_alert') {
       // 从 config.price_alert 中读取价格提醒配置
       const priceAlert = config.price_alert || {}
@@ -2212,37 +2213,60 @@ const loadBotData = async () => {
         condition: priceAlert.condition || 'above',
         target_price: priceAlert.target_price || ''
       }
-    } else if (formData.value.signal_type === 'rsi' && config.rsi) {
-      rsiConfig.value = {
-        period: config.rsi.period || 14,
-        overbought: config.rsi.overbought || 70,
-        oversold: config.rsi.oversold || 30
+    } else if (formData.value.signal_type === 'indicator_alert') {
+      // 从 config.indicator_alert 中读取指标提醒配置
+      const indicatorAlert = config.indicator_alert || {}
+      const indicatorType = indicatorAlert.indicator_type || 'rsi'
+
+      // 设置指标类型
+      indicatorAlertType.value = indicatorType
+
+      // 根据指标类型加载配置
+      if (indicatorType === 'rsi') {
+        rsiConfig.value = {
+          period: indicatorAlert.period || 14,
+          overbought: indicatorAlert.overbought || 70,
+          oversold: indicatorAlert.oversold || 30
+        }
+      } else if (indicatorType === 'macd') {
+        macdConfig.value = {
+          fast: indicatorAlert.fast || 12,
+          slow: indicatorAlert.slow || 26,
+          signal: indicatorAlert.signal || 9
+        }
+      } else if (indicatorType === 'ma_crossover') {
+        maCrossConfig.value = {
+          fast: indicatorAlert.fast || 7,
+          slow: indicatorAlert.slow || 25
+        }
+      } else if (indicatorType === 'kdj') {
+        kdjConfig.value = {
+          period: indicatorAlert.period || 9,
+          overbought: indicatorAlert.overbought || 80,
+          oversold: indicatorAlert.oversold || 20
+        }
       }
-    } else if (formData.value.signal_type === 'ma_crossover' && config.ma_cross) {
-      maCrossConfig.value = {
-        fast: config.ma_cross.fast || 7,
-        slow: config.ma_cross.slow || 25
-      }
-    } else if (formData.value.signal_type === 'bollinger' && config.bollinger) {
-      bollingerConfig.value = {
-        period: config.bollinger.period || 20,
-        std: config.bollinger.std || 2
-      }
-    } else if (formData.value.signal_type === 'volume' && config.volume) {
-      volumeConfig.value = {
-        threshold: config.volume.threshold || 2.0
-      }
-    } else if (formData.value.signal_type === 'macd' && config.macd) {
-      macdConfig.value = {
-        fast: config.macd.fast || 12,
-        slow: config.macd.slow || 26,
-        signal: config.macd.signal || 9
-      }
-    } else if (formData.value.signal_type === 'kdj' && config.kdj) {
-      kdjConfig.value = {
-        period: config.kdj.period || 9,
-        overbought: config.kdj.overbought || 80,
-        oversold: config.kdj.oversold || 20
+    } else if (formData.value.signal_type === 'volatility') {
+      // 从 config.volatility 中读取波动性提醒配置
+      const volatility = config.volatility || {}
+      volatilityThreshold.value = volatility.threshold_percentage || 5
+    } else if (formData.value.signal_type === 'volume') {
+      // 从 config.volume 中读取成交量/持仓提醒配置
+      const volume = config.volume || {}
+      const volumeType = volume.type || 'volume'
+
+      // 设置成交量提醒类型
+      volumeAlertType.value = volumeType
+
+      // 根据类型加载配置
+      if (volumeType === 'volume') {
+        volumeConfig.value = {
+          threshold: volume.threshold || 2.0
+        }
+      } else if (volumeType === 'open_interest') {
+        openInterestConfig.value = {
+          threshold: volume.threshold || 1.5
+        }
       }
     }
 

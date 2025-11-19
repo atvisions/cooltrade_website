@@ -44,20 +44,35 @@
                 <label class="block text-sm font-medium text-slate-700 mb-2">
                   信号机器人 <span class="text-red-500">*</span>
                 </label>
-                <select
-                  v-model="formData.signal_bot"
-                  @change="handleSignalBotChange"
-                  class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option :value="null">请选择信号机器人</option>
-                  <option
-                    v-for="bot in availableSignalBots"
-                    :key="bot.id"
-                    :value="bot.signal_bot"
-                  >
-                    {{ bot.name }} ({{ bot.token_symbol }})
-                  </option>
-                </select>
+                <Listbox v-model="formData.signal_bot" @update:modelValue="handleSignalBotChange">
+                  <div class="relative">
+                    <ListboxButton class="relative w-full cursor-default rounded-xl bg-slate-50 py-3 pl-4 pr-10 text-left border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                      <span class="block truncate text-slate-700">
+                        {{ selectedSignalBotLabel || '请选择信号机器人' }}
+                      </span>
+                      <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                        <ChevronUpDownIcon class="h-5 w-5 text-slate-400" aria-hidden="true" />
+                      </span>
+                    </ListboxButton>
+                    <transition leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
+                      <ListboxOptions class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                        <ListboxOption
+                          v-for="bot in availableSignalBots"
+                          :key="bot.id"
+                          :value="bot.signal_bot"
+                          v-slot="{ active, selected }"
+                          as="template"
+                        >
+                          <li :class="[active ? 'bg-slate-100 text-slate-900' : 'text-slate-700', 'relative cursor-default select-none py-3 pl-4 pr-4']">
+                            <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">
+                              {{ bot.name }} ({{ bot.token_symbol }})
+                            </span>
+                          </li>
+                        </ListboxOption>
+                      </ListboxOptions>
+                    </transition>
+                  </div>
+                </Listbox>
                 <p v-if="errors.signal_bot" class="mt-1 text-sm text-red-500">{{ errors.signal_bot }}</p>
               </div>
 
@@ -2900,6 +2915,12 @@ const selectedSignalBot = computed(() => {
   return availableSignalBots.value.find(bot => bot.signal_bot === formData.value.signal_bot)
 })
 
+// 选中的信号机器人标签（用于 Listbox 显示）
+const selectedSignalBotLabel = computed(() => {
+  if (!selectedSignalBot.value) return null
+  return `${selectedSignalBot.value.name} (${selectedSignalBot.value.token_symbol})`
+})
+
 // 信号类型标签映射
 const getSignalTypeLabel = (signalType) => {
   const labels = {
@@ -3232,7 +3253,8 @@ const isFormValid = computed(() => {
   validationLog.checks.exchange_api = {
     value: formData.value.exchange_api,
     valid: !!formData.value.exchange_api,
-    required: true
+    required: true,
+    note: 'exchange_api 从信号机器人自动继承'
   }
 
   validationLog.checks.token = {
@@ -3514,9 +3536,17 @@ const loadSignalBots = async () => {
     const response = await botAPI.getBotList()
     console.log('📊 机器人列表响应:', response)
 
-    // 筛选出类型为 'signal' 的机器人（不限制状态，让用户可以选择任何信号机器人）
+    // 筛选出类型为 'signal' 的机器人，并排除价格提醒类型
     const allBots = response.results || response || []
-    availableSignalBots.value = allBots.filter(bot => bot.bot_type === 'signal')
+    availableSignalBots.value = allBots.filter(bot => {
+      // 必须是信号机器人
+      if (bot.bot_type !== 'signal') return false
+
+      // 排除价格提醒类型（价格提醒不能关联趋势跟踪机器人）
+      if (bot.signal_type === 'price_alert') return false
+
+      return true
+    })
 
     console.log('✅ 加载信号机器人列表成功:', availableSignalBots.value.length, '个')
     console.log('📋 信号机器人列表:', availableSignalBots.value)
@@ -4144,6 +4174,7 @@ const handleSignalBotChange = () => {
     console.log('  - token_name:', signalBot.token_name)
     console.log('  - token_logo:', signalBot.token_logo)
     console.log('  - exchange_name:', signalBot.exchange_name)
+    console.log('  - exchange_api:', signalBot.exchange_api)
 
     // 自动继承 token
     if (signalBot.token) {
@@ -4172,6 +4203,22 @@ const handleSignalBotChange = () => {
 
       // 加载计价币种列表
       loadQuoteAssets()
+    }
+
+    // 自动继承交易所API（如果信号机器人有 exchange_api）
+    if (signalBot.exchange_api) {
+      formData.value.exchange_api = signalBot.exchange_api
+
+      // 设置 selectedExchangeAPI 用于显示
+      const exchangeApiObj = exchangeAPIs.value.find(api => api.id === signalBot.exchange_api)
+      if (exchangeApiObj) {
+        selectedExchangeAPI.value = exchangeApiObj
+        console.log('✅ 已继承交易所API:', exchangeApiObj)
+      } else {
+        console.warn('⚠️ 未找到对应的交易所API对象，ID:', signalBot.exchange_api)
+      }
+    } else {
+      console.log('ℹ️ 信号机器人没有配置交易所API（可能使用公开数据）')
     }
   } else {
     console.warn('⚠️ 未找到对应的信号机器人！')

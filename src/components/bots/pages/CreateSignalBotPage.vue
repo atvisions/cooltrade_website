@@ -396,6 +396,32 @@
                   </svg>
                   <h3 class="text-base font-semibold text-slate-900">价格提醒设置</h3>
                 </div>
+
+                <!-- 警告提示 -->
+                <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div class="flex gap-3">
+                    <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <div class="flex-1">
+                      <h4 class="text-sm font-semibold text-blue-900 mb-1">💡 功能说明</h4>
+                      <p class="text-sm text-blue-800 mb-2">
+                        价格提醒是一个<strong>纯通知工具</strong>，帮助您关注重要价格位。
+                      </p>
+                      <ul class="text-xs text-blue-700 space-y-1 ml-4 list-disc">
+                        <li><strong>中性通知</strong>：当价格达到目标时发送提醒，不包含买卖建议</li>
+                        <li><strong>不支持自动交易</strong>：价格提醒无法关联趋势跟踪机器人</li>
+                        <li><strong>不支持AI分析</strong>：仅提供价格到达通知，不进行市场分析</li>
+                        <li><strong>适用场景</strong>：关注关键价格位、设置止盈止损提醒、监控突破位</li>
+                      </ul>
+                      <div class="mt-2 pt-2 border-t border-blue-200">
+                        <p class="text-xs text-blue-700">
+                          <strong>💡 提示：</strong>如需自动交易和AI分析，请使用"指标信号提醒"（支持MA交叉、RSI、MACD等技术指标）
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
                 <div class="space-y-4">
                   <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">
@@ -504,51 +530,56 @@
                   </div>
 
                   <!-- 使用场景说明 -->
-                  <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
                     <div class="flex items-center gap-2 mb-3">
-                      <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                       </svg>
-                      <div class="text-xs font-semibold text-blue-900">常见使用场景</div>
+                      <div class="text-xs font-semibold text-slate-900">💡 使用场景示例</div>
                     </div>
-                    <div class="space-y-2 text-xs text-blue-800">
+                    <div class="space-y-2 text-xs text-slate-700">
                       <div class="flex items-start gap-2">
-                        <svg class="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        <svg class="w-4 h-4 text-slate-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13l-3 3m0 0l-3-3m3 3V8m0 13a9 9 0 110-18 9 9 0 010 18z" />
                         </svg>
                         <div>
-                          <span class="font-semibold">抄底场景：</span>
-                          设置"价格低于"并填入期望的买入价格，当价格跌到心理价位时收到通知，考虑是否买入
+                          <span class="font-semibold">关注低价：</span>
+                          设置"价格低于"目标价，当价格跌到关注位时收到通知，您可以自行判断是否入场
                         </div>
                       </div>
                       <div class="flex items-start gap-2">
-                        <svg class="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 text-slate-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 11l3-3m0 0l3 3m-3-3v8m0-13a9 9 0 110 18 9 9 0 010-18z" />
+                        </svg>
+                        <div>
+                          <span class="font-semibold">关注高价：</span>
+                          设置"价格高于"目标价，当价格涨到关注位时收到通知，您可以自行判断是否离场
+                        </div>
+                      </div>
+                      <div class="flex items-start gap-2">
+                        <svg class="w-4 h-4 text-slate-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                         </svg>
                         <div>
-                          <span class="font-semibold">止盈场景：</span>
-                          设置"价格高于"并填入期望的卖出价格，当价格涨到目标价位时收到通知，考虑是否卖出
+                          <span class="font-semibold">关注突破：</span>
+                          设置"向上突破"或"向下突破"关键价格位，突破时收到通知，提醒您关注市场变化
                         </div>
                       </div>
-                      <div class="flex items-start gap-2">
-                        <svg class="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                        </svg>
-                        <div>
-                          <span class="font-semibold">关键位场景：</span>
-                          设置"向上突破"或"向下突破"关键阻力/支撑位，突破时收到通知，可能有大行情
-                        </div>
+                      <div class="mt-3 pt-3 border-t border-slate-200">
+                        <p class="text-slate-600">
+                          <strong>注意：</strong>价格提醒只是通知工具，不提供交易建议。收到通知后，请结合市场情况自行判断操作。
+                        </p>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <!-- 时间周期 -->
-              <div>
+              <!-- 时间周期（价格提醒不需要） -->
+              <div v-if="formData.signal_type !== 'price_alert'">
                 <div class="flex items-baseline gap-2 mb-3">
                   <label class="block text-sm font-medium text-slate-700">
-                    时间周期
+                    时间周期 <span class="text-red-500">*</span>
                   </label>
                   <div class="relative">
                     <button
@@ -564,8 +595,8 @@
                       v-if="showTimeframeTooltip"
                       class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg z-50 pointer-events-none"
                     >
-                      <div class="whitespace-nowrap">周期越短信号越频繁</div>
-                      <div class="whitespace-nowrap">周期越长信号越稳定</div>
+                      <div class="whitespace-nowrap">用于计算技术指标的K线周期</div>
+                      <div class="whitespace-nowrap">周期越短信号越频繁，越长信号越稳定</div>
                       <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
                     </div>
                   </div>
@@ -1133,21 +1164,21 @@
           </Card>
 
           <!-- AI 分析模式 -->
-          <Card variant="default" class="mb-6">
-            <div class="flex items-center gap-3 py-3">
-              <div class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
-                <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <div class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+                <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                 </svg>
               </div>
               <div class="flex-1">
                 <div class="flex items-center gap-2">
-                  <h2 class="text-lg font-semibold text-slate-900">AI 分析模式</h2>
+                  <h2 class="text-lg font-semibold text-amber-900">AI 分析模式</h2>
                   <div class="relative">
                     <button
                       @mouseenter="showAITooltip = true"
                       @mouseleave="showAITooltip = false"
-                      class="p-1 text-slate-400 hover:text-slate-600 transition-colors"
+                      class="p-1 text-amber-600 hover:text-amber-700 transition-colors"
                     >
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -1164,13 +1195,13 @@
                     </div>
                   </div>
                 </div>
-                <p class="text-sm text-slate-500">使用 AI 深度分析市场</p>
+                <p class="text-sm text-amber-700">使用 AI 深度分析市场</p>
               </div>
               <button
-                @click="formData.use_advanced_analysis = !formData.use_advanced_analysis"
+                @click="handleAIToggle"
                 :class="[
                   'relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-200 flex-shrink-0',
-                  formData.use_advanced_analysis ? 'bg-blue-600' : 'bg-gray-200'
+                  formData.use_advanced_analysis ? 'bg-amber-500' : 'bg-gray-300'
                 ]"
               >
                 <span :class="[
@@ -1179,7 +1210,7 @@
                 ]"></span>
               </button>
             </div>
-          </Card>
+          </div>
 
           <!-- 通知设置 -->
           <Card variant="default" class="mb-6">
@@ -1282,7 +1313,8 @@
                 </label>
               </div>
 
-              <div class="mt-4">
+              <!-- 冷却时间（只在"条件维持提醒"模式下显示） -->
+              <div v-if="alertConfig.mode === 'condition_sustain'" class="mt-4">
                 <div class="flex items-baseline gap-2 mb-2">
                   <label class="block text-sm font-medium text-slate-700">
                     冷却时间（分钟）
@@ -1301,7 +1333,7 @@
                       v-if="showCooldownTooltip"
                       class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg z-50 pointer-events-none"
                     >
-                      <div class="whitespace-nowrap">两次提醒之间的最小间隔</div>
+                      <div class="whitespace-nowrap">条件持续满足时，两次提醒之间的最小间隔</div>
                       <div class="whitespace-nowrap">新手 60 分钟 | 短期 15-30 分钟 | 专业 30 分钟</div>
                       <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
                     </div>
@@ -1450,7 +1482,7 @@
                         {{ selectedToken?.symbol ? `${selectedToken.symbol}/${formData.trading_pair || 'USDT'}` : '-' }}
                       </span>
                     </div>
-                    <div class="flex justify-between text-xs">
+                    <div v-if="formData.signal_type !== 'price_alert'" class="flex justify-between text-xs">
                       <span class="text-slate-500">时间周期</span>
                       <span class="font-medium text-slate-900">
                         {{ timeframes?.find(t => t.value === formData.timeframe)?.label || '-' }}
@@ -1667,7 +1699,7 @@
                         {{ alertModes?.find(m => m.value === alertConfig.mode)?.label || '-' }}
                       </span>
                     </div>
-                    <div class="flex items-center justify-between text-xs">
+                    <div v-if="alertConfig.mode === 'condition_sustain'" class="flex items-center justify-between text-xs">
                       <div class="flex items-center gap-2">
                         <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -2854,6 +2886,7 @@ const handleSubmit = async () => {
       description: formData.value.description,
       token: formData.value.token,
       exchange_name: formData.value.exchange_name,  // 交易所名称（信号机器人只需要这个）
+      exchange_api: formData.value.exchange_api || null,  // 交易所API（可选，用于获取账户数据）
       trading_pair: formData.value.trading_pair,
       timeframe: formData.value.timeframe,
       signal_type: formData.value.signal_type,
@@ -2904,6 +2937,18 @@ const handleCancel = () => {
   router.back()
 }
 
+// 处理AI分析开关点击
+const handleAIToggle = () => {
+  // 如果是价格提醒类型，显示提示信息
+  if (formData.value.signal_type === 'price_alert') {
+    showError('价格提醒无需开启 AI 分析模式')
+    return
+  }
+
+  // 非价格提醒类型，正常切换
+  formData.value.use_advanced_analysis = !formData.value.use_advanced_analysis
+}
+
 // 页面加载时获取数据
 // 点击外部关闭搜索结果
 const handleClickOutside = (event) => {
@@ -2912,6 +2957,14 @@ const handleClickOutside = (event) => {
     showTokenResults.value = false
   }
 }
+
+// 监听信号类型变化，价格提醒时自动关闭AI分析
+watch(() => formData.value.signal_type, (newType) => {
+  if (newType === 'price_alert') {
+    // 价格提醒不支持AI分析，自动关闭
+    formData.value.use_advanced_analysis = false
+  }
+})
 
 onMounted(() => {
   loadData()

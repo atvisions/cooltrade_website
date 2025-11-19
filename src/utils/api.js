@@ -154,7 +154,7 @@ export async function apiRequest(url, options = {}) {
       const errorData = await response.json().catch(() => ({}))
 
       // 构建详细的错误信息
-      let errorMessage = errorData.message || `HTTP error! status: ${response.status}`
+      let errorMessage = errorData.error || errorData.message || `HTTP error! status: ${response.status}`
 
       // 如果有验证错误，添加详细信息
       if (errorData.errors && typeof errorData.errors === 'object') {

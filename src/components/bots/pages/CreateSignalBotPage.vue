@@ -82,6 +82,130 @@
                   </div>
                   <p v-if="errors.exchange_name" class="mt-1 text-sm text-red-500">{{ errors.exchange_name }}</p>
                 </div>
+
+                <!-- 选择交易所API账号 -->
+                <div>
+                  <div class="flex items-center justify-between mb-2">
+                    <label class="block text-sm font-medium text-slate-700">
+                      选择交易所API账号 <span class="text-red-500">*</span>
+                      <span class="text-xs text-slate-500 ml-2">用于获取市场数据和执行交易</span>
+                    </label>
+                    <button
+                      v-if="formData.exchange_name && filteredExchangeAPIs.length === 0"
+                      type="button"
+                      @click="$router.push('/settings/exchanges')"
+                      class="text-xs text-blue-600 hover:text-blue-700 hover:underline flex items-center gap-1"
+                    >
+                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                      </svg>
+                      添加交易所 API
+                    </button>
+                  </div>
+                  <Listbox v-model="formData.exchange_api" :disabled="!formData.exchange_name || filteredExchangeAPIs.length === 0">
+                    <div class="relative">
+                      <ListboxButton :class="[
+                        'relative w-full cursor-default rounded-lg py-2.5 pl-4 pr-10 text-left border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
+                        !formData.exchange_name || filteredExchangeAPIs.length === 0
+                          ? 'bg-slate-50 opacity-50 cursor-not-allowed'
+                          : 'bg-white hover:border-slate-400'
+                      ]">
+                        <div class="flex items-center gap-3">
+                          <img
+                            v-if="selectedExchangeAPI"
+                            :src="getExchangeLogo(selectedExchangeAPI.exchange)"
+                            :alt="selectedExchangeAPI.exchange"
+                            class="w-6 h-6 rounded object-contain flex-shrink-0"
+                            @error="handleImageError"
+                          />
+                          <div v-else class="w-6 h-6 rounded bg-slate-200 flex-shrink-0 flex items-center justify-center">
+                            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                            </svg>
+                          </div>
+                          <div class="flex-1 min-w-0">
+                            <span class="block truncate text-sm text-slate-700">
+                              <template v-if="selectedExchangeAPI">
+                                {{ selectedExchangeAPI.exchange_display || selectedExchangeAPI.exchange }} - {{ selectedExchangeAPI.name }}
+                                <span
+                                  :class="[
+                                    'text-xs px-2 py-0.5 rounded-full whitespace-nowrap ml-2',
+                                    selectedExchangeAPI.is_testnet
+                                      ? 'bg-orange-100 text-orange-700'
+                                      : 'bg-green-100 text-green-700'
+                                  ]"
+                                >
+                                  {{ selectedExchangeAPI.is_testnet ? '模拟' : '真实' }}
+                                </span>
+                              </template>
+                              <template v-else>
+                                请选择交易所API账号
+                              </template>
+                            </span>
+                          </div>
+                        </div>
+                        <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                          <ChevronUpDownIcon class="h-5 w-5 text-slate-400" aria-hidden="true" />
+                        </span>
+                      </ListboxButton>
+                      <transition leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
+                        <ListboxOptions v-if="formData.exchange_name && filteredExchangeAPIs.length > 0" class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                          <ListboxOption
+                            v-slot="{ active, selected }"
+                            v-for="api in filteredExchangeAPIs"
+                            :key="api.id"
+                            :value="api.id"
+                            as="template"
+                          >
+                            <li :class="[active ? 'bg-slate-100 text-slate-900' : 'text-slate-700', 'relative cursor-default select-none py-3 pl-4 pr-10']">
+                              <div class="flex items-center gap-3">
+                                <img
+                                  :src="getExchangeLogo(api.exchange)"
+                                  :alt="api.exchange"
+                                  class="w-6 h-6 rounded object-contain flex-shrink-0"
+                                  @error="handleImageError"
+                                />
+                                <div class="flex-1 min-w-0">
+                                  <div class="flex items-center gap-2 mb-1">
+                                    <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">
+                                      {{ api.name }}
+                                    </span>
+                                    <span
+                                      :class="[
+                                        'text-xs px-2 py-0.5 rounded-full whitespace-nowrap',
+                                        api.is_testnet
+                                          ? 'bg-orange-100 text-orange-700 font-medium'
+                                          : 'bg-green-100 text-green-700 font-medium'
+                                      ]"
+                                    >
+                                      {{ api.is_testnet ? '模拟账户' : '真实账户' }}
+                                    </span>
+                                  </div>
+                                  <div class="text-xs text-slate-500 truncate">
+                                    {{ api.exchange_display || api.exchange }}
+                                    <template v-if="getBalanceDisplay(api) !== '未同步'">
+                                      · 余额: {{ getBalanceDisplay(api) }}
+                                    </template>
+                                  </div>
+                                </div>
+                              </div>
+                              <span v-if="selected" class="absolute inset-y-0 right-0 flex items-center pr-3 text-blue-600">
+                                <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                </svg>
+                              </span>
+                            </li>
+                          </ListboxOption>
+                        </ListboxOptions>
+                      </transition>
+                    </div>
+                  </Listbox>
+                  <p v-if="errors.exchange_api" class="mt-1 text-sm text-red-500">{{ errors.exchange_api }}</p>
+                  <p v-if="!formData.exchange_name" class="mt-1 text-sm text-orange-500">请先选择交易所</p>
+                  <p v-else-if="filteredExchangeAPIs.length === 0" class="mt-1 text-sm text-orange-500">
+                    该交易所暂无可用的API账号，请先在"交易所管理"中添加
+                  </p>
+                </div>
               </div>
 
               <!-- 代币和计价币种 -->
@@ -94,15 +218,38 @@
                     <span v-else class="text-xs text-slate-500 ml-2">只显示 {{ selectedExchange?.label }} 支持的代币</span>
                   </label>
                   <div class="relative">
+                    <!-- 代币 Logo（选中时显示） -->
+                    <img
+                      v-if="selectedToken"
+                      :src="selectedToken.logo"
+                      :alt="selectedToken.symbol"
+                      class="absolute left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full object-contain pointer-events-none z-10"
+                      @error="handleImageError"
+                    />
                     <input
                       v-model="tokenSearchQuery"
                       @input="handleTokenSearch"
-                      @focus="showTokenResults = true"
+                      @focus="handleTokenInputFocus"
                       type="text"
                       :placeholder="formData.exchange_name ? '搜索代币 (如: BTC, ETH)' : '请先选择交易所'"
                       :disabled="!formData.exchange_name"
-                      class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed"
+                      :class="[
+                        'w-full py-2.5 pr-10 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed',
+                        selectedToken ? 'pl-12' : 'pl-4'
+                      ]"
                     />
+                    <!-- 清除按钮 -->
+                    <button
+                      v-if="selectedToken"
+                      type="button"
+                      @click="clearTokenSelection"
+                      class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors z-10"
+                      title="清除选择"
+                    >
+                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                      </svg>
+                    </button>
                     <div
                       v-if="showTokenResults"
                       class="absolute z-50 w-full mt-1 bg-white border border-slate-200 rounded-lg shadow-lg max-h-60 overflow-y-auto"
@@ -122,9 +269,14 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                           </svg>
                         </div>
-                        <div class="text-slate-600 font-medium">未找到相关代币</div>
+                        <div class="text-slate-600 font-medium">
+                          {{ tokenSearchQuery.trim() ? '未找到相关代币' : '暂无持仓代币' }}
+                        </div>
                         <div class="text-xs text-slate-500 mt-1">
-                          {{ selectedExchange?.label }} 不支持该代币
+                          {{ tokenSearchQuery.trim()
+                            ? `${selectedExchange?.label} 不支持该代币`
+                            : '请输入代币名称或符号进行搜索'
+                          }}
                         </div>
                       </div>
                       <div v-else>
@@ -133,20 +285,33 @@
                           :key="token.id"
                           type="button"
                           @click="selectToken(token)"
-                          class="w-full flex items-center p-3 hover:bg-slate-50 transition-colors text-left"
+                          class="w-full flex items-center p-3 hover:bg-slate-50 transition-colors text-left border-b border-slate-100 last:border-b-0"
                         >
                           <img
                             :src="token.logo"
                             :alt="token.symbol"
-                            class="w-8 h-8 rounded-full mr-3 object-contain"
+                            class="w-8 h-8 rounded-full mr-3 object-contain flex-shrink-0"
                             @error="handleImageError"
                           />
-                          <div class="flex-1">
-                            <div class="font-medium text-slate-900">{{ token.symbol }}</div>
+                          <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2">
+                              <span class="font-medium text-slate-900">{{ token.symbol }}</span>
+                              <span v-if="token.balance" class="text-xs px-2 py-0.5 bg-green-100 text-green-700 rounded-full">
+                                持仓
+                              </span>
+                            </div>
                             <div class="text-xs text-slate-500">{{ token.name }}</div>
+                            <div v-if="token.balance" class="text-xs text-green-600 mt-0.5">
+                              余额: {{ formatBalance(token.balance) }} {{ token.symbol }}
+                            </div>
                           </div>
-                          <div class="text-sm text-slate-600">
-                            ${{ formatPrice(token.current_price) }}
+                          <div class="text-right flex-shrink-0 ml-3">
+                            <div class="text-sm text-slate-600">
+                              ${{ formatPrice(token.current_price) }}
+                            </div>
+                            <div v-if="token.balance && token.current_price" class="text-xs text-slate-500 mt-0.5">
+                              ≈ ${{ formatPrice(token.balance * token.current_price) }}
+                            </div>
                           </div>
                         </button>
                       </div>
@@ -1557,6 +1722,8 @@
 <script setup>
 import { ref, computed, watch, onMounted, onUnmounted, h } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue'
+import { ChevronUpDownIcon } from '@heroicons/vue/20/solid'
 import Header from '../../common/Header.vue'
 import Button from '../../common/ui/Button.vue'
 import Input from '../../common/ui/Input.vue'
@@ -1606,6 +1773,18 @@ const selectedExchange = computed(() => {
   return availableExchanges.value.find(ex => ex.value === formData.value.exchange_name)
 })
 
+// 根据选中的交易所过滤 exchange_api
+const filteredExchangeAPIs = computed(() => {
+  if (!formData.value.exchange_name) return []
+  return availableExchangeAPIs.value.filter(api => api.exchange === formData.value.exchange_name)
+})
+
+// 选中的交易所API
+const selectedExchangeAPI = computed(() => {
+  if (!formData.value.exchange_api) return null
+  return availableExchangeAPIs.value.find(api => api.id === formData.value.exchange_api)
+})
+
 // 代币搜索
 const tokenSearchQuery = ref('')
 const tokenSearchResults = ref([])
@@ -1624,6 +1803,7 @@ const formData = ref({
   name: '',
   description: '',
   exchange_name: '',  // 交易所名称（用于公开数据）
+  exchange_api: null,  // 交易所API（必填，用于获取市场数据）
   token: null,
   trading_pair: 'USDT',
   timeframe: '1h',
@@ -1637,6 +1817,9 @@ const formData = ref({
 
 // 可用的交易所列表（从后端获取）
 const availableExchanges = ref([])
+
+// 可用的交易所API列表（从后端获取）
+const availableExchangeAPIs = ref([])
 
 const errors = ref({})
 
@@ -1764,6 +1947,24 @@ const formatPrice = (price) => {
   const numPrice = typeof price === 'string' ? parseFloat(price) : price
   if (isNaN(numPrice)) return '0.00'
   return numPrice.toFixed(2)
+}
+
+// 格式化余额
+const formatBalance = (balance) => {
+  if (!balance) return '0'
+  const numBalance = typeof balance === 'string' ? parseFloat(balance) : balance
+  if (isNaN(numBalance)) return '0'
+
+  // 如果余额很小，显示更多小数位
+  if (numBalance < 0.01) {
+    return numBalance.toFixed(8)
+  } else if (numBalance < 1) {
+    return numBalance.toFixed(6)
+  } else if (numBalance < 100) {
+    return numBalance.toFixed(4)
+  } else {
+    return numBalance.toFixed(2)
+  }
 }
 
 // 快捷百分比选项
@@ -1911,18 +2112,151 @@ watch(selectedToken, (newToken) => {
   }
 })
 
-// 监听交易所变化，清空代币选择
+// 监听交易所变化，清空代币选择和交易所API选择
 watch(() => formData.value.exchange_name, (newExchange, oldExchange) => {
   // 只有在交易所真正改变时才清空（不是初始化）
   if (oldExchange && newExchange !== oldExchange) {
+    // 清空交易所API选择
+    formData.value.exchange_api = null
+
     // 清空代币选择
     formData.value.token = null
     tokenSearchQuery.value = ''
     tokenSearchResults.value = []
     showTokenResults.value = false
-    console.log(`✅ 交易所已切换到 ${newExchange}，已清空代币选择`)
+    console.log(`✅ 交易所已切换到 ${newExchange}，已清空交易所API和代币选择`)
   }
 })
+
+// 处理代币输入框获得焦点
+const handleTokenInputFocus = async () => {
+  showTokenResults.value = true
+
+  // 如果输入框为空且已选择交易所API，加载持仓代币
+  if (!tokenSearchQuery.value.trim() && formData.value.exchange_api && selectedExchangeAPI.value) {
+    await loadAccountTokens()
+  }
+}
+
+// 加载账户持仓代币
+const loadAccountTokens = async () => {
+  if (!selectedExchangeAPI.value) {
+    return
+  }
+
+  try {
+    tokenSearching.value = true
+
+    const snapshot = selectedExchangeAPI.value.balance_snapshot
+    if (!snapshot || typeof snapshot !== 'object') {
+      tokenSearchResults.value = []
+      return
+    }
+
+    // 收集所有有余额的代币符号
+    const tokenSymbols = new Set()
+
+    // 从现货账户收集
+    if (snapshot.spot && typeof snapshot.spot === 'object') {
+      Object.keys(snapshot.spot).forEach(symbol => {
+        const rawValue = snapshot.spot[symbol]
+
+        // 如果是对象，可能包含 free, used, total 等字段
+        let balance = 0
+        if (typeof rawValue === 'object' && rawValue !== null) {
+          balance = parseFloat(rawValue.total || rawValue.free || rawValue.available || 0)
+        } else {
+          balance = parseFloat(rawValue)
+        }
+
+        if (!isNaN(balance) && balance > 0) {
+          tokenSymbols.add(symbol)
+        }
+      })
+    }
+
+    // 从合约账户收集
+    if (snapshot.future && typeof snapshot.future === 'object') {
+      Object.keys(snapshot.future).forEach(symbol => {
+        const rawValue = snapshot.future[symbol]
+
+        // 如果是对象，可能包含 free, used, total 等字段
+        let balance = 0
+        if (typeof rawValue === 'object' && rawValue !== null) {
+          balance = parseFloat(rawValue.total || rawValue.free || rawValue.available || 0)
+        } else {
+          balance = parseFloat(rawValue)
+        }
+
+        if (!isNaN(balance) && balance > 0) {
+          tokenSymbols.add(symbol)
+        }
+      })
+    }
+
+    if (tokenSymbols.size === 0) {
+      tokenSearchResults.value = []
+      return
+    }
+
+    // 搜索这些代币的详细信息
+    const tokens = []
+    for (const symbol of tokenSymbols) {
+      try {
+        const response = await apiRequest(
+          `${API_ENDPOINTS.AI_STRATEGY_SEARCH_TOKEN}?q=${symbol}&exchange=${formData.value.exchange_name}`
+        )
+
+        if (response.status === 'success' && response.data.results && response.data.results.length > 0) {
+          const token = response.data.results[0]
+
+          // 添加余额信息（从现货和合约账户累加）
+          let totalBalance = 0
+
+          // 从现货账户获取余额
+          if (snapshot.spot && snapshot.spot[symbol]) {
+            const spotValue = snapshot.spot[symbol]
+            if (typeof spotValue === 'object' && spotValue !== null) {
+              totalBalance += parseFloat(spotValue.total || spotValue.free || 0)
+            } else {
+              totalBalance += parseFloat(spotValue) || 0
+            }
+          }
+
+          // 从合约账户获取余额
+          if (snapshot.future && snapshot.future[symbol]) {
+            const futureValue = snapshot.future[symbol]
+            if (typeof futureValue === 'object' && futureValue !== null) {
+              totalBalance += parseFloat(futureValue.total || futureValue.free || 0)
+            } else {
+              totalBalance += parseFloat(futureValue) || 0
+            }
+          }
+
+          token.balance = totalBalance
+          tokens.push(token)
+        }
+      } catch (error) {
+        console.error(`搜索代币 ${symbol} 失败:`, error)
+      }
+    }
+
+    // 按余额价值排序（余额 * 价格）
+    tokens.sort((a, b) => {
+      const valueA = (a.balance || 0) * (a.current_price || 0)
+      const valueB = (b.balance || 0) * (b.current_price || 0)
+      return valueB - valueA
+    })
+
+    tokenSearchResults.value = tokens
+    console.log('✅ 加载持仓代币成功:', tokens.length, '个')
+  } catch (error) {
+    console.error('加载持仓代币失败:', error)
+    tokenSearchResults.value = []
+  } finally {
+    tokenSearching.value = false
+  }
+}
 
 // 代币搜索
 const handleTokenSearch = () => {
@@ -1935,7 +2269,12 @@ const handleTokenSearch = () => {
   if (query.length < 1) {
     tokenSearchResults.value = []
     tokenSearching.value = false
-    showTokenResults.value = false
+    // 不关闭下拉框，而是加载持仓代币
+    if (formData.value.exchange_api && selectedExchangeAPI.value) {
+      loadAccountTokens()
+    } else {
+      showTokenResults.value = false
+    }
     // 清空选择
     formData.value.token = null
     selectedToken.value = null
@@ -1991,6 +2330,15 @@ const selectToken = (token) => {
   tokenSearchResults.value = []
 }
 
+// 清除代币选择
+const clearTokenSelection = () => {
+  selectedToken.value = null
+  formData.value.token = null
+  tokenSearchQuery.value = ''
+  tokenSearchResults.value = []
+  showTokenResults.value = false
+}
+
 // 快捷选择热门代币
 const quickSelectToken = async (symbol) => {
   // 检查是否选择了交易所
@@ -2022,6 +2370,75 @@ const quickSelectToken = async (symbol) => {
   } finally {
     tokenSearching.value = false
   }
+}
+
+// 获取交易所 Logo（从 availableExchanges 中获取本地图片路径）
+const getExchangeLogo = (exchange) => {
+  const exchangeObj = availableExchanges.value.find(ex => ex.value === exchange)
+  return exchangeObj?.logo || ''
+}
+
+// 获取余额显示（参考 ExchangePage.vue 的实现）
+const getBalanceDisplay = (api) => {
+  if (!api || !api.balance_snapshot || typeof api.balance_snapshot !== 'object') {
+    return '未同步'
+  }
+
+  const snapshot = api.balance_snapshot
+
+  // 新格式：包含 spot 和 future
+  if (snapshot.total_usd !== undefined && snapshot.total_usd !== null) {
+    const totalUsd = parseFloat(snapshot.total_usd)
+    if (!isNaN(totalUsd) && totalUsd > 0) {
+      return `$${totalUsd.toFixed(2)}`
+    }
+  }
+
+  // 尝试从现货账户获取余额
+  if (snapshot.spot && typeof snapshot.spot === 'object') {
+    const spotKeys = Object.keys(snapshot.spot)
+    if (spotKeys.length > 0) {
+      // 优先显示 USDT
+      if (snapshot.spot.USDT !== undefined && snapshot.spot.USDT !== null) {
+        const usdtBalance = parseFloat(snapshot.spot.USDT)
+        if (!isNaN(usdtBalance) && usdtBalance > 0) {
+          return `${usdtBalance.toFixed(2)} USDT`
+        }
+      }
+
+      // 否则显示第一个有余额的币种
+      for (const currency of spotKeys) {
+        const balance = parseFloat(snapshot.spot[currency])
+        if (!isNaN(balance) && balance > 0) {
+          return `${balance.toFixed(2)} ${currency}`
+        }
+      }
+    }
+  }
+
+  // 如果现货没有余额，尝试合约账户
+  if (snapshot.future && typeof snapshot.future === 'object') {
+    const futureKeys = Object.keys(snapshot.future)
+    if (futureKeys.length > 0) {
+      // 优先显示 USDT
+      if (snapshot.future.USDT !== undefined && snapshot.future.USDT !== null) {
+        const usdtBalance = parseFloat(snapshot.future.USDT)
+        if (!isNaN(usdtBalance) && usdtBalance > 0) {
+          return `${usdtBalance.toFixed(2)} USDT`
+        }
+      }
+
+      // 否则显示第一个有余额的币种
+      for (const currency of futureKeys) {
+        const balance = parseFloat(snapshot.future[currency])
+        if (!isNaN(balance) && balance > 0) {
+          return `${balance.toFixed(2)} ${currency}`
+        }
+      }
+    }
+  }
+
+  return '未同步'
 }
 
 // 自动生成机器人名称
@@ -2137,6 +2554,16 @@ const loadData = async () => {
       console.log('✅ 加载交易所列表成功:', availableExchanges.value)
     }
 
+    // 加载交易所API列表
+    const exchangeAPIsResponse = await exchangeAPI.getExchangeList()
+    if (exchangeAPIsResponse.success && exchangeAPIsResponse.data) {
+      availableExchangeAPIs.value = exchangeAPIsResponse.data
+      console.log('✅ 加载交易所API列表成功:', availableExchangeAPIs.value.length, '个')
+      if (availableExchangeAPIs.value.length > 0) {
+        console.log('📊 交易所API数据示例:', availableExchangeAPIs.value[0])
+      }
+    }
+
     // 如果是编辑模式，加载机器人数据
     if (isEditMode.value) {
       await loadBotData()
@@ -2167,10 +2594,15 @@ const loadBotData = async () => {
     formData.value.name = bot.name || ''
     formData.value.description = bot.description || ''
 
-    // 设置交易所（信号机器人只使用 exchange_name）
+    // 设置交易所（信号机器人使用 exchange_name 和 exchange_api）
     if (bot.exchange_name) {
       formData.value.exchange_name = bot.exchange_name
       selectedExchangeType.value = bot.exchange_name
+    }
+
+    // 设置交易所API
+    if (bot.exchange_api) {
+      formData.value.exchange_api = typeof bot.exchange_api === 'object' ? bot.exchange_api.id : bot.exchange_api
     }
 
     formData.value.token = typeof bot.token === 'object' ? bot.token.id : bot.token

@@ -110,7 +110,7 @@
             </div>
           </Card>
 
-          <!-- 第2步: 交易所配置 -->
+          <!-- 第2步: 市场类型配置 -->
           <Card variant="default" class="mb-6">
             <!-- 卡片标题 -->
             <div class="flex items-center gap-3 mb-6">
@@ -120,176 +120,44 @@
                 </svg>
               </div>
               <div>
-                <div class="text-lg font-semibold text-slate-900">交易所配置</div>
-                <div class="text-xs text-slate-500">选择交易所账号和交易对</div>
+                <div class="text-lg font-semibold text-slate-900">市场类型</div>
+                <div class="text-xs text-slate-500">选择交易市场类型（现货或合约）</div>
               </div>
             </div>
 
-            <div class="space-y-6">
-              <!-- 交易所账号 -->
+            <div class="space-y-4">
+              <!-- 市场类型 -->
               <div>
-                <div class="flex items-center justify-between mb-2">
-                  <label class="block text-sm font-medium text-slate-700">
-                    交易所账号 <span class="text-red-500">*</span>
-                  </label>
+                <label class="block text-sm font-medium text-slate-700 mb-2">
+                  市场类型 <span class="text-red-500">*</span>
+                </label>
+                <div class="grid grid-cols-2 gap-3">
                   <button
-                    v-if="availableExchangeAPIs.length === 0"
+                    v-for="type in [
+                      { value: 'spot', label: '现货', icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
+                      { value: 'linear', label: '合约-USDT', icon: 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6' }
+                    ]"
+                    :key="type.value"
+                    @click="formData.market_type = type.value"
+                    :class="[
+                      'flex items-center justify-center gap-2 p-3 rounded-lg text-center transition-all border-2 text-sm font-medium',
+                      formData.market_type === type.value
+                        ? 'border-blue-500 bg-blue-50 text-blue-900'
+                        : 'border-slate-200 bg-white text-slate-700 hover:border-blue-300'
+                    ]"
                     type="button"
-                    @click="goToExchangeSettings"
-                    class="text-xs text-blue-600 hover:text-blue-700 hover:underline flex items-center gap-1"
                   >
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="type.icon" />
                     </svg>
-                    添加交易所 API
+                    {{ type.label }}
                   </button>
                 </div>
-                <Listbox v-model="formData.exchange_api" :disabled="availableExchangeAPIs.length === 0">
-                  <div class="relative">
-                    <ListboxButton :class="[
-                      'relative w-full cursor-default rounded-lg py-2.5 pl-4 pr-10 text-left border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all',
-                      availableExchangeAPIs.length === 0
-                        ? 'bg-slate-50 opacity-50 cursor-not-allowed'
-                        : 'bg-white hover:border-slate-400'
-                    ]">
-                      <div class="flex items-center gap-2">
-                        <img
-                          v-if="selectedExchangeAPI"
-                          :src="getExchangeLogo(selectedExchangeAPI.exchange)"
-                          :alt="selectedExchangeAPI.exchange"
-                          class="w-5 h-5 rounded object-contain"
-                          @error="handleImageError"
-                        />
-                        <div class="flex-1 min-w-0">
-                          <div class="flex items-center gap-2">
-                            <span class="block truncate text-sm text-slate-700">
-                              {{ selectedExchangeAPI?.name || '请选择交易所账号' }}
-                            </span>
-                            <span
-                              v-if="selectedExchangeAPI"
-                              :class="[
-                                'text-xs px-2 py-0.5 rounded-full whitespace-nowrap',
-                                selectedExchangeAPI.is_testnet
-                                  ? 'bg-orange-100 text-orange-700'
-                                  : 'bg-green-100 text-green-700'
-                              ]"
-                            >
-                              {{ selectedExchangeAPI.is_testnet ? '模拟' : '真实' }}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                        <ChevronUpDownIcon class="h-5 w-5 text-slate-400" aria-hidden="true" />
-                      </span>
-                    </ListboxButton>
-                    <transition leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
-                      <ListboxOptions v-if="availableExchangeAPIs.length > 0" class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                        <ListboxOption
-                          v-slot="{ active, selected }"
-                          v-for="api in availableExchangeAPIs"
-                          :key="api.id"
-                          :value="api.id"
-                          as="template"
-                        >
-                          <li :class="[active ? 'bg-slate-100 text-slate-900' : 'text-slate-700', 'relative cursor-default select-none py-3 pl-4 pr-10']">
-                            <div class="flex items-center gap-2">
-                              <img
-                                :src="getExchangeLogo(api.exchange)"
-                                :alt="api.exchange"
-                                class="w-5 h-5 rounded object-contain"
-                                @error="handleImageError"
-                              />
-                              <div class="flex-1 min-w-0">
-                                <div class="flex items-center gap-2 mb-1">
-                                  <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">
-                                    {{ api.name || getExchangeLabel(api.exchange) }}
-                                  </span>
-                                  <span
-                                    :class="[
-                                      'text-xs px-2 py-0.5 rounded-full whitespace-nowrap',
-                                      api.is_testnet
-                                        ? 'bg-orange-100 text-orange-700 font-medium'
-                                        : 'bg-green-100 text-green-700 font-medium'
-                                    ]"
-                                  >
-                                    {{ api.is_testnet ? '模拟账户' : '真实账户' }}
-                                  </span>
-                                </div>
-                                <div class="text-xs text-slate-500 truncate">
-                                  余额: {{ getBalanceDisplay(api) }}
-                                </div>
-                              </div>
-                            </div>
-                            <span v-if="selected" class="absolute inset-y-0 right-0 flex items-center pr-3 text-blue-600">
-                              <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                              </svg>
-                            </span>
-                          </li>
-                        </ListboxOption>
-                      </ListboxOptions>
-                    </transition>
-                  </div>
-                </Listbox>
-                <p v-if="errors.exchange_api" class="mt-1 text-sm text-red-500">{{ errors.exchange_api }}</p>
+                <p v-if="errors.market_type" class="mt-1 text-sm text-red-500">{{ errors.market_type }}</p>
+                <p class="mt-2 text-xs text-slate-500">
+                  💡 提示：交易所账号、代币和计价币种将从关联的信号机器人自动继承
+                </p>
               </div>
-
-              <!-- 市场类型和计价币种 -->
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- 市场类型 -->
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">
-                    市场类型 <span class="text-red-500">*</span>
-                  </label>
-                  <div class="grid grid-cols-2 gap-3">
-                    <button
-                      v-for="type in [
-                        { value: 'spot', label: '现货', icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
-                        { value: 'linear', label: '合约-USDT', icon: 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6' }
-                      ]"
-                      :key="type.value"
-                      @click="formData.market_type = type.value"
-                      :class="[
-                        'flex items-center justify-center gap-2 p-3 rounded-lg text-center transition-all border-2 text-sm font-medium',
-                        formData.market_type === type.value
-                          ? 'border-blue-500 bg-blue-50 text-blue-900'
-                          : 'border-slate-200 bg-white text-slate-700 hover:border-blue-300'
-                      ]"
-                      type="button"
-                    >
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="type.icon" />
-                      </svg>
-                      {{ type.label }}
-                    </button>
-                  </div>
-                  <p v-if="errors.market_type" class="mt-1 text-sm text-red-500">{{ errors.market_type }}</p>
-                </div>
-
-                <!-- 计价币种 -->
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">
-                    计价币种 <span class="text-red-500">*</span>
-                  </label>
-                  <select
-                    v-model="formData.trading_pair"
-                    :disabled="availableQuoteAssets.length === 0"
-                    class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm disabled:bg-slate-50 disabled:opacity-50"
-                  >
-                    <option v-if="availableQuoteAssets.length === 0" :value="null">请先选择交易所和市场类型</option>
-                    <option
-                      v-for="asset in availableQuoteAssets"
-                      :key="asset.value"
-                      :value="asset.value"
-                    >
-                      {{ asset.label }}
-                    </option>
-                  </select>
-                  <p v-if="errors.trading_pair" class="mt-1 text-sm text-red-500">{{ errors.trading_pair }}</p>
-                </div>
-              </div>
-
             </div>
           </Card>
 
@@ -2865,13 +2733,15 @@ const formData = ref({
   trading_mode: 'signal_trigger',  // 趋势跟踪机器人只做信号触发
 
   // ============ 关联信号机器人（必填）============
-  signal_bot: null,  // 关联的信号机器人 ID
+  signal_bot: null,  // 关联的信号机器人 ID（必填，从中继承 token、exchange_api、trading_pair）
 
-  exchange_api: null,  // 交易所 API ID
-  token: null,  // 从信号机器人继承
-  timeframe: '1h',  // 从信号机器人继承
-  trading_pair: 'USDT',  // 交易对 (如: BTC/USDT)
-  market_type: 'spot',  // spot, linear, inverse
+  // 以下字段从 signal_bot 继承，不需要用户配置
+  // token: null,  // 从信号机器人继承
+  // exchange_api: null,  // 从信号机器人继承
+  // trading_pair: 'USDT',  // 从信号机器人继承
+  // timeframe: '1h',  // 从信号机器人继承（可选覆盖）
+
+  market_type: 'spot',  // spot, linear, inverse（必填）
   leverage: 1,  // 杠杆倍数
 
   // ============ 持仓管理 ============
@@ -4039,12 +3909,12 @@ const handleSubmit = async () => {
       description: formData.value.description || `${autoGeneratedName.value} - 自动交易策略`,
       bot_type: 'trend_following',
       trading_mode: formData.value.trading_mode,
-      signal_bot: formData.value.signal_bot,  // 关联的信号机器人 ID（必填）
-      exchange_api: formData.value.exchange_api,
-      token: typeof formData.value.token === 'object' ? formData.value.token.id : formData.value.token,
-      timeframe: formData.value.timeframe,  // 从信号机器人继承
-      trading_pair: formData.value.trading_pair,
-      market_type: formData.value.market_type,
+      signal_bot: formData.value.signal_bot,  // 关联的信号机器人 ID（必填，从中继承 token、exchange_api、trading_pair）
+
+      // 注意：token、exchange_api、trading_pair 从 signal_bot 继承，不需要传递
+      // timeframe 可选，如果不传则从 signal_bot 继承
+
+      market_type: formData.value.market_type,  // 必填
       leverage: formData.value.market_type === 'spot' ? 1 : formData.value.leverage,  // 现货固定为1倍
 
       // ============ 持仓管理（使用正确的字段名）============

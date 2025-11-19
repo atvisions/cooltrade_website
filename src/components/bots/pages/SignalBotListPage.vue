@@ -932,13 +932,16 @@ const updateExchangeOptions = () => {
 }
 
 const updateStatistics = () => {
+  // 只统计信号机器人
+  const signalBots = bots.value.filter(bot => bot.bot_type === 'signal')
+
   statistics.value = {
-    total_bots: bots.value.length,
-    running_bots: bots.value.filter(bot => bot.status === 'running').length,
-    paused_bots: bots.value.filter(bot => bot.status === 'paused').length,
-    total_profit: bots.value.reduce((sum, bot) => sum + (bot.total_profit || 0), 0),
-    win_rate: bots.value.length > 0 
-      ? Math.round(bots.value.reduce((sum, bot) => sum + (bot.win_rate || 0), 0) / bots.value.length)
+    total_bots: signalBots.length,
+    running_bots: signalBots.filter(bot => bot.status === 'running').length,
+    paused_bots: signalBots.filter(bot => bot.status === 'paused').length,
+    total_profit: signalBots.reduce((sum, bot) => sum + (bot.total_profit || 0), 0),
+    win_rate: signalBots.length > 0
+      ? Math.round(signalBots.reduce((sum, bot) => sum + (bot.win_rate || 0), 0) / signalBots.length)
       : 0
   }
 }
@@ -1051,7 +1054,8 @@ const handleConfirmDelete = async () => {
 
   try {
     loadingBotId.value = botId
-    await botAPI.deleteBot(botId)
+    const response = await botAPI.deleteBot(botId)
+
     showSuccess('机器人已删除')
 
     // 从列表中移除已删除的机器人
@@ -1064,7 +1068,15 @@ const handleConfirmDelete = async () => {
     showDeleteConfirm.value = false
   } catch (error) {
     console.error('删除机器人失败:', error)
-    showError(error.message || '删除机器人失败')
+
+    // 检查是否是因为有关联的趋势跟踪机器人
+    const errorMessage = error.message || error.error || '删除机器人失败'
+    if (errorMessage.includes('趋势跟踪机器人正在使用')) {
+      // 显示详细的错误信息，提示用户先删除关联的机器人
+      showError(errorMessage)
+    } else {
+      showError(errorMessage)
+    }
   } finally {
     loadingBotId.value = null
     pendingDeleteBotId.value = null

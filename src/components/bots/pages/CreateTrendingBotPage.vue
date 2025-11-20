@@ -153,11 +153,14 @@
                       { value: 'linear', label: '合约-USDT', icon: 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6' }
                     ]"
                     :key="type.value"
-                    @click="formData.market_type = type.value"
+                    @click="selectMarketType(type.value)"
+                    :disabled="isMarketTypeDisabled(type.value)"
                     :class="[
                       'flex items-center justify-center gap-2 p-3 rounded-lg text-center transition-all border-2 text-sm font-medium',
                       formData.market_type === type.value
                         ? 'border-blue-500 bg-blue-50 text-blue-900'
+                        : isMarketTypeDisabled(type.value)
+                        ? 'border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed'
                         : 'border-slate-200 bg-white text-slate-700 hover:border-blue-300'
                     ]"
                     type="button"
@@ -169,7 +172,19 @@
                   </button>
                 </div>
                 <p v-if="errors.market_type" class="mt-1 text-sm text-red-500">{{ errors.market_type }}</p>
-                <p class="mt-2 text-xs text-slate-500">
+                <!-- 显示代币市场类型支持提示 -->
+                <p v-if="selectedSignalBotData && selectedSignalBotData.token" class="mt-2 text-xs text-slate-600">
+                  <span v-if="selectedSignalBotData.token.is_spot_available && selectedSignalBotData.token.is_futures_available">
+                    ✅ 代币 {{ selectedSignalBotData.token.symbol }} 支持现货和合约交易
+                  </span>
+                  <span v-else-if="selectedSignalBotData.token.is_spot_available && !selectedSignalBotData.token.is_futures_available" class="text-amber-600">
+                    ⚠️ 代币 {{ selectedSignalBotData.token.symbol }} 仅支持现货交易
+                  </span>
+                  <span v-else-if="!selectedSignalBotData.token.is_spot_available && selectedSignalBotData.token.is_futures_available" class="text-amber-600">
+                    ⚠️ 代币 {{ selectedSignalBotData.token.symbol }} 仅支持合约交易
+                  </span>
+                </p>
+                <p v-else class="mt-2 text-xs text-slate-500">
                   💡 提示：交易所账号、代币和计价币种将从关联的信号机器人自动继承
                 </p>
               </div>
@@ -2915,11 +2930,50 @@ const selectedSignalBot = computed(() => {
   return availableSignalBots.value.find(bot => bot.signal_bot === formData.value.signal_bot)
 })
 
+// 选中的信号机器人完整数据（包括 token 信息）
+const selectedSignalBotData = computed(() => {
+  return selectedSignalBot.value
+})
+
 // 选中的信号机器人标签（用于 Listbox 显示）
 const selectedSignalBotLabel = computed(() => {
   if (!selectedSignalBot.value) return null
   return `${selectedSignalBot.value.name} (${selectedSignalBot.value.token_symbol})`
 })
+
+// 判断市场类型是否应该被禁用
+const isMarketTypeDisabled = (marketType) => {
+  if (!selectedSignalBotData.value || !selectedSignalBotData.value.token) {
+    return false // 如果没有选择信号机器人，不禁用任何选项
+  }
+
+  const token = selectedSignalBotData.value.token
+
+  if (marketType === 'spot') {
+    return !token.is_spot_available // 如果代币不支持现货，禁用现货选项
+  } else if (marketType === 'linear' || marketType === 'inverse') {
+    return !token.is_futures_available // 如果代币不支持合约，禁用合约选项
+  }
+
+  return false
+}
+
+// 选择市场类型
+const selectMarketType = (marketType) => {
+  if (isMarketTypeDisabled(marketType)) {
+    const token = selectedSignalBotData.value?.token
+    if (token) {
+      if (marketType === 'spot') {
+        showError(`代币 ${token.symbol} 不支持现货交易，只支持合约交易`)
+      } else {
+        showError(`代币 ${token.symbol} 不支持合约交易，只支持现货交易`)
+      }
+    }
+    return
+  }
+
+  formData.value.market_type = marketType
+}
 
 // 信号类型标签映射
 const getSignalTypeLabel = (signalType) => {
@@ -3504,6 +3558,13 @@ const loadExchangeStats = async (exchange) => {
 const selectExchangeType = (exchangeType) => {
   selectedExchangeType.value = exchangeType
 
+  // 🔧 如果是信号触发模式且已选择信号机器人，不清空数据（因为数据从信号机器人继承）
+  if (formData.value.trading_mode === 'signal_trigger' && formData.value.signal_bot) {
+    console.log('📊 [信号触发模式] 切换交易所类型，保留从信号机器人继承的数据')
+    loadQuoteAssets()
+    return
+  }
+
   // 清空已选择的 API
   formData.value.exchange_api = null
   selectedExchangeAPI.value = null
@@ -3643,50 +3704,7 @@ const getBalanceDisplay = (api) => {
   return '-'
 }
 
-// 代币搜索（已废弃，改为直接选择交易对）
-// const handleTokenSearch = () => {
-//   if (searchTimeout) {
-//     clearTimeout(searchTimeout)
-//   }
-//   if (!selectedExchangeAPI.value) {
-//     showError('请先选择交易所 API')
-//     return
-//   }
-//   const query = tokenSearchQuery.value.trim()
-//   if (!query || query.length < 1) {
-//     tokenSearchResults.value = []
-//     showTokenResults.value = false
-//     return
-//   }
-//   showTokenResults.value = true
-//   searchingTokens.value = true
-//   searchTimeout = setTimeout(async () => {
-//     try {
-//       const response = await apiRequest(
-//         `${API_ENDPOINTS.TOKEN_SEARCH}?q=${encodeURIComponent(query)}&exchange=${selectedExchangeAPI.value.exchange}`
-//       )
-//       const results = response.data?.results || response.data || []
-//       tokenSearchResults.value = Array.isArray(results) ? results : []
-//       console.log('✅ 代币搜索成功:', tokenSearchResults.value.length, '个结果')
-//     } catch (error) {
-//       console.error('搜索代币失败:', error)
-//       tokenSearchResults.value = []
-//       showError('搜索代币失败: ' + (error.message || '未知错误'))
-//     } finally {
-//       searchingTokens.value = false
-//     }
-//   }, 300)
-// }
 
-// 选择代币（已废弃，改为直接选择交易对）
-// const selectToken = (token) => {
-//   selectedToken.value = token
-//   formData.value.token = token  // 存储完整的 token 对象，而不仅仅是 ID
-//   tokenSearchQuery.value = token.symbol
-//   showTokenResults.value = false
-//   // 选择代币后，加载该交易所支持的交易对
-//   loadTradingPairs()
-// }
 
 // 加载交易对列表
 const loadTradingPairs = async () => {
@@ -4207,18 +4225,46 @@ const handleSignalBotChange = () => {
 
     // 自动继承交易所API（如果信号机器人有 exchange_api）
     if (signalBot.exchange_api) {
-      formData.value.exchange_api = signalBot.exchange_api
-
-      // 设置 selectedExchangeAPI 用于显示
+      // 设置 selectedExchangeAPI 用于显示（先设置这个，避免 watch 清空）
       const exchangeApiObj = exchangeAPIs.value.find(api => api.id === signalBot.exchange_api)
       if (exchangeApiObj) {
         selectedExchangeAPI.value = exchangeApiObj
-        console.log('✅ 已继承交易所API:', exchangeApiObj)
+        console.log('✅ 已设置 selectedExchangeAPI:', exchangeApiObj)
       } else {
         console.warn('⚠️ 未找到对应的交易所API对象，ID:', signalBot.exchange_api)
       }
+
+      // 然后设置 formData.exchange_api
+      formData.value.exchange_api = signalBot.exchange_api
+      console.log('✅ 已继承交易所API ID:', signalBot.exchange_api)
     } else {
       console.log('ℹ️ 信号机器人没有配置交易所API（可能使用公开数据）')
+    }
+
+    // 🔧 根据代币支持的市场类型自动选择或验证当前市场类型
+    if (signalBot.token && typeof signalBot.token === 'object') {
+      const token = signalBot.token
+      const currentMarketType = formData.value.market_type
+
+      console.log('📊 代币市场类型支持:')
+      console.log('  - is_spot_available:', token.is_spot_available)
+      console.log('  - is_futures_available:', token.is_futures_available)
+      console.log('  - 当前选择的市场类型:', currentMarketType)
+
+      // 如果当前市场类型不支持，自动切换到支持的类型
+      if (currentMarketType === 'spot' && !token.is_spot_available) {
+        if (token.is_futures_available) {
+          formData.value.market_type = 'linear'
+          console.log('⚠️ 代币不支持现货交易，已自动切换到合约交易 (linear)')
+          showError(`代币 ${token.symbol} 不支持现货交易，已自动切换到合约交易`)
+        }
+      } else if ((currentMarketType === 'linear' || currentMarketType === 'inverse') && !token.is_futures_available) {
+        if (token.is_spot_available) {
+          formData.value.market_type = 'spot'
+          console.log('⚠️ 代币不支持合约交易，已自动切换到现货交易 (spot)')
+          showError(`代币 ${token.symbol} 不支持合约交易，已自动切换到现货交易`)
+        }
+      }
     }
   } else {
     console.warn('⚠️ 未找到对应的信号机器人！')
@@ -4893,30 +4939,19 @@ onMounted(async () => {
   }
 })
 
-// 监听交易所类型变化
-watch(() => selectedExchangeType.value, () => {
-  // 只在非编辑模式下清空数据（编辑模式下应该保留原有选择）
-  if (!isEditMode.value) {
-    // 清空之前选择的账号
-    formData.value.exchange_api = null
-    selectedExchangeAPI.value = null
-    // 清空交易对选择
-    availableTradingPairs.value = []
-    formData.value.trading_pair = null
-    tradingPairSearchQuery.value = ''
-  }
-})
+// 监听交易所类型变化（已废弃，清空逻辑已移到 selectExchangeType 函数中）
+// watch(() => selectedExchangeType.value, () => {
+//   // 清空逻辑已移到 selectExchangeType 函数中
+// })
 
-// 监听交易所账号变化
+// 监听交易所账号变化（同步 selectedExchangeAPI）
 watch(() => formData.value.exchange_api, (newApiId) => {
   if (newApiId) {
-    // 从 filteredExchangeAPIs 中查找对应的 API
-    const foundApi = filteredExchangeAPIs.value.find(api => api.id === newApiId)
-    if (foundApi) {
+    // 从 exchangeAPIs 中查找对应的 API（使用完整列表，避免过滤导致找不到）
+    const foundApi = exchangeAPIs.value.find(api => api.id === newApiId)
+    if (foundApi && selectedExchangeAPI.value?.id !== foundApi.id) {
       selectedExchangeAPI.value = foundApi
-    } else if (!isEditMode.value) {
-      // 只在创建模式下设置为 null，编辑模式下保留原有值
-      selectedExchangeAPI.value = null
+      console.log('🔄 同步 selectedExchangeAPI:', foundApi)
     }
   }
 })

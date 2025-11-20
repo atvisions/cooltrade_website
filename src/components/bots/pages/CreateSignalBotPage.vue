@@ -2060,28 +2060,32 @@ const priceChangePreview = computed(() => {
 
   if (condition === 'above') {
     triggerDescription = `当价格涨至 $${targetFormatted} 或以上时通知`
-    if (target <= current) {
-      isLogicalError = true
-      errorMessage = `目标价格 ($${targetFormatted}) 低于或等于当前价格 ($${current.toLocaleString('en-US', { maximumFractionDigits: 2 })})，价格无法"高于"一个更低的值。建议选择"价格低于"或提高目标价格。`
-    }
+    // 移除验证：允许设置任何目标价格
+    // if (target <= current) {
+    //   isLogicalError = true
+    //   errorMessage = `目标价格 ($${targetFormatted}) 低于或等于当前价格 ($${current.toLocaleString('en-US', { maximumFractionDigits: 2 })})，价格无法"高于"一个更低的值。建议选择"价格低于"或提高目标价格。`
+    // }
   } else if (condition === 'below') {
     triggerDescription = `当价格跌至 $${targetFormatted} 或以下时通知`
-    if (target >= current) {
-      isLogicalError = true
-      errorMessage = `目标价格 ($${targetFormatted}) 高于或等于当前价格 ($${current.toLocaleString('en-US', { maximumFractionDigits: 2 })})，价格无法"低于"一个更高的值。建议选择"价格高于"或降低目标价格。`
-    }
+    // 移除验证：允许设置任何目标价格
+    // if (target >= current) {
+    //   isLogicalError = true
+    //   errorMessage = `目标价格 ($${targetFormatted}) 高于或等于当前价格 ($${current.toLocaleString('en-US', { maximumFractionDigits: 2 })})，价格无法"低于"一个更高的值。建议选择"价格高于"或降低目标价格。`
+    // }
   } else if (condition === 'crosses_above') {
     triggerDescription = `当价格向上突破 $${targetFormatted} 时通知`
-    if (target <= current) {
-      isLogicalError = true
-      errorMessage = `目标价格 ($${targetFormatted}) 低于或等于当前价格，无法"向上突破"。建议提高目标价格或选择"向下突破"。`
-    }
+    // 移除验证：允许设置任何目标价格
+    // if (target <= current) {
+    //   isLogicalError = true
+    //   errorMessage = `目标价格 ($${targetFormatted}) 低于或等于当前价格，无法"向上突破"。建议提高目标价格或选择"向下突破"。`
+    // }
   } else if (condition === 'crosses_below') {
     triggerDescription = `当价格向下跌破 $${targetFormatted} 时通知`
-    if (target >= current) {
-      isLogicalError = true
-      errorMessage = `目标价格 ($${targetFormatted}) 高于或等于当前价格，无法"向下跌破"。建议降低目标价格或选择"向上突破"。`
-    }
+    // 移除验证：允许设置任何目标价格
+    // if (target >= current) {
+    //   isLogicalError = true
+    //   errorMessage = `目标价格 ($${targetFormatted}) 高于或等于当前价格，无法"向下跌破"。建议降低目标价格或选择"向上突破"。`
+    // }
   }
 
   return {

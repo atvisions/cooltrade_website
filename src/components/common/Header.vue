@@ -18,13 +18,6 @@
           <!-- 导航链接 -->
           <nav class="hidden md:flex items-center space-x-1">
             <router-link
-              to="/"
-              class="px-4 py-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-medium"
-              :class="{ 'text-blue-600 bg-blue-50': $route.path === '/' }"
-            >
-              首页
-            </router-link>
-            <router-link
               to="/market"
               class="px-4 py-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-medium"
               :class="{ 'text-blue-600 bg-blue-50': $route.path.startsWith('/market') }"
@@ -38,10 +31,11 @@
               class="relative"
               ref="botsMenuRef"
               @mouseenter="showBotsMenu = true"
+              @mouseleave="showBotsMenu = false"
             >
               <button
                 class="px-4 py-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-medium flex items-center gap-1"
-                :class="{ 'text-blue-600 bg-blue-50': $route.path.startsWith('/bots') || $route.path.startsWith('/signal-bots') || $route.path.startsWith('/ai-strategy') }"
+                :class="{ 'text-blue-600 bg-blue-50': $route.path.startsWith('/bots') || $route.path.startsWith('/signal-bots') }"
               >
                 机器人
                 <svg
@@ -54,6 +48,57 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                 </svg>
               </button>
+
+              <!-- 下拉菜单 -->
+              <transition
+                enter-active-class="transition ease-out duration-100"
+                enter-from-class="transform opacity-0 scale-95"
+                enter-to-class="transform opacity-100 scale-100"
+                leave-active-class="transition ease-in duration-75"
+                leave-from-class="transform opacity-100 scale-100"
+                leave-to-class="transform opacity-0 scale-95"
+              >
+                <div
+                  v-show="showBotsMenu"
+                  class="absolute left-0 top-full mt-2 w-56 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50"
+                >
+                  <!-- 信号机器人 -->
+                  <router-link
+                    to="/signal-bots"
+                    class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
+                    @click="showBotsMenu = false"
+                  >
+                    <div class="flex-shrink-0">
+                      <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                        </svg>
+                      </div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <div class="text-sm font-medium text-gray-900">信号机器人</div>
+                    </div>
+                  </router-link>
+
+                  <!-- 趋势跟踪机器人 -->
+                  <router-link
+                    to="/bots?type=trend_following"
+                    class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
+                    @click="showBotsMenu = false"
+                  >
+                    <div class="flex-shrink-0">
+                      <div class="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                        </svg>
+                      </div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <div class="text-sm font-medium text-gray-900">趋势跟踪</div>
+                    </div>
+                  </router-link>
+                </div>
+              </transition>
             </div>
 
             <router-link
@@ -68,16 +113,96 @@
 
         <!-- 右侧操作区 -->
         <div class="flex items-center space-x-4">
-          <!-- 搜索框 - 始终显示 -->
-          <div class="hidden md:block relative">
+          <!-- 搜索框 - 代币搜索 -->
+          <div class="hidden md:block relative" ref="searchContainerRef">
             <input
+              v-model="searchQuery"
+              @input="handleSearch"
+              @focus="handleSearchFocus"
               type="text"
-              placeholder="搜索用户、策略..."
-              class="w-64 pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="搜索代币..."
+              :class="[
+                'w-64 pl-10 py-2 bg-gray-50 rounded-lg focus:outline-none focus:bg-white transition-all border',
+                searchQuery ? 'pr-10' : 'pr-4',
+                isFocused ? 'ring-2 ring-black border-black' : 'border-transparent'
+              ]"
             />
             <svg class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
             </svg>
+
+            <!-- 清除按钮 -->
+            <button
+              v-if="searchQuery"
+              @click="clearSearch"
+              class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+
+            <!-- 搜索结果下拉框 -->
+            <transition
+              enter-active-class="transition ease-out duration-100"
+              enter-from-class="transform opacity-0 scale-95"
+              enter-to-class="transform opacity-100 scale-100"
+              leave-active-class="transition ease-in duration-75"
+              leave-from-class="transform opacity-100 scale-100"
+              leave-to-class="transform opacity-0 scale-95"
+            >
+              <div
+                v-if="showSearchResults && (searchResults.length > 0 || searching || loadingHotTokens)"
+                class="absolute top-full mt-2 w-96 bg-white rounded-xl shadow-lg border border-gray-200 max-h-96 overflow-y-auto z-50"
+              >
+                <!-- 加载中 -->
+                <div v-if="searching || loadingHotTokens" class="p-4 text-center text-gray-500">
+                  <svg class="animate-spin h-5 w-5 mx-auto text-blue-600" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  <p class="mt-2 text-sm">{{ searchQuery ? '搜索中...' : '加载热门代币...' }}</p>
+                </div>
+
+                <!-- 搜索结果 -->
+                <div v-else-if="searchResults.length > 0" class="py-2">
+                  <!-- 标题 -->
+                  <div v-if="!searchQuery" class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    热门代币
+                  </div>
+
+                  <div
+                    v-for="token in searchResults"
+                    :key="token.id"
+                    @click="selectToken(token)"
+                    class="px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors flex items-center space-x-3"
+                  >
+                    <img
+                      :src="token.logo"
+                      :alt="token.symbol"
+                      class="w-8 h-8 rounded-full"
+                      @error="$event.target.src = '/default-token.png'"
+                    />
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center space-x-2">
+                        <span class="font-semibold text-gray-900">{{ token.name }}</span>
+                        <span class="text-xs text-gray-500">#{{ token.market_cap_rank || '-' }}</span>
+                      </div>
+                    </div>
+                    <div class="text-right">
+                      <div class="font-medium text-gray-900 text-sm">
+                        ${{ formatPrice(token.current_price) }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 无结果 -->
+                <div v-else class="p-4 text-center text-gray-500">
+                  <p class="text-sm">未找到相关代币</p>
+                </div>
+              </div>
+            </transition>
           </div>
 
           <!-- 未登录状态 - 只显示登录按钮 -->
@@ -230,14 +355,6 @@
       <div v-if="showMobileMenu" class="md:hidden border-t border-gray-200 bg-white">
         <div class="px-4 py-3 space-y-1">
           <router-link
-            to="/"
-            class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors"
-            :class="{ 'text-blue-600 bg-blue-50 font-semibold': $route.path === '/' }"
-            @click="showMobileMenu = false"
-          >
-            首页
-          </router-link>
-          <router-link
             to="/market"
             class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors"
             :class="{ 'text-blue-600 bg-blue-50 font-semibold': $route.path.startsWith('/market') }"
@@ -267,182 +384,13 @@
         </div>
       </div>
     </transition>
-
-    <!-- 机器人通栏下拉菜单 -->
-    <transition
-      enter-active-class="transition ease-out duration-200"
-      enter-from-class="transform opacity-0 -translate-y-1"
-      enter-to-class="transform opacity-100 translate-y-0"
-      leave-active-class="transition ease-in duration-150"
-      leave-from-class="transform opacity-100 translate-y-0"
-      leave-to-class="transform opacity-0 -translate-y-1"
-    >
-      <div
-        v-show="showBotsMenu"
-        @mouseenter="showBotsMenu = true"
-        @mouseleave="showBotsMenu = false"
-        class="absolute left-0 right-0 top-full bg-white border-t border-gray-100 shadow-lg"
-      >
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <!-- 信号机器人 -->
-            <router-link
-              to="/signal-bots"
-              class="group block h-full"
-              @click="showBotsMenu = false"
-            >
-              <div class="flex flex-col h-full gap-4 p-6 rounded-lg bg-gray-50 hover:bg-gray-100 transition-all duration-200">
-                <div class="flex items-start gap-4">
-                  <div class="flex-shrink-0">
-                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                      <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-                      </svg>
-                    </div>
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <h3 class="text-base font-semibold text-gray-900 mb-2">信号机器人</h3>
-                    <p class="text-sm text-gray-500 leading-relaxed">实时监控市场信号，及时通知交易机会，无需执行交易</p>
-                  </div>
-                </div>
-                <div class="flex items-center gap-4 text-xs mt-auto pl-14">
-                  <span class="flex items-center gap-1 text-blue-600">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    实时监控
-                  </span>
-                  <span class="flex items-center gap-1 text-blue-600">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    零风险
-                  </span>
-                </div>
-              </div>
-            </router-link>
-
-            <!-- 趋势跟踪机器人 -->
-            <router-link
-              to="/bots?type=trend_following"
-              class="group block h-full"
-              @click="showBotsMenu = false"
-            >
-              <div class="flex flex-col h-full gap-4 p-6 rounded-lg bg-gray-50 hover:bg-gray-100 transition-all duration-200">
-                <div class="flex items-start gap-4">
-                  <div class="flex-shrink-0">
-                    <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                      <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
-                      </svg>
-                    </div>
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <h3 class="text-base font-semibold text-gray-900 mb-2">趋势跟踪</h3>
-                    <p class="text-sm text-gray-500 leading-relaxed">自动识别市场趋势，执行交易策略，支持止损止盈</p>
-                  </div>
-                </div>
-                <div class="flex items-center gap-4 text-xs mt-auto pl-14">
-                  <span class="flex items-center gap-1 text-green-600">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                    </svg>
-                    自动交易
-                  </span>
-                  <span class="flex items-center gap-1 text-green-600">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
-                    </svg>
-                    风控保护
-                  </span>
-                </div>
-              </div>
-            </router-link>
-
-            <!-- 行情分析 -->
-            <router-link
-              to="/ai-strategy"
-              class="group block h-full"
-              @click="showBotsMenu = false"
-            >
-              <div class="flex flex-col h-full gap-4 p-6 rounded-lg bg-gray-50 hover:bg-gray-100 transition-all duration-200">
-                <div class="flex items-start gap-4">
-                  <div class="flex-shrink-0">
-                    <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-                      <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                      </svg>
-                    </div>
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <h3 class="text-base font-semibold text-gray-900 mb-2">行情分析</h3>
-                    <p class="text-sm text-gray-500 leading-relaxed">AI 智能分析市场行情，生成交易策略建议</p>
-                  </div>
-                </div>
-                <div class="flex items-center gap-4 text-xs mt-auto pl-14">
-                  <span class="flex items-center gap-1 text-purple-600">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                    </svg>
-                    AI 分析
-                  </span>
-                  <span class="flex items-center gap-1 text-purple-600">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                    </svg>
-                    策略建议
-                  </span>
-                </div>
-              </div>
-            </router-link>
-
-            <!-- 代币推荐 -->
-            <router-link
-              to="/token-recommendations"
-              class="group block h-full"
-              @click="showBotsMenu = false"
-            >
-              <div class="flex flex-col h-full gap-4 p-6 rounded-lg bg-gray-50 hover:bg-gray-100 transition-all duration-200">
-                <div class="flex items-start gap-4">
-                  <div class="flex-shrink-0">
-                    <div class="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
-                      <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
-                      </svg>
-                    </div>
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <h3 class="text-base font-semibold text-gray-900 mb-2">代币推荐</h3>
-                    <p class="text-sm text-gray-500 leading-relaxed">基于市场数据和技术分析，推荐优质交易机会</p>
-                  </div>
-                </div>
-                <div class="flex items-center gap-4 text-xs mt-auto pl-14">
-                  <span class="flex items-center gap-1 text-orange-600">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
-                    </svg>
-                    数据驱动
-                  </span>
-                  <span class="flex items-center gap-1 text-orange-600">
-                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                    </svg>
-                    技术分析
-                  </span>
-                </div>
-              </div>
-            </router-link>
-          </div>
-        </div>
-      </div>
-    </transition>
   </header>
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { userAPI } from '../../utils/api.js'
+import { apiRequest, API_ENDPOINTS } from '../../utils/api.js'
 import { useUserStore } from '../../utils/userStore.js'
 
 const router = useRouter()
@@ -456,6 +404,17 @@ const showMobileMenu = ref(false)
 const showBotsMenu = ref(false)
 const userMenuRef = ref(null)
 const botsMenuRef = ref(null)
+
+// 搜索相关
+const searchQuery = ref('')
+const searchResults = ref([])
+const showSearchResults = ref(false)
+const searching = ref(false)
+const searchContainerRef = ref(null)
+const isFocused = ref(false)
+const loadingHotTokens = ref(false)
+const isSearching = ref(false) // 标记是否正在搜索（非热门代币）
+let searchTimeout = null
 
 // 这些计算属性已经从 userStore 中获取，不需要重复定义
 
@@ -474,10 +433,144 @@ const handleLogout = () => {
   router.push('/auth')
 }
 
+// 加载热门代币
+const loadHotTokens = async () => {
+  // 如果正在搜索，不要加载热门代币
+  if (isSearching.value) {
+    return
+  }
+
+  loadingHotTokens.value = true
+  try {
+    const response = await apiRequest(
+      `${API_ENDPOINTS.TOKEN_LIST}hot/?limit=5`
+    )
+
+    // 再次检查是否正在搜索（防止在请求期间开始搜索）
+    if (isSearching.value) {
+      return
+    }
+
+    // API 直接返回分页数据，包含 results 数组
+    searchResults.value = response.results || []
+  } catch (error) {
+    console.error('加载热门代币失败:', error)
+    searchResults.value = []
+  } finally {
+    loadingHotTokens.value = false
+  }
+}
+
+// 处理搜索框获得焦点
+const handleSearchFocus = () => {
+  isFocused.value = true
+  showSearchResults.value = true
+
+  // 如果没有搜索内容，加载热门代币
+  if (!searchQuery.value.trim()) {
+    loadHotTokens()
+  }
+}
+
+// 代币搜索
+const handleSearch = () => {
+  if (searchTimeout) {
+    clearTimeout(searchTimeout)
+  }
+
+  const query = searchQuery.value.trim()
+
+  if (query.length < 1) {
+    // 如果清空搜索，显示热门代币
+    isSearching.value = false
+    searchResults.value = []
+    searching.value = false
+    // 只有在搜索框有焦点时才加载热门代币
+    if (isFocused.value) {
+      loadHotTokens()
+    }
+    return
+  }
+
+  // 标记正在搜索
+  isSearching.value = true
+  searching.value = true
+  showSearchResults.value = true
+
+  searchTimeout = setTimeout(async () => {
+    try {
+      // 再次检查搜索内容，防止在延迟期间被清空
+      const currentQuery = searchQuery.value.trim()
+
+      if (currentQuery.length < 1) {
+        isSearching.value = false
+        searching.value = false
+        // 只有在搜索框有焦点时才加载热门代币
+        if (isFocused.value) {
+          loadHotTokens()
+        }
+        return
+      }
+
+      const response = await apiRequest(
+        `${API_ENDPOINTS.TOKEN_SEARCH}?q=${currentQuery}&limit=10`
+      )
+
+      if (response.status === 'success') {
+        searchResults.value = response.data.results || []
+      } else {
+        searchResults.value = []
+      }
+    } catch (error) {
+      console.error('搜索代币失败:', error)
+      searchResults.value = []
+    } finally {
+      isSearching.value = false
+      searching.value = false
+    }
+  }, 300)
+}
+
+// 清除搜索
+const clearSearch = () => {
+  searchQuery.value = ''
+  // handleSearch 会被 @input 触发，它会自动加载热门代币
+  // 所以这里不需要手动调用 loadHotTokens()
+}
+
+// 选择代币
+const selectToken = (token) => {
+  // 使用 symbol 跳转到代币详情页
+  const symbol = token.symbol.toLowerCase()
+  router.push(`/market/${symbol}`)
+
+  // 清空搜索状态
+  searchQuery.value = ''
+  searchResults.value = []
+  showSearchResults.value = false
+  isFocused.value = false
+}
+
+// 格式化价格
+const formatPrice = (price) => {
+  if (!price) return '0.00'
+  const num = parseFloat(price)
+  if (num >= 1) {
+    return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+  }
+  return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 8 })
+}
+
 // 点击外部关闭菜单
 const handleClickOutside = (event) => {
   if (userMenuRef.value && !userMenuRef.value.contains(event.target)) {
     showUserMenu.value = false
+  }
+
+  // 点击搜索框外部关闭搜索结果
+  if (searchContainerRef.value && !searchContainerRef.value.contains(event.target)) {
+    showSearchResults.value = false
+    isFocused.value = false
   }
 }
 

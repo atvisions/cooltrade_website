@@ -397,31 +397,6 @@
                   <h3 class="text-base font-semibold text-slate-900">价格提醒设置</h3>
                 </div>
 
-                <!-- 警告提示 -->
-                <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <div class="flex gap-3">
-                    <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <div class="flex-1">
-                      <h4 class="text-sm font-semibold text-blue-900 mb-1">💡 功能说明</h4>
-                      <p class="text-sm text-blue-800 mb-2">
-                        价格提醒是一个<strong>纯通知工具</strong>，帮助您关注重要价格位。
-                      </p>
-                      <ul class="text-xs text-blue-700 space-y-1 ml-4 list-disc">
-                        <li><strong>中性通知</strong>：当价格达到目标时发送提醒，不包含买卖建议</li>
-                        <li><strong>不支持自动交易</strong>：价格提醒无法关联趋势跟踪机器人</li>
-                        <li><strong>不支持AI分析</strong>：仅提供价格到达通知，不进行市场分析</li>
-                        <li><strong>适用场景</strong>：关注关键价格位、设置止盈止损提醒、监控突破位</li>
-                      </ul>
-                      <div class="mt-2 pt-2 border-t border-blue-200">
-                        <p class="text-xs text-blue-700">
-                          <strong>💡 提示：</strong>如需自动交易和AI分析，请使用"指标信号提醒"（支持MA交叉、RSI、MACD等技术指标）
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
                 <div class="space-y-4">
                   <div>
                     <label class="block text-sm font-medium text-slate-700 mb-2">
@@ -529,6 +504,49 @@
                     </div>
                   </div>
 
+                  <!-- 检查间隔 -->
+                  <div class="space-y-3">
+                    <div class="flex items-baseline gap-2">
+                      <label class="block text-sm font-medium text-slate-700">
+                        检查间隔
+                      </label>
+                      <div class="relative">
+                        <button
+                          @mouseenter="showCheckIntervalTooltip = true"
+                          @mouseleave="showCheckIntervalTooltip = false"
+                          class="p-1 text-slate-400 hover:text-slate-600 transition-colors"
+                        >
+                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </button>
+                        <div
+                          v-if="showCheckIntervalTooltip"
+                          class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg z-50 pointer-events-none whitespace-nowrap"
+                        >
+                          系统多久检查一次价格条件
+                          <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                      <button
+                        v-for="interval in checkIntervals"
+                        :key="interval.value"
+                        type="button"
+                        @click="formData.check_interval = interval.value"
+                        :class="[
+                          'px-4 py-2 rounded-lg text-sm font-medium transition-all',
+                          formData.check_interval === interval.value
+                            ? 'bg-blue-600 text-white shadow-sm'
+                            : 'bg-white text-slate-700 border border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                        ]"
+                      >
+                        {{ interval.label }}
+                      </button>
+                    </div>
+                  </div>
+
                   <!-- 使用场景说明 -->
                   <div class="bg-slate-50 border border-slate-200 rounded-lg p-4">
                     <div class="flex items-center gap-2 mb-3">
@@ -571,108 +589,6 @@
                         </p>
                       </div>
                     </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 时间周期（价格提醒不需要） -->
-              <div v-if="formData.signal_type !== 'price_alert'">
-                <div class="flex items-baseline gap-2 mb-3">
-                  <label class="block text-sm font-medium text-slate-700">
-                    时间周期 <span class="text-red-500">*</span>
-                  </label>
-                  <div class="relative">
-                    <button
-                      @mouseenter="showTimeframeTooltip = true"
-                      @mouseleave="showTimeframeTooltip = false"
-                      class="p-1 text-slate-400 hover:text-slate-600 transition-colors"
-                    >
-                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </button>
-                    <div
-                      v-if="showTimeframeTooltip"
-                      class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg z-50 pointer-events-none"
-                    >
-                      <div class="whitespace-nowrap">用于计算技术指标的K线周期</div>
-                      <div class="whitespace-nowrap">周期越短信号越频繁，越长信号越稳定</div>
-                      <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
-                    </div>
-                  </div>
-                </div>
-                <div class="flex flex-wrap gap-2">
-                  <button
-                    v-for="tf in timeframes"
-                    :key="tf.value"
-                    type="button"
-                    @click="formData.timeframe = tf.value"
-                    :class="[
-                      'px-4 py-2 rounded-lg text-sm font-medium transition-all',
-                      formData.timeframe === tf.value
-                        ? 'bg-blue-600 text-white shadow-sm'
-                        : 'bg-white text-slate-700 border border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-                    ]"
-                  >
-                    {{ tf.label }}
-                  </button>
-                </div>
-              </div>
-
-              <!-- 检查间隔 -->
-              <div>
-                <div class="flex items-baseline gap-2 mb-3">
-                  <label class="block text-sm font-medium text-slate-700">
-                    检查间隔
-                  </label>
-                  <div class="relative">
-                    <button
-                      @mouseenter="showCheckIntervalTooltip = true"
-                      @mouseleave="showCheckIntervalTooltip = false"
-                      class="p-1 text-slate-400 hover:text-slate-600 transition-colors"
-                    >
-                      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </button>
-                    <div
-                      v-if="showCheckIntervalTooltip"
-                      class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg z-50 pointer-events-none"
-                    >
-                      <div class="whitespace-nowrap">系统多久检查一次信号条件</div>
-                      <div class="whitespace-nowrap">独立于时间周期</div>
-                      <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
-                    </div>
-                  </div>
-                </div>
-                <div class="flex flex-wrap gap-2">
-                  <button
-                    v-for="interval in checkIntervals"
-                    :key="interval.value"
-                    type="button"
-                    @click="formData.check_interval = interval.value"
-                    :class="[
-                      'px-4 py-2 rounded-lg text-sm font-medium transition-all',
-                      formData.check_interval === interval.value
-                        ? 'bg-blue-600 text-white shadow-sm'
-                        : 'bg-white text-slate-700 border border-slate-200 hover:border-slate-300 hover:bg-slate-50'
-                    ]"
-                  >
-                    {{ interval.label }}
-                  </button>
-                </div>
-              </div>
-
-              <!-- 说明提示 -->
-              <div class="p-4 bg-blue-50 border border-blue-100 rounded-lg">
-                <div class="flex gap-3">
-                  <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <div class="text-sm text-slate-700 space-y-1.5">
-                    <p><span class="font-semibold text-slate-900">时间周期</span>：决定用哪种 K 线计算指标（如 1 小时 K 线）</p>
-                    <p><span class="font-semibold text-slate-900">检查间隔</span>：决定多久检查一次信号（如每 5 分钟检查一次）</p>
-                    <p class="text-blue-700 font-medium">💡 推荐：检查间隔 ≤ 时间周期，避免错过信号</p>
                   </div>
                 </div>
               </div>
@@ -892,6 +808,95 @@
                       </div>
                     </div>
                   </div>
+
+                  <!-- 时间周期和检查间隔 -->
+                  <div v-if="volumeAlertType" class="space-y-4 pt-4 border-t border-slate-200">
+                    <!-- 时间周期 -->
+                    <div>
+                      <div class="flex items-baseline gap-2 mb-3">
+                        <label class="block text-sm font-medium text-slate-700">
+                          时间周期 <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                          <button
+                            @mouseenter="showTimeframeTooltip = true"
+                            @mouseleave="showTimeframeTooltip = false"
+                            class="p-1 text-slate-400 hover:text-slate-600 transition-colors"
+                          >
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </button>
+                          <div
+                            v-if="showTimeframeTooltip"
+                            class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg z-50 pointer-events-none"
+                          >
+                            <div class="whitespace-nowrap">计算成交量/持仓量的时间窗口</div>
+                            <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="flex flex-wrap gap-2">
+                        <button
+                          v-for="tf in timeframes"
+                          :key="tf.value"
+                          type="button"
+                          @click="formData.timeframe = tf.value"
+                          :class="[
+                            'px-4 py-2 rounded-lg text-sm font-medium transition-all',
+                            formData.timeframe === tf.value
+                              ? 'bg-blue-600 text-white shadow-sm'
+                              : 'bg-white text-slate-700 border border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                          ]"
+                        >
+                          {{ tf.label }}
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- 检查间隔 -->
+                    <div>
+                      <div class="flex items-baseline gap-2 mb-3">
+                        <label class="block text-sm font-medium text-slate-700">
+                          检查间隔
+                        </label>
+                        <div class="relative">
+                          <button
+                            @mouseenter="showCheckIntervalTooltip = true"
+                            @mouseleave="showCheckIntervalTooltip = false"
+                            class="p-1 text-slate-400 hover:text-slate-600 transition-colors"
+                          >
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </button>
+                          <div
+                            v-if="showCheckIntervalTooltip"
+                            class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg z-50 pointer-events-none"
+                          >
+                            <div class="whitespace-nowrap">系统多久检查一次成交量/持仓量</div>
+                            <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="flex flex-wrap gap-2">
+                        <button
+                          v-for="interval in checkIntervals"
+                          :key="interval.value"
+                          type="button"
+                          @click="formData.check_interval = interval.value"
+                          :class="[
+                            'px-4 py-2 rounded-lg text-sm font-medium transition-all',
+                            formData.check_interval === interval.value
+                              ? 'bg-blue-600 text-white shadow-sm'
+                              : 'bg-white text-slate-700 border border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                          ]"
+                        >
+                          {{ interval.label }}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -928,91 +933,354 @@
                   </div>
 
                   <!-- RSI 参数 -->
-                  <div v-if="indicatorAlertType === 'rsi'" class="grid grid-cols-2 gap-4">
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2">
-                        周期
-                        <span class="text-xs text-slate-500 block">推荐 14</span>
-                      </label>
-                      <Input
-                        v-model="rsiConfig.period"
-                        type="number"
-                        placeholder="14"
-                      />
+                  <div v-if="indicatorAlertType === 'rsi'" class="space-y-4">
+                    <!-- 功能描述 -->
+                    <div class="bg-white rounded-lg p-3 text-xs text-slate-600 border border-slate-200">
+                      <div class="flex items-start gap-2">
+                        <svg class="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div>
+                          <p class="font-medium text-slate-700 mb-1">RSI（相对强弱指标）</p>
+                          <p>衡量价格涨跌动能，判断超买超卖状态。RSI > 70 为超买（可能回调），RSI < 30 为超卖（可能反弹）。</p>
+                        </div>
+                      </div>
                     </div>
+
+                    <!-- 快捷参数 -->
                     <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2">
-                        超买阈值
-                        <span class="text-xs text-slate-500 block">推荐 70</span>
-                      </label>
-                      <Input
-                        v-model="rsiConfig.overbought"
-                        type="number"
-                        placeholder="70"
-                      />
+                      <label class="block text-sm font-medium text-slate-700 mb-2">快捷参数</label>
+                      <div class="grid grid-cols-3 gap-2">
+                        <button
+                          type="button"
+                          @click="rsiConfig.period = 14; rsiConfig.overbought = 70; rsiConfig.oversold = 30"
+                          class="px-3 py-2 text-xs border-2 border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all"
+                        >
+                          <div class="font-semibold text-slate-900">标准</div>
+                          <div class="text-slate-500">14/70/30</div>
+                        </button>
+                        <button
+                          type="button"
+                          @click="rsiConfig.period = 14; rsiConfig.overbought = 80; rsiConfig.oversold = 20"
+                          class="px-3 py-2 text-xs border-2 border-slate-200 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-all"
+                        >
+                          <div class="font-semibold text-slate-900">激进</div>
+                          <div class="text-slate-500">14/80/20</div>
+                        </button>
+                        <button
+                          type="button"
+                          @click="rsiConfig.period = 14; rsiConfig.overbought = 65; rsiConfig.oversold = 35"
+                          class="px-3 py-2 text-xs border-2 border-slate-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all"
+                        >
+                          <div class="font-semibold text-slate-900">保守</div>
+                          <div class="text-slate-500">14/65/35</div>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- 参数输入 -->
+                    <div class="grid grid-cols-3 gap-4">
+                      <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">
+                          周期
+                          <span class="text-xs text-slate-500 block">计算窗口</span>
+                        </label>
+                        <Input
+                          v-model="rsiConfig.period"
+                          type="number"
+                          placeholder="14"
+                        />
+                      </div>
+                      <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">
+                          超买阈值
+                          <span class="text-xs text-slate-500 block">卖出信号</span>
+                        </label>
+                        <Input
+                          v-model="rsiConfig.overbought"
+                          type="number"
+                          placeholder="70"
+                        />
+                      </div>
+                      <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">
+                          超卖阈值
+                          <span class="text-xs text-slate-500 block">买入信号</span>
+                        </label>
+                        <Input
+                          v-model="rsiConfig.oversold"
+                          type="number"
+                          placeholder="30"
+                        />
+                      </div>
                     </div>
                   </div>
 
                   <!-- MACD 参数 -->
-                  <div v-if="indicatorAlertType === 'macd'" class="grid grid-cols-3 gap-4">
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2">
-                        快线周期
-                        <span class="text-xs text-slate-500 block">推荐 12</span>
-                      </label>
-                      <Input
-                        v-model="macdConfig.fast"
-                        type="number"
-                        placeholder="12"
-                      />
+                  <div v-if="indicatorAlertType === 'macd'" class="space-y-4">
+                    <!-- 功能描述 -->
+                    <div class="bg-white rounded-lg p-3 text-xs text-slate-600 border border-slate-200">
+                      <div class="flex items-start gap-2">
+                        <svg class="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div>
+                          <p class="font-medium text-slate-700 mb-1">MACD（指数平滑异同移动平均线）</p>
+                          <p>通过快慢均线的交叉判断趋势变化。MACD 线上穿信号线为金叉（买入），下穿为死叉（卖出）。柱状图越大信号越强。</p>
+                        </div>
+                      </div>
                     </div>
+
+                    <!-- 快捷参数 -->
                     <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2">
-                        慢线周期
-                        <span class="text-xs text-slate-500 block">推荐 26</span>
-                      </label>
-                      <Input
-                        v-model="macdConfig.slow"
-                        type="number"
-                        placeholder="26"
-                      />
+                      <label class="block text-sm font-medium text-slate-700 mb-2">快捷参数</label>
+                      <div class="grid grid-cols-3 gap-2">
+                        <button
+                          type="button"
+                          @click="macdConfig.fast = 12; macdConfig.slow = 26; macdConfig.signal = 9"
+                          class="px-3 py-2 text-xs border-2 border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all"
+                        >
+                          <div class="font-semibold text-slate-900">标准</div>
+                          <div class="text-slate-500">12/26/9</div>
+                          <div class="text-slate-400">适合日线</div>
+                        </button>
+                        <button
+                          type="button"
+                          @click="macdConfig.fast = 5; macdConfig.slow = 13; macdConfig.signal = 5"
+                          class="px-3 py-2 text-xs border-2 border-slate-200 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-all"
+                        >
+                          <div class="font-semibold text-slate-900">快速</div>
+                          <div class="text-slate-500">5/13/5</div>
+                          <div class="text-slate-400">适合短线</div>
+                        </button>
+                        <button
+                          type="button"
+                          @click="macdConfig.fast = 19; macdConfig.slow = 39; macdConfig.signal = 9"
+                          class="px-3 py-2 text-xs border-2 border-slate-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all"
+                        >
+                          <div class="font-semibold text-slate-900">慢速</div>
+                          <div class="text-slate-500">19/39/9</div>
+                          <div class="text-slate-400">适合长线</div>
+                        </button>
+                      </div>
                     </div>
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2">
-                        信号线周期
-                        <span class="text-xs text-slate-500 block">推荐 9</span>
-                      </label>
-                      <Input
-                        v-model="macdConfig.signal"
-                        type="number"
-                        placeholder="9"
-                      />
+
+                    <!-- 参数输入 -->
+                    <div class="grid grid-cols-3 gap-4">
+                      <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">
+                          快线周期
+                          <span class="text-xs text-slate-500 block">短期EMA</span>
+                        </label>
+                        <Input
+                          v-model="macdConfig.fast"
+                          type="number"
+                          placeholder="12"
+                        />
+                      </div>
+                      <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">
+                          慢线周期
+                          <span class="text-xs text-slate-500 block">长期EMA</span>
+                        </label>
+                        <Input
+                          v-model="macdConfig.slow"
+                          type="number"
+                          placeholder="26"
+                        />
+                      </div>
+                      <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">
+                          信号线周期
+                          <span class="text-xs text-slate-500 block">MACD平滑</span>
+                        </label>
+                        <Input
+                          v-model="macdConfig.signal"
+                          type="number"
+                          placeholder="9"
+                        />
+                      </div>
                     </div>
                   </div>
 
                   <!-- MA交叉 参数 -->
-                  <div v-if="indicatorAlertType === 'ma_crossover'" class="grid grid-cols-2 gap-4">
-                    <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2">
-                        快线周期
-                        <span class="text-xs text-slate-500 block">推荐 7</span>
-                      </label>
-                      <Input
-                        v-model="maCrossConfig.fast"
-                        type="number"
-                        placeholder="7"
-                      />
+                  <div v-if="indicatorAlertType === 'ma_crossover'" class="space-y-4">
+                    <!-- 功能描述 -->
+                    <div class="bg-white rounded-lg p-3 text-xs text-slate-600 border border-slate-200">
+                      <div class="flex items-start gap-2">
+                        <svg class="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div>
+                          <p class="font-medium text-slate-700 mb-1">MA交叉（移动平均线交叉）</p>
+                          <p>通过快慢均线的交叉判断趋势转折。快线上穿慢线为金叉（买入），下穿为死叉（卖出）。交叉幅度越大信号越强。</p>
+                        </div>
+                      </div>
                     </div>
+
+                    <!-- 快捷参数 -->
                     <div>
-                      <label class="block text-sm font-medium text-slate-700 mb-2">
-                        慢线周期
-                        <span class="text-xs text-slate-500 block">推荐 25</span>
-                      </label>
-                      <Input
-                        v-model="maCrossConfig.slow"
-                        type="number"
-                        placeholder="25"
-                      />
+                      <label class="block text-sm font-medium text-slate-700 mb-2">快捷参数</label>
+                      <div class="grid grid-cols-3 gap-2">
+                        <button
+                          type="button"
+                          @click="maCrossConfig.fast = 7; maCrossConfig.slow = 25"
+                          class="px-3 py-2 text-xs border-2 border-slate-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all"
+                        >
+                          <div class="font-semibold text-slate-900">短线</div>
+                          <div class="text-slate-500">7/25</div>
+                          <div class="text-slate-400">快速反应</div>
+                        </button>
+                        <button
+                          type="button"
+                          @click="maCrossConfig.fast = 20; maCrossConfig.slow = 50"
+                          class="px-3 py-2 text-xs border-2 border-slate-200 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-all"
+                        >
+                          <div class="font-semibold text-slate-900">中线</div>
+                          <div class="text-slate-500">20/50</div>
+                          <div class="text-slate-400">平衡稳定</div>
+                        </button>
+                        <button
+                          type="button"
+                          @click="maCrossConfig.fast = 50; maCrossConfig.slow = 200"
+                          class="px-3 py-2 text-xs border-2 border-slate-200 rounded-lg hover:border-green-500 hover:bg-green-50 transition-all"
+                        >
+                          <div class="font-semibold text-slate-900">长线</div>
+                          <div class="text-slate-500">50/200</div>
+                          <div class="text-slate-400">黄金交叉</div>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- 参数输入 -->
+                    <div class="grid grid-cols-2 gap-4">
+                      <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">
+                          快线周期
+                          <span class="text-xs text-slate-500 block">短期均线</span>
+                        </label>
+                        <Input
+                          v-model="maCrossConfig.fast"
+                          type="number"
+                          placeholder="7"
+                        />
+                      </div>
+                      <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">
+                          慢线周期
+                          <span class="text-xs text-slate-500 block">长期均线</span>
+                        </label>
+                        <Input
+                          v-model="maCrossConfig.slow"
+                          type="number"
+                          placeholder="25"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 时间周期和检查间隔（指标信号提醒专用） -->
+                  <div v-if="indicatorAlertType" class="space-y-4 pt-4 border-t border-slate-200">
+                    <!-- 时间周期 -->
+                    <div>
+                      <div class="flex items-baseline gap-2 mb-3">
+                        <label class="block text-sm font-medium text-slate-700">
+                          时间周期 <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                          <button
+                            @mouseenter="showTimeframeTooltip = true"
+                            @mouseleave="showTimeframeTooltip = false"
+                            class="p-1 text-slate-400 hover:text-slate-600 transition-colors"
+                          >
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </button>
+                          <div
+                            v-if="showTimeframeTooltip"
+                            class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg z-50 pointer-events-none"
+                          >
+                            <div class="whitespace-nowrap">用于计算技术指标的K线周期</div>
+                            <div class="whitespace-nowrap">周期越短信号越频繁，越长信号越稳定</div>
+                            <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="flex flex-wrap gap-2">
+                        <button
+                          v-for="tf in timeframes"
+                          :key="tf.value"
+                          type="button"
+                          @click="formData.timeframe = tf.value"
+                          :class="[
+                            'px-4 py-2 rounded-lg text-sm font-medium transition-all',
+                            formData.timeframe === tf.value
+                              ? 'bg-blue-600 text-white shadow-sm'
+                              : 'bg-white text-slate-700 border border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                          ]"
+                        >
+                          {{ tf.label }}
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- 检查间隔 -->
+                    <div>
+                      <div class="flex items-baseline gap-2 mb-3">
+                        <label class="block text-sm font-medium text-slate-700">
+                          检查间隔
+                        </label>
+                        <div class="relative">
+                          <button
+                            @mouseenter="showCheckIntervalTooltip = true"
+                            @mouseleave="showCheckIntervalTooltip = false"
+                            class="p-1 text-slate-400 hover:text-slate-600 transition-colors"
+                          >
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </button>
+                          <div
+                            v-if="showCheckIntervalTooltip"
+                            class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg z-50 pointer-events-none"
+                          >
+                            <div class="whitespace-nowrap">系统多久检查一次信号条件</div>
+                            <div class="whitespace-nowrap">独立于时间周期</div>
+                            <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="flex flex-wrap gap-2">
+                        <button
+                          v-for="interval in checkIntervals"
+                          :key="interval.value"
+                          type="button"
+                          @click="formData.check_interval = interval.value"
+                          :class="[
+                            'px-4 py-2 rounded-lg text-sm font-medium transition-all',
+                            formData.check_interval === interval.value
+                              ? 'bg-blue-600 text-white shadow-sm'
+                              : 'bg-white text-slate-700 border border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                          ]"
+                        >
+                          {{ interval.label }}
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- 说明提示 -->
+                    <div class="p-4 bg-blue-50 border border-blue-100 rounded-lg">
+                      <div class="flex gap-3">
+                        <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div class="text-sm text-slate-700 space-y-1.5">
+                          <p><span class="font-semibold text-slate-900">时间周期</span>：决定用哪种 K 线计算指标（如 1 小时 K 线）</p>
+                          <p><span class="font-semibold text-slate-900">检查间隔</span>：决定多久检查一次信号（如每 5 分钟检查一次）</p>
+                          <p class="text-blue-700 font-medium">💡 推荐：检查间隔 ≤ 时间周期，避免错过信号</p>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1046,6 +1314,95 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                       <span>高波动性通常预示市场机会或风险，适合短期交易者</span>
+                    </div>
+                  </div>
+
+                  <!-- 时间周期和检查间隔 -->
+                  <div class="space-y-4 pt-4 border-t border-slate-200">
+                    <!-- 时间周期 -->
+                    <div>
+                      <div class="flex items-baseline gap-2 mb-3">
+                        <label class="block text-sm font-medium text-slate-700">
+                          时间周期 <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                          <button
+                            @mouseenter="showTimeframeTooltip = true"
+                            @mouseleave="showTimeframeTooltip = false"
+                            class="p-1 text-slate-400 hover:text-slate-600 transition-colors"
+                          >
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </button>
+                          <div
+                            v-if="showTimeframeTooltip"
+                            class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg z-50 pointer-events-none"
+                          >
+                            <div class="whitespace-nowrap">计算波动性的时间窗口</div>
+                            <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="flex flex-wrap gap-2">
+                        <button
+                          v-for="tf in timeframes"
+                          :key="tf.value"
+                          type="button"
+                          @click="formData.timeframe = tf.value"
+                          :class="[
+                            'px-4 py-2 rounded-lg text-sm font-medium transition-all',
+                            formData.timeframe === tf.value
+                              ? 'bg-blue-600 text-white shadow-sm'
+                              : 'bg-white text-slate-700 border border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                          ]"
+                        >
+                          {{ tf.label }}
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- 检查间隔 -->
+                    <div>
+                      <div class="flex items-baseline gap-2 mb-3">
+                        <label class="block text-sm font-medium text-slate-700">
+                          检查间隔
+                        </label>
+                        <div class="relative">
+                          <button
+                            @mouseenter="showCheckIntervalTooltip = true"
+                            @mouseleave="showCheckIntervalTooltip = false"
+                            class="p-1 text-slate-400 hover:text-slate-600 transition-colors"
+                          >
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </button>
+                          <div
+                            v-if="showCheckIntervalTooltip"
+                            class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg z-50 pointer-events-none"
+                          >
+                            <div class="whitespace-nowrap">系统多久检查一次波动性</div>
+                            <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="flex flex-wrap gap-2">
+                        <button
+                          v-for="interval in checkIntervals"
+                          :key="interval.value"
+                          type="button"
+                          @click="formData.check_interval = interval.value"
+                          :class="[
+                            'px-4 py-2 rounded-lg text-sm font-medium transition-all',
+                            formData.check_interval === interval.value
+                              ? 'bg-blue-600 text-white shadow-sm'
+                              : 'bg-white text-slate-700 border border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                          ]"
+                        >
+                          {{ interval.label }}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -104,26 +104,7 @@
             </div>
           </div>
 
-          <!-- Strategy Feed -->
-          <div class="bg-white rounded-xl overflow-hidden border border-gray-200">
-            <div class="border-b border-gray-100 px-6 py-4">
-              <div class="flex items-center justify-between">
-                <h2 class="text-lg font-semibold text-gray-900 flex items-center">
-                  <svg class="w-5 h-5 mr-2 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                  </svg>
-                  策略单
-                </h2>
-                <span class="text-xs text-gray-500">用户共享策略</span>
-              </div>
-            </div>
-            <div class="p-6">
-              <AIStrategiesGrid
-                :strategies="tokenData.recommended_strategies"
-                :market-condition="tokenData.market_analysis?.condition_label"
-              />
-            </div>
-          </div>
+
 
         </div>
 
@@ -161,7 +142,6 @@ import TokenBasicInfo from './detail/TokenBasicInfo.vue'
 import TradingChart from './detail/TradingChart.vue'
 import TechnicalAnalysisTabs from './detail/TechnicalAnalysisTabs.vue'
 import OnChainIndicators from './detail/OnChainIndicators.vue'
-import AIStrategiesGrid from './detail/AIStrategiesGrid.vue'
 import BotTradingPanel from './detail/BotTradingPanel.vue'
 
 const route = useRoute()

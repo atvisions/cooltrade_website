@@ -92,7 +92,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, watch } from 'vue'
-import { createChart, CrosshairMode, CandlestickSeries } from 'lightweight-charts'
+import { createChart, CrosshairMode, CandlestickSeries, LineSeries } from 'lightweight-charts'
 import { apiRequest, API_BASE_URL } from '../../../utils/api.js'
 
 const props = defineProps({
@@ -137,6 +137,7 @@ const klineCount = ref(0)
 
 let chart = null
 let candlestickSeries = null
+let lineSeries = null  // 收盘价折线图
 let resizeObserver = null
 
 // Initialize chart
@@ -177,6 +178,15 @@ const initChart = () => {
       wickDownColor: '#ef5350',
     })
 
+    // 添加收盘价折线图（让价格走势更连续）
+    lineSeries = chart.addSeries(LineSeries, {
+      color: '#2962FF',
+      lineWidth: 1,
+      crosshairMarkerVisible: false,
+      lastValueVisible: false,
+      priceLineVisible: false,
+    })
+
     // Handle window resize
     resizeObserver = new ResizeObserver(entries => {
       if (entries.length === 0 || entries[0].target !== chartContainer.value) return
@@ -205,26 +215,37 @@ const loadKlineData = async (timeframe) => {
     // Convert symbol format (remove any existing /USDT)
     const cleanSymbol = props.symbol.replace('/USDT', '').replace('USDT', '')
 
+    // 不指定exchange参数，让后端自动选择代币所在的交易所
     const response = await apiRequest(
       `${API_BASE_URL}/market/klines/${cleanSymbol}/`,
       {
         method: 'GET',
         params: {
           timeframe: apiTimeframe,
-          limit: limit,
-          exchange: 'binance'
+          limit: limit
         }
       }
     )
 
     if (response.status === 'success' && response.data) {
-      const { klines, latest_price } = response.data
+      const { klines, latest_price, high_24h, low_24h, volume_24h } = response.data
 
-      // Update latest price info
+      // 检查是否有K线数据
+      if (!klines || klines.length === 0) {
+        error.value = '该代币暂无K线数据'
+        return
+      }
+
+      // Update latest price info with 24h stats
       if (latest_price) {
-        latestPrice.value = latest_price
+        latestPrice.value = {
+          ...latest_price,
+          high_24h: high_24h || latest_price.high_24h,
+          low_24h: low_24h || latest_price.low_24h,
+          volume_24h: volume_24h || latest_price.volume_24h
+        }
         // 发送价格更新事件给父组件
-        emit('price-update', latest_price)
+        emit('price-update', latestPrice.value)
       }
 
       // Format data for lightweight-charts
@@ -236,13 +257,23 @@ const loadKlineData = async (timeframe) => {
         close: k.close,
       }))
 
+      // 提取收盘价数据用于折线图
+      const lineData = klines.map(k => ({
+        time: k.timestamp / 1000,
+        value: k.close,
+      }))
+
       klineCount.value = formattedData.length
 
       // Update chart
       candlestickSeries.setData(formattedData)
+      lineSeries.setData(lineData)  // 更新折线图
       chart.timeScale().fitContent()
     } else {
-      throw new Error(response.message || '加载K线数据失败')
+      // 处理错误响应
+      const errorMsg = response.message || '加载K线数据失败'
+      const errorDetail = response.detail || ''
+      error.value = errorDetail ? `${errorMsg}: ${errorDetail}` : errorMsg
     }
   } catch (err) {
     console.error('Error loading kline data:', err)

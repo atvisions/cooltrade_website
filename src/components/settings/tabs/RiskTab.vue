@@ -295,6 +295,120 @@
             </div>
           </div>
 
+          <!-- 每日最大亏损 -->
+          <div class="bg-white rounded-lg border border-gray-200 p-5 hover:border-gray-300 transition-colors">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex-1">
+                <label class="text-sm font-semibold text-gray-900 flex items-center">
+                  <svg class="w-4 h-4 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  每日最大亏损
+                </label>
+                <p class="text-xs text-gray-500 mt-1 ml-6">单日允许的最大亏损金额</p>
+              </div>
+              <div class="flex items-center space-x-2">
+                <input
+                  v-model.number="tradingPreferences.maxDailyLoss"
+                  type="number"
+                  min="100"
+                  max="10000"
+                  step="100"
+                  class="w-20 px-2 py-1 text-sm font-bold text-gray-900 bg-gray-50 border border-gray-300 rounded text-right focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                />
+                <span class="text-xs font-medium text-gray-600">USDT</span>
+              </div>
+            </div>
+            <input
+              v-model.number="tradingPreferences.maxDailyLoss"
+              type="range"
+              min="100"
+              max="10000"
+              step="100"
+              class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-gray"
+            />
+            <div class="flex justify-between text-xs text-gray-400 mt-2">
+              <span>100</span>
+              <span>10000</span>
+            </div>
+          </div>
+
+          <!-- 最大总仓位 - 隐藏，后端保留 -->
+          <!-- <div class="bg-white rounded-lg border border-gray-200 p-5 hover:border-gray-300 transition-colors">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex-1">
+                <label class="text-sm font-semibold text-gray-900 flex items-center">
+                  <svg class="w-4 h-4 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                  </svg>
+                  最大总仓位
+                </label>
+                <p class="text-xs text-gray-500 mt-1 ml-6">所有机器人的总仓位上限</p>
+              </div>
+              <div class="flex items-center space-x-2">
+                <input
+                  v-model.number="tradingPreferences.maxTotalPosition"
+                  type="number"
+                  min="1000"
+                  max="100000"
+                  step="1000"
+                  class="w-20 px-2 py-1 text-sm font-bold text-gray-900 bg-gray-50 border border-gray-300 rounded text-right focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                />
+                <span class="text-xs font-medium text-gray-600">USDT</span>
+              </div>
+            </div>
+            <input
+              v-model.number="tradingPreferences.maxTotalPosition"
+              type="range"
+              min="1000"
+              max="100000"
+              step="1000"
+              class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-gray"
+            />
+            <div class="flex justify-between text-xs text-gray-400 mt-2">
+              <span>1000</span>
+              <span>100000</span>
+            </div>
+          </div> -->
+
+          <!-- 最大回撤百分比 -->
+          <div class="bg-white rounded-lg border border-gray-200 p-5 hover:border-gray-300 transition-colors">
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex-1">
+                <label class="text-sm font-semibold text-gray-900 flex items-center">
+                  <svg class="w-4 h-4 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/>
+                  </svg>
+                  最大回撤百分比
+                </label>
+                <p class="text-xs text-gray-500 mt-1 ml-6">允许的最大账户回撤比例</p>
+              </div>
+              <div class="flex items-center space-x-2">
+                <input
+                  v-model.number="tradingPreferences.maxDrawdownPercentage"
+                  type="number"
+                  min="5"
+                  max="50"
+                  step="5"
+                  class="w-16 px-2 py-1 text-sm font-bold text-gray-900 bg-gray-50 border border-gray-300 rounded text-right focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                />
+                <span class="text-sm font-medium text-gray-600">%</span>
+              </div>
+            </div>
+            <input
+              v-model.number="tradingPreferences.maxDrawdownPercentage"
+              type="range"
+              min="5"
+              max="50"
+              step="5"
+              class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer slider-gray"
+            />
+            <div class="flex justify-between text-xs text-gray-400 mt-2">
+              <span>5%</span>
+              <span>50%</span>
+            </div>
+          </div>
+
           <!-- 最大杠杆倍数 -->
           <div class="bg-white rounded-lg border border-gray-200 p-5 hover:border-gray-300 transition-colors">
             <div class="flex items-start justify-between mb-4">

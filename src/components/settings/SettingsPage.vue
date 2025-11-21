@@ -310,6 +310,9 @@ const tradingPreferences = ref({
   maxTotalPositions: 5,          // 最大持仓数量
   minPositionSize: 100,          // 最小建仓金额 (USDT)
   maxPositionSize: 5000,         // 最大头寸大小 (USDT)
+  maxTotalPosition: 10000,       // 最大总仓位 (USDT)
+  maxDailyLoss: 500,             // 每日最大亏损 (USDT)
+  maxDrawdownPercentage: 20,     // 最大回撤百分比 (%)
   stopLoss: 5,                   // 止损比例 (%)
   takeProfit: 15,                // 止盈比例 (%)
   slippageTolerance: 1,          // 滑点容忍度 (%)
@@ -1004,19 +1007,23 @@ const saveTradingPreferences = async () => {
 
       if (riskConfig && riskConfig.id) {
         // 构建要更新的数据
+        // max_total_position 自动设置为 max_position_per_bot * 10（支持最多10个机器人）
+        const autoMaxTotalPosition = tradingPreferences.value.maxPositionSize * 10
+
         const updateData = {
           min_position_size: tradingPreferences.value.minPositionSize,
-          max_leverage: tradingPreferences.value.maxLeverage,
-          max_trades_per_day: tradingPreferences.value.maxDailyTrades,
-          max_open_positions: tradingPreferences.value.maxTotalPositions,
           max_position_per_bot: tradingPreferences.value.maxPositionSize,
+          max_total_position: autoMaxTotalPosition,  // 自动计算
+          max_leverage: tradingPreferences.value.maxLeverage,
+          max_daily_loss: tradingPreferences.value.maxDailyLoss,
+          max_drawdown_percentage: tradingPreferences.value.maxDrawdownPercentage,
+          max_open_positions: tradingPreferences.value.maxTotalPositions,
+          max_trades_per_day: tradingPreferences.value.maxDailyTrades,
           circuit_breaker_enabled: tradingPreferences.value.circuitBreakerEnabled,
           circuit_breaker_loss: tradingPreferences.value.circuitBreakerLoss,
-          // 保留其他字段不变
-          max_total_position: riskConfig.max_total_position,
-          max_daily_loss: riskConfig.max_daily_loss,
-          max_drawdown_percentage: riskConfig.max_drawdown_percentage,
         }
+
+        console.log(`📊 自动计算 max_total_position: ${tradingPreferences.value.maxPositionSize} * 10 = ${autoMaxTotalPosition} USDT`)
 
         console.log('📤 更新系统风控配置:', { id: riskConfig.id, data: updateData })
         await botAPI.updateRiskConfig(riskConfig.id, updateData)
@@ -1331,12 +1338,40 @@ onMounted(async () => {
   // 加载风险评估数据（从后端API）
   await loadRiskAssessment()
 
-  // 加载交易偏好
+  // 加载交易偏好（优先从后端加载，然后合并 localStorage）
+  try {
+    const riskConfigResponse = await botAPI.getRiskConfig()
+    const riskConfig = riskConfigResponse.data?.data || riskConfigResponse.data || riskConfigResponse
+
+    if (riskConfig) {
+      // 从后端风控配置映射到前端交易偏好
+      // 注意：max_total_position 不再加载到前端，由后端自动计算
+      tradingPreferences.value = {
+        ...tradingPreferences.value,
+        minPositionSize: riskConfig.min_position_size || tradingPreferences.value.minPositionSize,
+        maxPositionSize: riskConfig.max_position_per_bot || tradingPreferences.value.maxPositionSize,
+        // maxTotalPosition: 不再从后端加载，前端已隐藏
+        maxDailyLoss: riskConfig.max_daily_loss || tradingPreferences.value.maxDailyLoss,
+        maxDrawdownPercentage: riskConfig.max_drawdown_percentage || tradingPreferences.value.maxDrawdownPercentage,
+        maxTotalPositions: riskConfig.max_open_positions || tradingPreferences.value.maxTotalPositions,
+        maxDailyTrades: riskConfig.max_trades_per_day || tradingPreferences.value.maxDailyTrades,
+        maxLeverage: riskConfig.max_leverage || tradingPreferences.value.maxLeverage,
+        circuitBreakerEnabled: riskConfig.circuit_breaker_enabled !== undefined ? riskConfig.circuit_breaker_enabled : tradingPreferences.value.circuitBreakerEnabled,
+        circuitBreakerLoss: riskConfig.circuit_breaker_loss || tradingPreferences.value.circuitBreakerLoss,
+      }
+      console.log('✅ 从后端加载系统风控配置:', tradingPreferences.value)
+    }
+  } catch (error) {
+    console.warn('⚠️ 加载后端风控配置失败，使用默认值:', error)
+  }
+
+  // 然后合并 localStorage 中的偏好设置（localStorage 优先级更高）
   const savedTradingPrefs = localStorage.getItem('trading_preferences')
   if (savedTradingPrefs) {
     try {
       const parsed = JSON.parse(savedTradingPrefs)
       tradingPreferences.value = { ...tradingPreferences.value, ...parsed }
+      console.log('✅ 合并 localStorage 交易偏好:', tradingPreferences.value)
     } catch (error) {
       console.error('解析交易偏好失败:', error)
     }

@@ -46,9 +46,26 @@
                 </label>
                 <Listbox v-model="formData.signal_bot" @update:modelValue="handleSignalBotChange">
                   <div class="relative">
-                    <ListboxButton class="relative w-full cursor-default rounded-xl bg-slate-50 py-3 pl-4 pr-10 text-left border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                      <span class="block truncate text-slate-700">
-                        {{ selectedSignalBotLabel || '请选择信号机器人' }}
+                    <ListboxButton class="relative w-full cursor-default rounded-xl bg-slate-50 py-3 pl-4 pr-32 text-left border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                      <span v-if="selectedSignalBot" class="flex items-center gap-2">
+                        <img
+                          :src="selectedSignalBot.token_logo || '/default-token.png'"
+                          :alt="selectedSignalBot.token_symbol"
+                          class="w-5 h-5 rounded-full"
+                          @error="$event.target.src='/default-token.png'"
+                        />
+                        <span class="truncate text-slate-700">
+                          {{ selectedSignalBotLabel }}
+                        </span>
+                      </span>
+                      <span v-else class="block truncate text-slate-700">
+                        请选择信号机器人
+                      </span>
+                      <!-- 账户类型标签（右侧） -->
+                      <span v-if="selectedSignalBot && selectedSignalBot.exchange_api" class="absolute inset-y-0 right-10 flex items-center pr-2">
+                        <span class="text-xs px-2 py-1 rounded whitespace-nowrap" :class="selectedSignalBot.exchange_api.is_testnet ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'">
+                          {{ selectedSignalBot.exchange_api.is_testnet ? '模拟账户' : '真实账户' }}
+                        </span>
                       </span>
                       <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
                         <ChevronUpDownIcon class="h-5 w-5 text-slate-400" aria-hidden="true" />
@@ -64,9 +81,22 @@
                           as="template"
                         >
                           <li :class="[active ? 'bg-slate-100 text-slate-900' : 'text-slate-700', 'relative cursor-default select-none py-3 pl-4 pr-4']">
-                            <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">
-                              {{ bot.name }} ({{ bot.token_symbol }})
-                            </span>
+                            <div class="flex items-center justify-between gap-3">
+                              <div class="flex items-center gap-2 flex-1 min-w-0">
+                                <img
+                                  :src="bot.token_logo || '/default-token.png'"
+                                  :alt="bot.token_symbol"
+                                  class="w-5 h-5 rounded-full flex-shrink-0"
+                                  @error="$event.target.src='/default-token.png'"
+                                />
+                                <span :class="[selected ? 'font-medium' : 'font-normal', 'truncate']">
+                                  {{ bot.name }} ({{ bot.token_symbol }})
+                                </span>
+                              </div>
+                              <span v-if="bot.exchange_api" class="text-xs px-2 py-1 rounded whitespace-nowrap flex-shrink-0" :class="bot.exchange_api.is_testnet ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'">
+                                {{ bot.exchange_api.is_testnet ? '模拟账户' : '真实账户' }}
+                              </span>
+                            </div>
                           </li>
                         </ListboxOption>
                       </ListboxOptions>
@@ -95,33 +125,7 @@
                 </div>
               </div>
 
-              <!-- 继承的配置信息 -->
-              <div v-if="selectedSignalBot" class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div class="text-sm font-semibold text-blue-900 mb-3 flex items-center gap-2">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  从信号机器人继承的配置
-                </div>
-                <div class="grid grid-cols-2 gap-3 text-xs">
-                  <div class="flex justify-between">
-                    <span class="text-slate-600">交易所:</span>
-                    <span class="font-medium text-slate-900">{{ selectedSignalBot.exchange_name || '-' }}</span>
-                  </div>
-                  <div class="flex justify-between">
-                    <span class="text-slate-600">代币:</span>
-                    <span class="font-medium text-slate-900">{{ selectedSignalBot.token_symbol || '-' }}</span>
-                  </div>
-                  <div class="flex justify-between">
-                    <span class="text-slate-600">时间周期:</span>
-                    <span class="font-medium text-slate-900">{{ selectedSignalBot.timeframe || '-' }}</span>
-                  </div>
-                  <div class="flex justify-between">
-                    <span class="text-slate-600">信号类型:</span>
-                    <span class="font-medium text-slate-900">{{ getSignalTypeLabel(selectedSignalBot.signal_type) }}</span>
-                  </div>
-                </div>
-              </div>
+
             </div>
           </Card>
 
@@ -174,19 +178,118 @@
                 <p v-if="errors.market_type" class="mt-1 text-sm text-red-500">{{ errors.market_type }}</p>
                 <!-- 显示代币市场类型支持提示 -->
                 <p v-if="selectedSignalBotData && selectedSignalBotData.token" class="mt-2 text-xs text-slate-600">
-                  <span v-if="selectedSignalBotData.token.is_spot_available && selectedSignalBotData.token.is_futures_available">
-                    ✅ 代币 {{ selectedSignalBotData.token.symbol }} 支持现货和合约交易
-                  </span>
-                  <span v-else-if="selectedSignalBotData.token.is_spot_available && !selectedSignalBotData.token.is_futures_available" class="text-amber-600">
-                    ⚠️ 代币 {{ selectedSignalBotData.token.symbol }} 仅支持现货交易
-                  </span>
-                  <span v-else-if="!selectedSignalBotData.token.is_spot_available && selectedSignalBotData.token.is_futures_available" class="text-amber-600">
-                    ⚠️ 代币 {{ selectedSignalBotData.token.symbol }} 仅支持合约交易
-                  </span>
+                  <template v-if="selectedSignalBotData.token.exchange_name && selectedSignalBotData.token.exchange_spot_available !== undefined">
+                    <!-- 显示交易所级别的支持情况 -->
+                    <span v-if="selectedSignalBotData.token.exchange_spot_available && selectedSignalBotData.token.exchange_futures_available">
+                      ✅ 代币 {{ selectedSignalBotData.token.symbol }} 在 {{ getExchangeDisplay(selectedSignalBotData.token.exchange_name) }} 支持现货和合约交易
+                    </span>
+                    <span v-else-if="selectedSignalBotData.token.exchange_spot_available && !selectedSignalBotData.token.exchange_futures_available" class="text-amber-600">
+                      ⚠️ 代币 {{ selectedSignalBotData.token.symbol }} 在 {{ getExchangeDisplay(selectedSignalBotData.token.exchange_name) }} 仅支持现货交易
+                    </span>
+                    <span v-else-if="!selectedSignalBotData.token.exchange_spot_available && selectedSignalBotData.token.exchange_futures_available" class="text-amber-600">
+                      ⚠️ 代币 {{ selectedSignalBotData.token.symbol }} 在 {{ getExchangeDisplay(selectedSignalBotData.token.exchange_name) }} 仅支持合约交易
+                    </span>
+                  </template>
+                  <template v-else>
+                    <!-- 降级到代币级别的支持情况 -->
+                    <span v-if="selectedSignalBotData.token.is_spot_available && selectedSignalBotData.token.is_futures_available">
+                      ✅ 代币 {{ selectedSignalBotData.token.symbol }} 支持现货和合约交易
+                    </span>
+                    <span v-else-if="selectedSignalBotData.token.is_spot_available && !selectedSignalBotData.token.is_futures_available" class="text-amber-600">
+                      ⚠️ 代币 {{ selectedSignalBotData.token.symbol }} 仅支持现货交易
+                    </span>
+                    <span v-else-if="!selectedSignalBotData.token.is_spot_available && selectedSignalBotData.token.is_futures_available" class="text-amber-600">
+                      ⚠️ 代币 {{ selectedSignalBotData.token.symbol }} 仅支持合约交易
+                    </span>
+                  </template>
                 </p>
                 <p v-else class="mt-2 text-xs text-slate-500">
                   💡 提示：交易所账号、代币和计价币种将从关联的信号机器人自动继承
                 </p>
+              </div>
+
+              <!-- 余额检查 -->
+              <div v-if="formData.market_type && selectedSignalBotData && selectedSignalBotData.exchange_api" class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div>
+                  <h4 class="text-sm font-semibold text-blue-900 mb-2">余额检查</h4>
+
+                    <!-- 加载中 -->
+                    <div v-if="loadingBalanceCheck" class="text-xs text-blue-700">
+                      <div class="flex items-center gap-2">
+                        <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>正在检查余额...</span>
+                      </div>
+                    </div>
+
+                    <!-- 余额信息 -->
+                    <div v-else-if="balanceCheckResult" class="space-y-3">
+                      <!-- 当前余额 -->
+                      <div class="text-xs">
+                        <div class="font-medium text-blue-900 mb-1">当前余额：</div>
+                        <div class="grid grid-cols-2 gap-2">
+                          <div class="flex items-center justify-between bg-white px-3 py-2 rounded border border-blue-100">
+                            <span class="text-slate-600">{{ formData.trading_pair || 'USDT' }}</span>
+                            <span class="font-semibold text-slate-900">{{ balanceCheckResult.quoteBalance }}</span>
+                          </div>
+                          <div class="flex items-center justify-between bg-white px-3 py-2 rounded border border-blue-100">
+                            <span class="text-slate-600">{{ selectedSignalBotData.token?.symbol || '-' }}</span>
+                            <span class="font-semibold text-slate-900">{{ balanceCheckResult.baseBalance }}</span>
+                          </div>
+                        </div>
+                        <div class="text-xs text-slate-500 mt-1">
+                          ({{ formData.market_type === 'spot' ? '现货账户' : '合约账户' }})
+                        </div>
+                      </div>
+
+                      <!-- 预计所需 -->
+                      <div v-if="formData.position_size_value > 0" class="text-xs">
+                        <div class="font-medium text-blue-900 mb-1">预计所需：</div>
+                        <div class="space-y-1 text-slate-700">
+                          <div class="flex items-center justify-between">
+                            <span>• 买入信号：</span>
+                            <span class="font-medium">{{ balanceCheckResult.requiredForBuy }} {{ formData.trading_pair || 'USDT' }}</span>
+                          </div>
+                          <div class="flex items-center justify-between">
+                            <span>• 卖出信号：</span>
+                            <span class="font-medium">{{ balanceCheckResult.requiredForSell }} {{ selectedSignalBotData.token?.symbol || '-' }}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- 警告提示 -->
+                      <div v-if="balanceCheckResult.warnings.length > 0" class="space-y-2">
+                        <div v-for="(warning, index) in balanceCheckResult.warnings" :key="index" class="flex items-start gap-2 text-xs">
+                          <span class="text-amber-600">⚠️</span>
+                          <span class="text-amber-700">{{ warning }}</span>
+                        </div>
+                      </div>
+
+                      <!-- 建议 -->
+                      <div v-if="balanceCheckResult.suggestions.length > 0" class="space-y-1">
+                        <div v-for="(suggestion, index) in balanceCheckResult.suggestions" :key="index" class="flex items-start gap-2 text-xs">
+                          <span class="text-blue-600">💡</span>
+                          <span class="text-blue-700">{{ suggestion }}</span>
+                        </div>
+                      </div>
+
+                      <!-- 成功提示 -->
+                      <div v-if="balanceCheckResult.warnings.length === 0 && formData.position_size_value > 0" class="flex items-center gap-2 text-xs text-green-700">
+                        <span>✅</span>
+                        <span>余额充足，可以正常执行交易</span>
+                      </div>
+                    </div>
+
+                    <!-- 无余额数据 -->
+                    <div v-else class="text-xs text-slate-600">
+                      <div class="flex items-center gap-2">
+                        <span>ℹ️</span>
+                        <span>无法获取余额信息，请确保交易所 API 已同步</span>
+                      </div>
+                    </div>
+                </div>
               </div>
             </div>
           </Card>
@@ -273,46 +376,6 @@
                   class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
                 />
                 <p class="mt-1 text-xs text-slate-500">每天在指定时间执行收到的信号</p>
-              </div>
-
-              <!-- 信号确认K线数和过期时间 -->
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">信号确认K线数</label>
-                  <input
-                    v-model.number="formData.signal_confirmation_bars"
-                    type="number"
-                    min="1"
-                    max="10"
-                    placeholder="1"
-                    class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  />
-                  <p class="mt-1 text-xs text-slate-500">需要几根K线确认</p>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">信号过期时间（小时）</label>
-                  <input
-                    v-model.number="formData.signal_expiration_hours"
-                    type="number"
-                    min="1"
-                    max="168"
-                    placeholder="24"
-                    class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  />
-                  <p class="mt-1 text-xs text-slate-500">信号多久后过期</p>
-                </div>
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">每日最大信号数</label>
-                  <input
-                    v-model.number="formData.max_signals_per_day"
-                    type="number"
-                    min="1"
-                    max="100"
-                    placeholder="10"
-                    class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  />
-                  <p class="mt-1 text-xs text-slate-500">每天最多处理信号</p>
-                </div>
               </div>
             </div>
           </Card>
@@ -544,7 +607,7 @@
                 <!-- 最大并发持仓数 -->
                 <div>
                   <label class="block text-sm font-medium text-slate-700 mb-2">
-                    最大并发持仓数 <span class="text-red-500">*</span>
+                    最大并发持仓数（此机器人） <span class="text-red-500">*</span>
                     <div class="relative inline-block ml-2">
                       <button
                         type="button"
@@ -560,7 +623,7 @@
                         v-if="showTooltips.maxConcurrentPositions"
                         class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg z-50 pointer-events-none whitespace-nowrap"
                       >
-                        防止频繁买入，限制同时持仓数量
+                        此机器人同时最多持有多少个仓位
                         <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
                       </div>
                     </div>
@@ -580,20 +643,16 @@
                     ]"
                   />
                   <p v-if="errors.max_open_positions" class="mt-1 text-sm text-red-500">{{ errors.max_open_positions }}</p>
-                  <!-- 超出限制提示 -->
-                  <p v-if="isFieldExceedingLimit('max_open_positions')" class="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded font-medium">
-                    ⚠️ {{ getExceedingLimitText('max_open_positions') }}
-                  </p>
                   <!-- 系统风控限制提示 -->
-                  <p v-else-if="userRiskConfig" class="mt-2 text-xs text-slate-500 bg-slate-50 p-2 rounded">
-                    <span class="font-medium">系统限制:</span> 最多 {{ userRiskConfig.max_open_positions }} 个
+                  <p v-if="userRiskConfig" class="mt-2 text-xs text-slate-500 bg-slate-50 p-2 rounded">
+                    <span class="font-medium">系统限制:</span> 所有机器人总共最多 {{ userRiskConfig.max_open_positions }} 个持仓
                   </p>
                 </div>
 
                 <!-- 每日最大交易次数 -->
                 <div>
                   <label class="block text-sm font-medium text-slate-700 mb-2">
-                    每日最大交易次数
+                    每日最大交易次数（此机器人）
                     <div class="relative inline-block ml-2">
                       <button
                         type="button"
@@ -609,7 +668,7 @@
                         v-if="showTooltips.maxTradesPerDay"
                         class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg z-50 pointer-events-none whitespace-nowrap"
                       >
-                        可选，不限制则留空
+                        此机器人每天最多执行多少笔交易
                         <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
                       </div>
                     </div>
@@ -628,13 +687,9 @@
                     ]"
                   />
                   <p v-if="errors.max_daily_trades" class="mt-1 text-sm text-red-500">{{ errors.max_daily_trades }}</p>
-                  <!-- 超出限制提示 -->
-                  <p v-if="isFieldExceedingLimit('max_daily_trades')" class="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded font-medium">
-                    ⚠️ {{ getExceedingLimitText('max_daily_trades') }}
-                  </p>
                   <!-- 系统风控限制提示 -->
-                  <p v-else-if="userRiskConfig" class="mt-2 text-xs text-slate-500 bg-slate-50 p-2 rounded">
-                    <span class="font-medium">系统限制:</span> 最多 {{ userRiskConfig.max_daily_trades }} 次/天
+                  <p v-if="userRiskConfig" class="mt-2 text-xs text-slate-500 bg-slate-50 p-2 rounded">
+                    <span class="font-medium">系统限制:</span> 所有机器人总共最多 {{ userRiskConfig.max_trades_per_day }} 次/天
                   </p>
                 </div>
               </div>
@@ -775,6 +830,10 @@
                     placeholder="10"
                     class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
+                  <!-- 用户偏好提示 -->
+                  <p v-if="userTradingPreferences && userTradingPreferences.takeProfit" class="mt-2 text-xs text-slate-500 bg-slate-50 p-2 rounded">
+                    <span class="font-medium">您的偏好设置:</span> {{ userTradingPreferences.takeProfit }}%
+                  </p>
                 </div>
 
                 <!-- 多级止盈 -->
@@ -1213,9 +1272,24 @@
                       min="10"
                       step="10"
                       placeholder="100"
-                      class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      :class="[
+                        'w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2',
+                        isFieldExceedingLimit('position_size_value')
+                          ? 'border-red-500 focus:ring-red-500'
+                          : 'border-slate-300 focus:ring-blue-500'
+                      ]"
                     />
                     <p class="mt-1 text-xs text-slate-500">每笔交易固定投入的金额</p>
+                    <!-- 超出限制提示 -->
+                    <p v-if="isFieldExceedingLimit('position_size_value')" class="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded font-medium">
+                      ⚠️ {{ getExceedingLimitText('position_size_value') }}
+                    </p>
+                    <!-- 系统风控限制提示 -->
+                    <p v-else-if="userRiskConfig" class="mt-2 text-xs text-slate-500 bg-slate-50 p-2 rounded">
+                      <span class="font-medium">系统限制:</span>
+                      单个机器人最大仓位 {{ userRiskConfig.max_position_per_bot }} USDT
+                      <span v-if="userRiskConfig.min_position_size"> | 最小建仓 {{ userRiskConfig.min_position_size }} USDT</span>
+                    </p>
                   </div>
 
                   <!-- 固定风险参数 -->
@@ -1265,9 +1339,24 @@
                           min="10"
                           step="10"
                           placeholder="100"
-                          class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          :class="[
+                            'w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2',
+                            isFieldExceedingLimit('position_size_value')
+                              ? 'border-red-500 focus:ring-red-500'
+                              : 'border-slate-300 focus:ring-blue-500'
+                          ]"
                         />
                         <p class="mt-1 text-xs text-slate-500">基础仓位大小，会根据ATR动态调整</p>
+                        <!-- 超出限制提示 -->
+                        <p v-if="isFieldExceedingLimit('position_size_value')" class="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded font-medium">
+                          ⚠️ {{ getExceedingLimitText('position_size_value') }}
+                        </p>
+                        <!-- 系统风控限制提示 -->
+                        <p v-else-if="userRiskConfig" class="mt-2 text-xs text-slate-500 bg-slate-50 p-2 rounded">
+                          <span class="font-medium">系统限制:</span>
+                          单个机器人最大仓位 {{ userRiskConfig.max_position_per_bot }} USDT
+                          <span v-if="userRiskConfig.min_position_size"> | 最小建仓 {{ userRiskConfig.min_position_size }} USDT</span>
+                        </p>
                       </div>
                       <div>
                         <label class="block text-sm font-medium text-slate-700 mb-2">
@@ -1986,24 +2075,6 @@
                         {{ formData.signal_strength_threshold }}%
                       </span>
                     </div>
-                    <div class="flex justify-between text-xs">
-                      <span class="text-slate-500">确认K线数</span>
-                      <span class="font-medium text-slate-900">
-                        {{ formData.signal_confirmation_bars }} 根
-                      </span>
-                    </div>
-                    <div class="flex justify-between text-xs">
-                      <span class="text-slate-500">信号过期时间</span>
-                      <span class="font-medium text-slate-900">
-                        {{ formData.signal_expiration_hours }} 小时
-                      </span>
-                    </div>
-                    <div class="flex justify-between text-xs">
-                      <span class="text-slate-500">每日最大信号</span>
-                      <span class="font-medium text-slate-900">
-                        {{ formData.max_signals_per_day }} 个
-                      </span>
-                    </div>
                     <div v-if="formData.signal_execution_mode === 'delayed'" class="flex justify-between text-xs">
                       <span class="text-slate-500">延迟时间</span>
                       <span class="font-medium text-slate-900">
@@ -2542,6 +2613,13 @@ const popularTokens = ['BTC', 'ETH', 'BNB', 'SOL', 'XRP', 'ADA', 'DOGE', 'MATIC'
 const userRiskConfig = ref(null)
 const loadingRiskConfig = ref(false)
 
+// 用户交易偏好（从 localStorage 加载）
+const userTradingPreferences = ref(null)
+
+// 余额检查
+const loadingBalanceCheck = ref(false)
+const balanceCheckResult = ref(null)
+
 // Tooltip 显示状态
 const showTooltips = ref({
   maxPositionSize: false,
@@ -2793,9 +2871,6 @@ const formData = ref({
   signal_delay_seconds: 60,  // 延迟执行时间（秒）
   signal_scheduled_time: '09:00',  // 定时执行时间点
   signal_strength_threshold: 50,  // 信号强度阈值（0-100）
-  signal_confirmation_bars: 1,  // 信号确认K线数
-  signal_expiration_hours: 24,  // 信号过期时间（小时）
-  max_signals_per_day: 10,  // 每日最大信号数
 
   // ============ 执行策略 ============
   entry_mode: 'market',  // market, limit
@@ -2949,10 +3024,20 @@ const isMarketTypeDisabled = (marketType) => {
 
   const token = selectedSignalBotData.value.token
 
-  if (marketType === 'spot') {
-    return !token.is_spot_available // 如果代币不支持现货，禁用现货选项
-  } else if (marketType === 'linear' || marketType === 'inverse') {
-    return !token.is_futures_available // 如果代币不支持合约，禁用合约选项
+  // 优先使用交易所级别的支持情况（如果有）
+  if (token.exchange_name && token.exchange_spot_available !== undefined && token.exchange_futures_available !== undefined) {
+    if (marketType === 'spot') {
+      return !token.exchange_spot_available // 如果该交易所不支持现货，禁用现货选项
+    } else if (marketType === 'linear' || marketType === 'inverse') {
+      return !token.exchange_futures_available // 如果该交易所不支持合约，禁用合约选项
+    }
+  } else {
+    // 降级到代币级别的支持情况
+    if (marketType === 'spot') {
+      return !token.is_spot_available // 如果代币不支持现货，禁用现货选项
+    } else if (marketType === 'linear' || marketType === 'inverse') {
+      return !token.is_futures_available // 如果代币不支持合约，禁用合约选项
+    }
   }
 
   return false
@@ -2963,16 +3048,35 @@ const selectMarketType = (marketType) => {
   if (isMarketTypeDisabled(marketType)) {
     const token = selectedSignalBotData.value?.token
     if (token) {
+      const exchangeName = token.exchange_name || '该交易所'
+      const exchangeDisplay = {
+        'binance': 'Binance',
+        'gate': 'Gate.io',
+        'okx': 'OKX',
+        'bybit': 'Bybit'
+      }[exchangeName] || exchangeName
+
       if (marketType === 'spot') {
-        showError(`代币 ${token.symbol} 不支持现货交易，只支持合约交易`)
+        showError(`代币 ${token.symbol} 在 ${exchangeDisplay} 不支持现货交易，只支持合约交易`)
       } else {
-        showError(`代币 ${token.symbol} 不支持合约交易，只支持现货交易`)
+        showError(`代币 ${token.symbol} 在 ${exchangeDisplay} 不支持合约交易，只支持现货交易`)
       }
     }
     return
   }
 
   formData.value.market_type = marketType
+}
+
+// 交易所显示名称映射
+const getExchangeDisplay = (exchangeName) => {
+  const exchangeDisplayMap = {
+    'binance': 'Binance',
+    'gate': 'Gate.io',
+    'okx': 'OKX',
+    'bybit': 'Bybit'
+  }
+  return exchangeDisplayMap[exchangeName] || exchangeName
 }
 
 // 信号类型标签映射
@@ -2984,6 +3088,110 @@ const getSignalTypeLabel = (signalType) => {
     'volume': '成交量提醒'
   }
   return labels[signalType] || signalType
+}
+
+// 余额检查函数
+const checkBalance = async () => {
+  if (!selectedSignalBotData.value || !selectedSignalBotData.value.exchange_api || !formData.value.market_type) {
+    balanceCheckResult.value = null
+    return
+  }
+
+  try {
+    loadingBalanceCheck.value = true
+
+    const exchangeApi = selectedSignalBotData.value.exchange_api
+    const token = selectedSignalBotData.value.token
+    const marketType = formData.value.market_type
+    const tradingPair = formData.value.trading_pair || 'USDT'
+    const positionSize = formData.value.position_size_value || 0
+
+    // 获取余额快照
+    const balanceSnapshot = exchangeApi.balance_snapshot
+
+    if (!balanceSnapshot) {
+      balanceCheckResult.value = null
+      return
+    }
+
+    // 根据市场类型获取余额
+    let quoteBalance = 0  // 计价币种余额（USDT）
+    let baseBalance = 0   // 基础币种余额（如 FOXY）
+
+    if (marketType === 'spot') {
+      // 现货账户
+      if (balanceSnapshot.spot) {
+        // 获取计价币种余额（USDT）
+        const quoteAsset = balanceSnapshot.spot[tradingPair]
+        if (typeof quoteAsset === 'object' && quoteAsset !== null) {
+          quoteBalance = parseFloat(quoteAsset.free || quoteAsset.available || quoteAsset.total || 0)
+        } else {
+          quoteBalance = parseFloat(quoteAsset || 0)
+        }
+
+        // 获取基础币种余额（如 FOXY）
+        const baseAsset = balanceSnapshot.spot[token.symbol]
+        if (typeof baseAsset === 'object' && baseAsset !== null) {
+          baseBalance = parseFloat(baseAsset.free || baseAsset.available || baseAsset.total || 0)
+        } else {
+          baseBalance = parseFloat(baseAsset || 0)
+        }
+      }
+    } else if (marketType === 'linear') {
+      // 合约账户
+      if (balanceSnapshot.future) {
+        // 获取 USDT 余额
+        const futureAsset = balanceSnapshot.future[tradingPair]
+        if (typeof futureAsset === 'object' && futureAsset !== null) {
+          quoteBalance = parseFloat(futureAsset.free || futureAsset.available || futureAsset.total || 0)
+        } else {
+          quoteBalance = parseFloat(futureAsset || 0)
+        }
+      }
+      // 合约不需要基础币种余额
+      baseBalance = 0
+    }
+
+    // 计算所需余额
+    const currentPrice = token.current_price || 0
+    const requiredForBuy = positionSize  // 买入需要的 USDT
+    const requiredForSell = currentPrice > 0 ? positionSize / currentPrice : 0  // 卖出需要的代币数量
+
+    // 生成警告和建议
+    const warnings = []
+    const suggestions = []
+
+    if (positionSize > 0) {
+      // 检查买入余额
+      if (quoteBalance < requiredForBuy) {
+        const shortage = requiredForBuy - quoteBalance
+        warnings.push(`${tradingPair} 余额不足，买入信号可能失败（缺少 ${shortage.toFixed(2)} ${tradingPair}）`)
+        suggestions.push(`充值至少 ${shortage.toFixed(2)} ${tradingPair} 或降低仓位大小至 ${quoteBalance.toFixed(2)} ${tradingPair}`)
+      }
+
+      // 检查卖出余额（仅现货）
+      if (marketType === 'spot' && baseBalance < requiredForSell) {
+        const shortage = requiredForSell - baseBalance
+        warnings.push(`${token.symbol} 余额不足，卖出信号可能失败（缺少 ${shortage.toFixed(4)} ${token.symbol}）`)
+        suggestions.push(`持有至少 ${requiredForSell.toFixed(4)} ${token.symbol} 或等待买入信号先执行`)
+      }
+    }
+
+    balanceCheckResult.value = {
+      quoteBalance: `${quoteBalance.toFixed(2)} ${tradingPair}`,
+      baseBalance: marketType === 'spot' ? `${baseBalance.toFixed(4)} ${token.symbol}` : '-',
+      requiredForBuy: requiredForBuy.toFixed(2),
+      requiredForSell: marketType === 'spot' ? requiredForSell.toFixed(4) : '-',
+      warnings,
+      suggestions
+    }
+
+  } catch (error) {
+    console.error('余额检查失败:', error)
+    balanceCheckResult.value = null
+  } finally {
+    loadingBalanceCheck.value = false
+  }
 }
 
 // 交易所统计信息
@@ -3508,6 +3716,8 @@ watch(() => formData.value.market_type, (newMarketType, oldMarketType) => {
       console.log('📊 [信号触发模式] 市场类型变化，保留代币选择')
       // 只重新加载计价币种列表
       loadQuoteAssets()
+      // 检查余额
+      checkBalance()
       return
     }
 
@@ -3520,10 +3730,21 @@ watch(() => formData.value.market_type, (newMarketType, oldMarketType) => {
 
     // 重新加载计价币种列表
     loadQuoteAssets()
+    // 检查余额
+    checkBalance()
   } else if (oldMarketType && newMarketType !== oldMarketType && isEditMode.value) {
     // 编辑模式下，只重新加载计价币种列表，不清空代币选择
     console.log('📊 [编辑模式] 市场类型变化:', oldMarketType, '->', newMarketType, '- 保留代币选择')
     loadQuoteAssets()
+    // 检查余额
+    checkBalance()
+  }
+})
+
+// 监听仓位大小变化，重新检查余额
+watch(() => formData.value.position_size_value, () => {
+  if (formData.value.market_type && selectedSignalBotData.value) {
+    checkBalance()
   }
 })
 
@@ -3826,12 +4047,23 @@ const isFieldExceedingLimit = (fieldName) => {
   if (!userRiskConfig.value) return false
 
   switch (fieldName) {
+    case 'position_size_value':
+      // 检查是否低于最小值或超过最大值
+      const positionTooLow = formData.value.position_size_value < userRiskConfig.value.min_position_size
+      const positionTooHigh = formData.value.position_size_value > userRiskConfig.value.max_position_per_bot
+      if (positionTooLow) {
+        console.log(`🔍 [position_size_value] 低于最小值: ${formData.value.position_size_value} < ${userRiskConfig.value.min_position_size}`)
+      }
+      if (positionTooHigh) {
+        console.log(`🔍 [position_size_value] 超过最大值: ${formData.value.position_size_value} > ${userRiskConfig.value.max_position_per_bot}`)
+      }
+      return positionTooLow || positionTooHigh
     case 'max_position_size':
-      const positionExceeds = formData.value.max_position_size > userRiskConfig.value.max_position_per_bot
-      if (positionExceeds) {
+      const maxPositionExceeds = formData.value.max_position_size > userRiskConfig.value.max_position_per_bot
+      if (maxPositionExceeds) {
         console.log(`🔍 [max_position_size] 超过限制: ${formData.value.max_position_size} > ${userRiskConfig.value.max_position_per_bot}`)
       }
-      return positionExceeds
+      return maxPositionExceeds
     case 'leverage':
       return formData.value.leverage > userRiskConfig.value.max_leverage
     case 'max_open_positions':
@@ -3839,7 +4071,7 @@ const isFieldExceedingLimit = (fieldName) => {
     case 'stop_loss_percentage':
       return formData.value.stop_loss_percentage && formData.value.stop_loss_percentage > systemStopLossPercentage.value
     case 'max_daily_trades':
-      return formData.value.max_daily_trades && formData.value.max_daily_trades > userRiskConfig.value.max_daily_trades
+      return formData.value.max_daily_trades && formData.value.max_daily_trades > userRiskConfig.value.max_trades_per_day
     case 'max_daily_loss':
       const lossExceeds = formData.value.max_daily_loss && formData.value.max_daily_loss > userRiskConfig.value.max_daily_loss
       if (lossExceeds) {
@@ -3856,6 +4088,13 @@ const getExceedingLimitText = (fieldName) => {
   if (!userRiskConfig.value) return ''
 
   switch (fieldName) {
+    case 'position_size_value':
+      if (formData.value.position_size_value < userRiskConfig.value.min_position_size) {
+        return `低于最小建仓金额 ${userRiskConfig.value.min_position_size} USDT`
+      } else if (formData.value.position_size_value > userRiskConfig.value.max_position_per_bot) {
+        return `已超出单个机器人最大仓位 ${userRiskConfig.value.max_position_per_bot} USDT`
+      }
+      return ''
     case 'max_position_size':
       return `已超出最大设置 ${userRiskConfig.value.max_position_per_bot} USDT`
     case 'leverage':
@@ -3865,7 +4104,7 @@ const getExceedingLimitText = (fieldName) => {
     case 'stop_loss_percentage':
       return `已超出最大设置 ${systemStopLossPercentage.value}%`
     case 'max_daily_trades':
-      return `已超出最大设置 ${userRiskConfig.value.max_daily_trades} 次/天`
+      return `已超出最大设置 ${userRiskConfig.value.max_trades_per_day} 次/天`
     case 'max_daily_loss':
       return `已超出最大设置 ${userRiskConfig.value.max_daily_loss} USDT/天`
     default:
@@ -3984,9 +4223,6 @@ const handleSubmit = async () => {
       signal_delay_seconds: formData.value.signal_delay_seconds,
       signal_scheduled_time: formData.value.signal_scheduled_time,
       signal_strength_threshold: formData.value.signal_strength_threshold,
-      signal_confirmation_bars: formData.value.signal_confirmation_bars,
-      signal_expiration_hours: formData.value.signal_expiration_hours,
-      max_signals_per_day: formData.value.max_signals_per_day,
 
       // ============ 执行策略（扁平字段）============
       entry_mode: formData.value.entry_mode,
@@ -4266,6 +4502,9 @@ const handleSignalBotChange = () => {
         }
       }
     }
+
+    // 检查余额
+    checkBalance()
   } else {
     console.warn('⚠️ 未找到对应的信号机器人！')
     console.log('📋 可用的信号机器人列表:', availableSignalBots.value)
@@ -4289,6 +4528,17 @@ onMounted(async () => {
 
   // 第二步：加载系统风控配置
   await loadUserRiskConfig()
+
+  // 加载用户交易偏好（从 localStorage）
+  try {
+    const savedPrefs = localStorage.getItem('trading_preferences')
+    if (savedPrefs) {
+      userTradingPreferences.value = JSON.parse(savedPrefs)
+      console.log('✅ 加载用户交易偏好:', userTradingPreferences.value)
+    }
+  } catch (error) {
+    console.warn('⚠️ 加载用户交易偏好失败:', error)
+  }
 
   // 第三步：如果是编辑模式，加载机器人数据
   if (isEditMode.value) {
@@ -4472,16 +4722,10 @@ onMounted(async () => {
         formData.value.signal_delay_seconds = trendBot.signal_delay_seconds || 60
         formData.value.signal_scheduled_time = trendBot.signal_scheduled_time || '09:00'
         formData.value.signal_strength_threshold = Number(trendBot.signal_strength_threshold || 50)
-        formData.value.signal_confirmation_bars = Number(trendBot.signal_confirmation_bars || 1)
-        formData.value.signal_expiration_hours = Number(trendBot.signal_expiration_hours || 24)
-        formData.value.max_signals_per_day = Number(trendBot.max_signals_per_day || 10)
 
         console.log('✅ [编辑模式] 加载信号执行策略:', {
           signal_execution_mode: formData.value.signal_execution_mode,
-          signal_strength_threshold: formData.value.signal_strength_threshold,
-          signal_confirmation_bars: formData.value.signal_confirmation_bars,
-          signal_expiration_hours: formData.value.signal_expiration_hours,
-          max_signals_per_day: formData.value.max_signals_per_day
+          signal_strength_threshold: formData.value.signal_strength_threshold
         })
 
         // ============ 风险管理（优化后：配置对象）============

@@ -177,12 +177,22 @@
                     @click="selectToken(token)"
                     class="px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors flex items-center space-x-3"
                   >
-                    <img
-                      :src="token.logo"
-                      :alt="token.symbol"
-                      class="w-8 h-8 rounded-full"
-                      @error="$event.target.src = '/default-token.png'"
-                    />
+                    <!-- 代币Logo或首字母 -->
+                    <div class="w-8 h-8 rounded-full flex-shrink-0 overflow-hidden">
+                      <img
+                        v-if="token.logo"
+                        :src="token.logo"
+                        :alt="token.symbol"
+                        class="w-full h-full object-cover"
+                        @error="handleImageError($event, token)"
+                      />
+                      <div
+                        v-else
+                        class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm"
+                      >
+                        {{ token.symbol ? token.symbol.charAt(0).toUpperCase() : '?' }}
+                      </div>
+                    </div>
                     <div class="flex-1 min-w-0">
                       <div class="flex items-center space-x-2">
                         <span class="font-semibold text-gray-900">{{ token.name }}</span>
@@ -443,7 +453,7 @@ const loadHotTokens = async () => {
   loadingHotTokens.value = true
   try {
     const response = await apiRequest(
-      `${API_ENDPOINTS.TOKEN_LIST}hot/?limit=5`
+      `${API_ENDPOINTS.TOKEN_LIST}hot/?limit=10`
     )
 
     // 再次检查是否正在搜索（防止在请求期间开始搜索）
@@ -452,9 +462,19 @@ const loadHotTokens = async () => {
     }
 
     // API 直接返回分页数据，包含 results 数组
-    searchResults.value = response.results || []
+    let tokens = response.results || []
+
+    // 过滤掉无效的代币（没有必要字段的）
+    tokens = tokens.filter(token => {
+      return token && token.id && token.symbol && token.name
+    })
+
+    // 只取前10个有效代币
+    searchResults.value = tokens.slice(0, 10)
+
+    console.log('✅ 加载热门代币成功:', searchResults.value.length, '个')
   } catch (error) {
-    console.error('加载热门代币失败:', error)
+    console.error('❌ 加载热门代币失败:', error)
     searchResults.value = []
   } finally {
     loadingHotTokens.value = false
@@ -512,21 +532,36 @@ const handleSearch = () => {
         return
       }
 
+      console.log('🔍 搜索代币:', currentQuery)
+
       const response = await apiRequest(
         `${API_ENDPOINTS.TOKEN_SEARCH}?q=${currentQuery}&limit=10`
       )
 
+      console.log('📦 搜索API响应:', response)
+
+      // 再次检查搜索内容是否仍然匹配（防止在请求期间用户修改了搜索内容）
+      if (searchQuery.value.trim() !== currentQuery) {
+        console.log('⚠️ 搜索内容已变化，忽略此次结果')
+        return
+      }
+
       if (response.status === 'success') {
         searchResults.value = response.data.results || []
+        console.log('✅ 搜索结果:', searchResults.value.length, '个', searchResults.value)
       } else {
         searchResults.value = []
+        console.log('❌ 搜索失败，响应状态:', response.status)
       }
     } catch (error) {
-      console.error('搜索代币失败:', error)
+      console.error('❌ 搜索代币失败:', error)
       searchResults.value = []
     } finally {
-      isSearching.value = false
-      searching.value = false
+      // 只有在搜索内容仍然存在时才清除搜索状态
+      if (searchQuery.value.trim().length > 0) {
+        isSearching.value = false
+        searching.value = false
+      }
     }
   }, 300)
 }
@@ -536,6 +571,24 @@ const clearSearch = () => {
   searchQuery.value = ''
   // handleSearch 会被 @input 触发，它会自动加载热门代币
   // 所以这里不需要手动调用 loadHotTokens()
+}
+
+// 处理图片加载错误
+const handleImageError = (event, token) => {
+  // 隐藏失败的图片
+  event.target.style.display = 'none'
+
+  // 在图片的父容器中显示首字母
+  const parent = event.target.parentElement
+  if (parent && !parent.querySelector('.token-initial')) {
+    const initial = document.createElement('div')
+    initial.className = 'token-initial w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm'
+    initial.textContent = token.symbol ? token.symbol.charAt(0).toUpperCase() : '?'
+    parent.appendChild(initial)
+  }
+
+  // 清空 logo 字段，防止再次尝试加载
+  token.logo = null
 }
 
 // 选择代币

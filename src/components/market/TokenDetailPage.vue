@@ -129,7 +129,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { apiRequest, API_BASE_URL } from '../../utils/api.js'
 import { showFavoriteSuccess, showUnfavoriteSuccess, showError, showSuccess, showInfo } from '../../utils/notification.js'
@@ -162,23 +162,34 @@ const realtimePrice = ref(null)
 const loadData = async () => {
   loading.value = true
   error.value = null
+  realtimePrice.value = null // 重置实时价格
 
   try {
     const symbol = route.params.symbol
+    console.log('🔍 加载代币详情:', symbol)
     const response = await apiRequest(`${API_BASE_URL}/market/tokens/${symbol}/detail/`)
 
     if (response.status === 'success') {
       tokenData.value = response.data
+      console.log('✅ 代币详情加载成功:', tokenData.value.token.symbol)
     } else {
       throw new Error(response.message || '加载失败')
     }
   } catch (err) {
-    console.error('Error loading token detail:', err)
+    console.error('❌ Error loading token detail:', err)
     error.value = err.message || '加载代币详情失败'
   } finally {
     loading.value = false
   }
 }
+
+// 监听路由参数变化，重新加载数据
+watch(() => route.params.symbol, (newSymbol, oldSymbol) => {
+  if (newSymbol && newSymbol !== oldSymbol) {
+    console.log('🔄 路由参数变化，重新加载:', oldSymbol, '->', newSymbol)
+    loadData()
+  }
+})
 
 // Toggle watchlist
 const toggleWatchlist = async () => {

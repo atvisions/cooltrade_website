@@ -205,6 +205,7 @@
               :value="tokenSearchQuery"
               @input="handleTokenInput"
               @focus="handleTokenInputFocus"
+              @blur="handleTokenInputBlur"
               type="text"
               :placeholder="formData.exchange_name ? '搜索代币 (如: BTC, ETH)' : '请先选择交易所'"
               :disabled="!formData.exchange_name"
@@ -395,6 +396,7 @@ const emit = defineEmits([
   'selectExchangeType',
   'handleTokenSearch',
   'handleTokenInputFocus',
+  'handleTokenInputBlur',
   'clearTokenSelection',
   'selectToken',
   'quickSelectToken',
@@ -419,6 +421,10 @@ const handleTokenSearch = () => {
 
 const handleTokenInputFocus = () => {
   emit('handleTokenInputFocus')
+}
+
+const handleTokenInputBlur = () => {
+  emit('handleTokenInputBlur')
 }
 
 const clearTokenSelection = () => {

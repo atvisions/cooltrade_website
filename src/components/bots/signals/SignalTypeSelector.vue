@@ -98,10 +98,10 @@ const props = defineProps({
 defineEmits(['update:signalType'])
 
 const signalTypes = [
-  { label: '价格提醒', value: 'price_alert', icon: PriceIcon },
   { label: '指标信号提醒', value: 'indicator_alert', icon: ChartLineIcon },
   { label: '波动性提醒', value: 'volatility', icon: TrendingUpIcon },
-  { label: '成交量/持仓提醒', value: 'volume', icon: VolumeIcon }
+  { label: '成交量/持仓提醒', value: 'volume', icon: VolumeIcon },
+  { label: '价格提醒', value: 'price_alert', icon: PriceIcon }
 ]
 </script>
 

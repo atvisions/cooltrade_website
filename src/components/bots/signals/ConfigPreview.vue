@@ -57,6 +57,38 @@
             </div>
           </div>
 
+          <!-- 指标组合配置（仅在指标信号提醒时显示） -->
+          <div v-if="formData.signal_type === 'indicator_alert' && selectedIndicators && selectedIndicators.length > 0" class="border-t border-slate-200 pt-4">
+            <div class="text-xs font-semibold text-slate-700 mb-3 flex items-center justify-between">
+              <span>指标组合</span>
+              <span v-if="indicatorLogic" :class="[
+                'px-2 py-0.5 rounded text-xs font-semibold',
+                indicatorLogic === 'AND' ? 'bg-purple-100 text-purple-700' : 'bg-orange-100 text-orange-700'
+              ]">
+                {{ indicatorLogic === 'AND' ? '全部满足' : '任一满足' }}
+              </span>
+            </div>
+            <div class="space-y-2">
+              <div v-for="indicatorType in selectedIndicators" :key="indicatorType" class="bg-slate-50 rounded-lg p-2.5 border border-slate-200">
+                <div class="flex items-center justify-between mb-1.5">
+                  <div class="flex items-center gap-1.5">
+                    <svg class="w-3.5 h-3.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                    </svg>
+                    <span class="text-xs font-semibold text-slate-900">{{ getIndicatorLabel(indicatorType) }}</span>
+                  </div>
+                  <span class="text-xs text-slate-500">权重: {{ getIndicatorWeight(indicatorType) }}</span>
+                </div>
+                <div class="text-xs text-slate-600 space-y-0.5">
+                  <div v-for="(value, key) in getIndicatorParams(indicatorType)" :key="key" class="flex justify-between">
+                    <span class="text-slate-500">{{ getParamLabel(key) }}:</span>
+                    <span class="font-medium">{{ value }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- 专业分析模式 -->
           <div class="border-t border-slate-200 pt-4">
             <div class="text-xs font-semibold text-slate-700 mb-3">分析模式</div>
@@ -134,43 +166,6 @@
             </div>
           </div>
 
-          <!-- 指标配置（仅在指标信号提醒时显示） -->
-          <div v-if="formData.signal_type === 'indicator_alert'" class="border-t border-slate-200 pt-4">
-            <div class="text-xs font-semibold text-slate-700 mb-3">指标配置</div>
-            <div class="space-y-2">
-              <div class="flex items-center justify-between text-xs">
-                <span class="text-slate-600">指标类型</span>
-                <span class="font-medium text-slate-900">
-                  {{ indicatorAlertType === 'rsi' ? 'RSI' : indicatorAlertType === 'macd' ? 'MACD' : indicatorAlertType === 'ma_crossover' ? 'MA交叉' : 'ATR' }}
-                </span>
-              </div>
-              <div v-if="indicatorAlertType === 'rsi'" class="flex items-center justify-between text-xs">
-                <span class="text-slate-600">周期/超买超卖</span>
-                <span class="font-medium text-slate-900">
-                  {{ rsiConfig?.period || 14 }}/{{ rsiConfig?.oversold || 30 }}-{{ rsiConfig?.overbought || 70 }}
-                </span>
-              </div>
-              <div v-if="indicatorAlertType === 'macd'" class="flex items-center justify-between text-xs">
-                <span class="text-slate-600">参数</span>
-                <span class="font-medium text-slate-900">
-                  {{ macdConfig?.fast || 12 }}/{{ macdConfig?.slow || 26 }}/{{ macdConfig?.signal || 9 }}
-                </span>
-              </div>
-              <div v-if="indicatorAlertType === 'ma_crossover'" class="flex items-center justify-between text-xs">
-                <span class="text-slate-600">快线/慢线周期</span>
-                <span class="font-medium text-slate-900">
-                  {{ maCrossConfig?.fast || 7 }}/{{ maCrossConfig?.slow || 25 }}
-                </span>
-              </div>
-              <div v-if="indicatorAlertType === 'atr'" class="flex items-center justify-between text-xs">
-                <span class="text-slate-600">周期/倍数</span>
-                <span class="font-medium text-slate-900">
-                  {{ atrConfig?.period || 14 }}/{{ atrConfig?.multiplier || 2.0 }}
-                </span>
-              </div>
-            </div>
-          </div>
-
           <!-- 时间周期配置（仅在指标信号提醒时显示） -->
           <div v-if="formData.signal_type === 'indicator_alert'" class="border-t border-slate-200 pt-4">
             <div class="text-xs font-semibold text-slate-700 mb-3">时间周期</div>
@@ -239,7 +234,11 @@ const props = defineProps({
   timeframesConfig: Object,
   isBotRunning: Boolean,
   submitting: Boolean,
-  isEditMode: Boolean
+  isEditMode: Boolean,
+  // 新的多指标配置
+  selectedIndicators: Array,
+  indicatorLogic: String,
+  indicatorsConfig: Object
 })
 
 defineEmits(['submit', 'cancel'])
@@ -250,15 +249,38 @@ const autoGeneratedName = computed(() => {
   if (props.selectedToken?.symbol) parts.push(props.selectedToken.symbol)
   if (props.formData.trading_pair) parts.push(props.formData.trading_pair)
 
-  // 如果是指标信号提醒，使用具体的指标类型
-  if (props.formData.signal_type === 'indicator_alert' && props.indicatorAlertType) {
-    const indicatorLabels = {
-      'rsi': 'RSI',
-      'macd': 'MACD',
-      'ma_crossover': 'MA交叉',
-      'atr': 'ATR'
+  // 如果是指标信号提醒
+  if (props.formData.signal_type === 'indicator_alert') {
+    // 优先使用多指标组合
+    if (props.selectedIndicators && props.selectedIndicators.length > 0) {
+      const indicatorLabels = {
+        'rsi': 'RSI',
+        'macd': 'MACD',
+        'ma_crossover': 'MA交叉',
+        'atr': 'ATR',
+        'volume': '成交量'
+      }
+
+      // 如果是多个指标，显示组合
+      if (props.selectedIndicators.length > 1) {
+        const indicatorNames = props.selectedIndicators.map(type => indicatorLabels[type] || type)
+        parts.push(`${indicatorNames.join('+')}组合`)
+      } else {
+        // 单个指标
+        parts.push(indicatorLabels[props.selectedIndicators[0]] || '指标')
+      }
+    } else if (props.indicatorAlertType) {
+      // 兼容旧的单指标格式
+      const indicatorLabels = {
+        'rsi': 'RSI',
+        'macd': 'MACD',
+        'ma_crossover': 'MA交叉',
+        'atr': 'ATR'
+      }
+      parts.push(indicatorLabels[props.indicatorAlertType] || '指标信号提醒')
+    } else {
+      parts.push('指标信号提醒')
     }
-    parts.push(indicatorLabels[props.indicatorAlertType] || '指标信号提醒')
   } else if (props.formData.signal_type) {
     parts.push(getSignalTypeLabel(props.formData.signal_type))
   }
@@ -301,5 +323,42 @@ const getAlertModeLabel = (mode) => {
     'state_change': '状态变化提醒'
   }
   return modes[mode] || '-'
+}
+
+// 获取指标标签
+const getIndicatorLabel = (type) => {
+  const labels = {
+    'rsi': 'RSI',
+    'macd': 'MACD',
+    'ma_crossover': 'MA交叉',
+    'atr': 'ATR',
+    'volume': '成交量'
+  }
+  return labels[type] || type
+}
+
+// 获取指标权重
+const getIndicatorWeight = (type) => {
+  return props.indicatorsConfig?.[type]?.weight || 1
+}
+
+// 获取指标参数
+const getIndicatorParams = (type) => {
+  return props.indicatorsConfig?.[type]?.params || {}
+}
+
+// 获取参数标签
+const getParamLabel = (key) => {
+  const labels = {
+    'period': '周期',
+    'overbought': '超买',
+    'oversold': '超卖',
+    'fast': '快线',
+    'slow': '慢线',
+    'signal': '信号线',
+    'threshold': '阈值',
+    'multiplier': '倍数'
+  }
+  return labels[key] || key
 }
 </script>

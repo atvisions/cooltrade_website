@@ -249,12 +249,35 @@
                       >
                         <td class="px-6 py-4">
                           <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg flex items-center justify-center shadow-lg">
-                              <CpuChipIcon class="h-5 w-5 text-white" />
+                            <!-- 代币 Logo + 交易所徽章 -->
+                            <div class="relative w-10 h-10 flex-shrink-0">
+                              <!-- 代币 Logo -->
+                              <img
+                                v-if="bot.token_logo"
+                                :src="bot.token_logo"
+                                :alt="bot.token_symbol"
+                                class="w-10 h-10 object-contain rounded-lg"
+                                @error="(e) => e.target.style.display = 'none'"
+                              />
+                              <CpuChipIcon v-else class="w-10 h-10 text-slate-400" />
+
+                              <!-- 交易所徽章（右下角） -->
+                              <div
+                                v-if="getExchangeLogo(bot.exchange_name)"
+                                class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-white shadow-sm border border-slate-200 flex items-center justify-center overflow-hidden"
+                              >
+                                <img
+                                  :src="getExchangeLogo(bot.exchange_name)"
+                                  :alt="bot.exchange_display || bot.exchange_name"
+                                  class="w-4 h-4 object-contain"
+                                  @error="(e) => e.target.parentElement.style.display = 'none'"
+                                />
+                              </div>
                             </div>
-                            <div>
-                              <p class="font-medium text-slate-900">{{ bot.name }}</p>
-                              <p class="text-xs text-slate-500">
+
+                            <div class="min-w-0 flex-1">
+                              <p class="font-medium text-slate-900 truncate">{{ bot.name }}</p>
+                              <p class="text-xs text-slate-500 truncate">
                                 {{ bot.exchange_display || bot.exchange_name || '未知交易所' }}
                               </p>
                             </div>
@@ -628,7 +651,8 @@ const loadBots = async () => {
   try {
     loading.value = true
     console.log('开始加载机器人数据...', '类型:', currentBotType.value)
-    const response = await botAPI.getBotList()
+    // 请求所有机器人，设置较大的 page_size
+    const response = await botAPI.getBotList({ page_size: 100 })
     console.log('API响应:', response)
     const data = response.results || response.data || response
     console.log('处理后的数据:', data)
@@ -885,6 +909,17 @@ const getBotTypeLabel = (botType) => {
     'martingale': '马丁格尔'
   }
   return labels[botType] || botType
+}
+
+// 获取交易所 Logo URL（使用本地文件）
+const getExchangeLogo = (exchangeName) => {
+  const logos = {
+    'binance': '/dex/binance.png',
+    'okx': '/dex/okx.png',
+    'bybit': '/dex/bybit.png',
+    'gate': '/dex/gate.png'
+  }
+  return logos[exchangeName?.toLowerCase()] || ''
 }
 
 // 获取信号类型标签

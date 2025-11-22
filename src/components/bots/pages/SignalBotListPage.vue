@@ -338,7 +338,7 @@
                         <!-- 信号类型 -->
                         <td class="px-6 py-4 w-28">
                           <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-700 whitespace-nowrap">
-                            {{ getSignalTypeLabel(bot.signal_type) }}
+                            {{ getSignalTypeLabel(bot.signal_type, bot.indicator_type) }}
                           </span>
                         </td>
                         <!-- 信号数 -->
@@ -841,10 +841,23 @@ const statusOptionsWithAll = [
 ]
 
 const signalTypeOptions = [
-  { label: '价格提醒', value: 'price_alert' },
-  { label: '指标信号提醒', value: 'indicator_alert' },
+  { label: '指标信号提醒', value: 'indicator_alert', isGroup: true },
+  // 策略模板
+  { label: '  超短线抢帽子', value: 'strategy:scalping', parent: 'indicator_alert' },
+  { label: '  日内交易', value: 'strategy:day_trading', parent: 'indicator_alert' },
+  { label: '  波段交易', value: 'strategy:swing_trading', parent: 'indicator_alert' },
+  { label: '  趋势跟踪', value: 'strategy:trend_following', parent: 'indicator_alert' },
+  { label: '  反转捕捉', value: 'strategy:reversal', parent: 'indicator_alert' },
+  { label: '  突破策略', value: 'strategy:breakout', parent: 'indicator_alert' },
+  // 单指标类型
+  { label: '  RSI', value: 'indicator:rsi', parent: 'indicator_alert' },
+  { label: '  MACD', value: 'indicator:macd', parent: 'indicator_alert' },
+  { label: '  MA交叉', value: 'indicator:ma_crossover', parent: 'indicator_alert' },
+  { label: '  ATR', value: 'indicator:atr', parent: 'indicator_alert' },
+  { label: '  成交量', value: 'indicator:volume', parent: 'indicator_alert' },
   { label: '波动性提醒', value: 'volatility' },
-  { label: '成交量/持仓提醒', value: 'volume' }
+  { label: '成交量/持仓提醒', value: 'volume' },
+  { label: '价格提醒', value: 'price_alert' }
 ]
 
 const signalTypeOptionsWithAll = [
@@ -877,6 +890,30 @@ const filteredBots = computed(() => {
       if (!bot.signal_type) {
         return false
       }
+
+      // 检查是否是策略模板筛选（格式：strategy:scalping）
+      if (filters.value.signalType.startsWith('strategy:')) {
+        const strategyType = filters.value.signalType.split(':')[1]
+        // 检查机器人的配置是否匹配策略模板
+        // 这里需要根据机器人的指标组合来判断
+        if (bot.signal_type === 'indicator_alert' && bot.config?.indicator_alert) {
+          const indicators = bot.config.indicator_alert.indicators || []
+          return matchesStrategy(indicators, strategyType)
+        }
+        return false
+      }
+
+      // 检查是否是单指标筛选（格式：indicator:rsi）
+      if (filters.value.signalType.startsWith('indicator:')) {
+        const indicatorType = filters.value.signalType.split(':')[1]
+        if (bot.signal_type === 'indicator_alert' && bot.config?.indicator_alert) {
+          const indicators = bot.config.indicator_alert.indicators || []
+          return indicators.some(ind => ind.type === indicatorType)
+        }
+        return false
+      }
+
+      // 如果选择的是 indicator_alert（不带子类型），显示所有指标信号提醒
       return bot.signal_type === filters.value.signalType
     })
   }
@@ -898,9 +935,23 @@ const filteredBots = computed(() => {
 const loadBots = async () => {
   try {
     loading.value = true
-    const response = await botAPI.getBotList()
+    // 请求所有机器人，设置较大的 page_size
+    const response = await botAPI.getBotList({ page_size: 100 })
     const data = response.results || response.data || response
     bots.value = Array.isArray(data) ? data : []
+
+    // 调试：打印所有机器人数据
+    console.log('📊 加载的机器人总数:', bots.value.length)
+    console.log('📊 信号机器人数量:', bots.value.filter(b => b.bot_type === 'signal').length)
+    console.log('📊 所有机器人:', bots.value.map(b => ({
+      id: b.id,
+      name: b.name,
+      bot_type: b.bot_type,
+      signal_type: b.signal_type,
+      token_symbol: b.token_symbol,
+      status: b.status
+    })))
+
     updateExchangeOptions()
     updateStatistics()
   } catch (error) {
@@ -1175,17 +1226,26 @@ const getStatusLabel = (status) => {
 }
 
 // 获取信号类型标签（机器人配置的信号类型）
-const getSignalTypeLabel = (signalType) => {
+const getSignalTypeLabel = (signalType, indicatorType = null) => {
+  // 如果是指标信号提醒，且有具体的指标类型，显示具体类型
+  if (signalType === 'indicator_alert' && indicatorType) {
+    const indicatorLabels = {
+      'rsi': 'RSI',
+      'macd': 'MACD',
+      'ma_crossover': 'MA交叉',
+      'atr': 'ATR',
+      'bollinger': '布林带',
+      'kdj': 'KDJ'
+    }
+    return indicatorLabels[indicatorType] || indicatorType
+  }
+
+  // 否则显示大类
   const labels = {
     'price_alert': '价格提醒',
     'indicator_alert': '指标信号提醒',
     'volatility': '波动性提醒',
     'volume': '成交量/持仓提醒',
-    'rsi': 'RSI指标',
-    'ma_crossover': 'MA交叉',
-    'bollinger': '布林带',
-    'macd': 'MACD',
-    'kdj': 'KDJ',
     'custom': '自定义'
   }
   return labels[signalType] || signalType || '未知'
@@ -1323,6 +1383,26 @@ const last7DaysTrend = computed(() => {
 })
 
 
+
+// 策略匹配函数
+const matchesStrategy = (indicators, strategyType) => {
+  // 定义策略模板的指标组合
+  const strategyTemplates = {
+    scalping: ['rsi', 'macd', 'volume'],
+    day_trading: ['rsi', 'macd', 'volume'],
+    swing_trading: ['rsi', 'ma_crossover', 'volume'],
+    trend_following: ['ma_crossover', 'macd'],
+    reversal: ['rsi', 'macd', 'volume'],
+    breakout: ['atr', 'volume', 'macd']
+  }
+
+  const templateIndicators = strategyTemplates[strategyType]
+  if (!templateIndicators) return false
+
+  // 检查机器人的指标是否包含模板的所有指标
+  const botIndicatorTypes = indicators.map(ind => ind.type)
+  return templateIndicators.every(type => botIndicatorTypes.includes(type))
+}
 
 // 加载信号数据
 const loadSignals = async () => {

@@ -151,7 +151,7 @@ const routes = [
   {
     path: '/membership',
     name: 'Membership',
-    component: () => import('../components/membership/MembershipPage.vue'),
+    component: () => import('../components/membership/MembershipPageV2.vue'),
     meta: { requiresAuth: true }
   },
   {

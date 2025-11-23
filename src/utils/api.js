@@ -108,6 +108,21 @@ export const API_ENDPOINTS = {
   POSITION_OPEN: `${API_BASE_URL}/trading/positions/open/`,
   POSITION_CLOSE: (id) => `${API_BASE_URL}/trading/positions/${id}/close/`,
 
+  // 会员相关
+  MEMBERSHIP_PLANS: `${API_BASE_URL}/auth/membership/plans/`,
+  MEMBERSHIP_STATUS: `${API_BASE_URL}/auth/membership/status/`,
+  MEMBERSHIP_ORDERS: `${API_BASE_URL}/auth/membership/orders/`,
+  CREATE_MEMBERSHIP_ORDER: `${API_BASE_URL}/auth/membership/orders/create/`,
+
+  // 加密货币支付相关
+  CRYPTO_SUPPORTED_TOKENS: `${API_BASE_URL}/auth/crypto/supported-tokens/`,
+  CRYPTO_CREATE_ORDER: `${API_BASE_URL}/auth/crypto/create-order/`,
+  CRYPTO_VERIFY_PAYMENT: `${API_BASE_URL}/auth/crypto/verify-payment/`,
+  CRYPTO_PAYMENT_STATUS: (orderId) => `${API_BASE_URL}/auth/crypto/payment-status/${orderId}/`,
+  CRYPTO_TOKEN_PRICE: `${API_BASE_URL}/auth/crypto/token-price/`,
+  USER_ORDERS: `${API_BASE_URL}/auth/orders/`,
+  CANCEL_ORDER: `${API_BASE_URL}/auth/orders/cancel/`,
+
   // 其他端点可以在这里添加
 }
 
@@ -728,6 +743,87 @@ export const botAPI = {
   async closePosition(id) {
     return apiRequest(API_ENDPOINTS.POSITION_CLOSE(id), {
       method: 'POST'
+    })
+  }
+}
+
+// 会员相关的API函数
+export const membershipAPI = {
+  // 获取会员套餐列表
+  async getPlans() {
+    return apiRequest(API_ENDPOINTS.MEMBERSHIP_PLANS)
+  },
+
+  // 获取用户会员状态
+  async getStatus() {
+    return apiRequest(API_ENDPOINTS.MEMBERSHIP_STATUS)
+  },
+
+  // 获取订单历史
+  async getOrders() {
+    return apiRequest(API_ENDPOINTS.MEMBERSHIP_ORDERS)
+  },
+
+  // 创建订单（传统支付）
+  async createOrder(planId, paymentMethod) {
+    return apiRequest(API_ENDPOINTS.CREATE_MEMBERSHIP_ORDER, {
+      method: 'POST',
+      body: JSON.stringify({ plan_id: planId, payment_method: paymentMethod })
+    })
+  },
+
+  // 创建加密货币订单
+  async createCryptoOrder(planId, tokenSymbol = 'USDT', network = 'ethereum') {
+    return apiRequest(API_ENDPOINTS.CRYPTO_CREATE_ORDER, {
+      method: 'POST',
+      body: JSON.stringify({
+        plan_id: planId,
+        token_symbol: tokenSymbol,
+        network: network
+      })
+    })
+  },
+
+  // 验证加密货币支付
+  async verifyCryptoPayment(orderId, txHash, tokenSymbol, network) {
+    return apiRequest(API_ENDPOINTS.CRYPTO_VERIFY_PAYMENT, {
+      method: 'POST',
+      body: JSON.stringify({
+        order_id: orderId,
+        tx_hash: txHash,
+        token_symbol: tokenSymbol,
+        network: network
+      })
+    })
+  },
+
+  // 查询支付状态
+  async getPaymentStatus(orderId) {
+    return apiRequest(API_ENDPOINTS.CRYPTO_PAYMENT_STATUS(orderId))
+  },
+
+  // 获取支持的代币
+  async getSupportedTokens() {
+    return apiRequest(API_ENDPOINTS.CRYPTO_SUPPORTED_TOKENS)
+  },
+
+  // 获取代币价格
+  async getTokenPrice(tokenSymbol, network) {
+    return apiRequest(API_ENDPOINTS.CRYPTO_TOKEN_PRICE, {
+      params: { token_symbol: tokenSymbol, network: network }
+    })
+  },
+
+  // 获取用户所有订单
+  async getUserOrders() {
+    return apiRequest(API_ENDPOINTS.USER_ORDERS)
+  },
+
+  // 取消订单
+  async cancelOrder(orderId) {
+    return apiRequest(API_ENDPOINTS.CANCEL_ORDER, {
+      method: 'POST',
+      body: JSON.stringify({ order_id: orderId })
     })
   }
 }

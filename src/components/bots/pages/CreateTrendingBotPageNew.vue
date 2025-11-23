@@ -18,7 +18,7 @@
               </button>
               <div>
                 <h1 class="text-3xl font-bold text-slate-900">
-                  {{ isEditMode ? '编辑趋势跟踪机器人' : '创建趋势跟踪机器人' }}
+                  {{ isEditMode ? '编辑交易机器人' : '创建交易机器人' }}
                 </h1>
                 <p class="text-slate-600 mt-1">配置自动交易策略和风险管理</p>
               </div>
@@ -47,7 +47,7 @@
                 <input
                   v-model="formData.name"
                   type="text"
-                  placeholder="例如：BTC 趋势跟踪"
+                  placeholder="例如：BTC 交易机器人"
                   class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
                 <p v-if="errors.name" class="mt-1 text-sm text-red-500">{{ errors.name }}</p>

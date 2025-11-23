@@ -80,7 +80,7 @@
                     </div>
                   </router-link>
 
-                  <!-- 趋势跟踪机器人 -->
+                  <!-- 交易机器人 -->
                   <router-link
                     to="/bots?type=trend_following"
                     class="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors"
@@ -94,7 +94,7 @@
                       </div>
                     </div>
                     <div class="flex-1 min-w-0">
-                      <div class="text-sm font-medium text-gray-900">趋势跟踪</div>
+                      <div class="text-sm font-medium text-gray-900">交易机器人</div>
                     </div>
                   </router-link>
                 </div>
@@ -107,6 +107,15 @@
               :class="{ 'text-blue-600 bg-blue-50': $route.path === '/strategies' }"
             >
               社区
+            </router-link>
+
+            <router-link
+              v-if="userStore.isAuthenticated.value"
+              to="/membership"
+              class="px-4 py-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-medium"
+              :class="{ 'text-blue-600 bg-blue-50': $route.path === '/membership' }"
+            >
+              会员
             </router-link>
           </nav>
         </div>

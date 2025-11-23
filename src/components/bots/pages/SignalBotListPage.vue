@@ -770,6 +770,15 @@
       @unshared="handleUnshared"
       @edit="handleEditShare"
     />
+
+    <!-- 升级会员弹窗 -->
+    <UpgradeMembershipModal
+      ref="upgradeMembershipModal"
+      title="信号机器人数量已达上限"
+      message="您已达到当前会员等级的信号机器人数量限制，升级会员以创建更多机器人"
+      :current-usage="membershipStatus.bot_usage?.signal_bots || 0"
+      :limit-info="membershipStatus.bot_limits?.signal_bots === -1 ? '无限' : membershipStatus.bot_limits?.signal_bots || 0"
+    />
 </template>
 
 <script setup>
@@ -782,12 +791,23 @@ import ShareBotModal from '../../common/ShareBotModal.vue'
 import ShareStatsModal from '../../common/ShareStatsModal.vue'
 import { CpuChipIcon, BellIcon, ChartBarIcon, PencilIcon, EyeIcon, TrashIcon, PlayIcon } from '@heroicons/vue/24/outline'
 import { PlayIcon as PlayIconSolid, StopIcon as StopIconSolid } from '@heroicons/vue/24/solid'
-import { botAPI } from '../../../utils/api'
+import { botAPI, membershipAPI } from '../../../utils/api'
 import { showSuccess, showError } from '../../../utils/notification'
 import ConfirmModal from '../../common/ConfirmModal.vue'
 import BacktestPanel from '../components/BacktestPanel.vue'
+import UpgradeMembershipModal from '../../common/UpgradeMembershipModal.vue'
 
 const router = useRouter()
+
+// 升级会员弹窗
+const upgradeMembershipModal = ref(null)
+
+// 会员状态
+const membershipStatus = ref({
+  bot_limits: { signal_bots: 0, trading_bots: 0 },
+  bot_usage: { signal_bots: 0, trading_bots: 0 },
+  membership_tier: 'free'
+})
 
 // TAB 配置
 const activeTab = ref(0)
@@ -1216,8 +1236,44 @@ const handleEditShare = () => {
   showShareModal.value = true
 }
 
+// 检查是否可以创建信号机器人
+const canCreateSignalBot = computed(() => {
+  const limit = membershipStatus.value.bot_limits?.signal_bots || 0
+  const usage = membershipStatus.value.bot_usage?.signal_bots || 0
+
+  // -1 表示无限制
+  if (limit === -1) return true
+
+  return usage < limit
+})
+
+// 获取限制文本
+const botLimitText = (botType) => {
+  const limit = membershipStatus.value.bot_limits?.[botType] || 0
+  return limit === -1 ? '无限' : limit
+}
+
 const handleCreateBot = () => {
+  if (!canCreateSignalBot.value) {
+    // 显示升级会员弹窗
+    if (upgradeMembershipModal.value) {
+      upgradeMembershipModal.value.show()
+    }
+    return
+  }
   router.push('/bots/create-signal')
+}
+
+// 获取会员状态
+const fetchMembershipStatus = async () => {
+  try {
+    const response = await membershipAPI.getStatus()
+    if (response.status === 'success') {
+      membershipStatus.value = response.data
+    }
+  } catch (error) {
+    console.error('获取会员状态失败:', error)
+  }
 }
 
 const getStatusLabel = (status) => {
@@ -1442,6 +1498,7 @@ const loadSignals = async () => {
 let refreshInterval = null
 
 onMounted(async () => {
+  await fetchMembershipStatus()
   await loadBots()
   await loadSignals()
 

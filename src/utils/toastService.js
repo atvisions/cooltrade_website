@@ -46,3 +46,17 @@ export function showInfo(message, title = '提示') {
   })
 }
 
+// 通用的 showToast 函数，根据类型调用对应的函数
+export function showToast(message, type = 'info', title = null) {
+  const typeMap = {
+    'success': () => showSuccess(message, title || '成功'),
+    'error': () => showError(message, title || '错误'),
+    'warning': () => showWarning(message, title || '警告'),
+    'warn': () => showWarning(message, title || '警告'),
+    'info': () => showInfo(message, title || '提示')
+  }
+
+  const showFn = typeMap[type] || typeMap['info']
+  showFn()
+}
+

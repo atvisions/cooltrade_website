@@ -510,6 +510,11 @@ export const botAPI = {
     return apiRequest(url)
   },
 
+  // 获取最新信号及AI价格建议
+  async getLatestSignal(id) {
+    return apiRequest(`${API_BASE_URL}/trading/bots/${id}/latest-signal/`)
+  },
+
   // 获取分享统计
   async getShareStats(id) {
     return apiRequest(`${API_BASE_URL}/trading/bots/${id}/share_stats/`)

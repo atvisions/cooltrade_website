@@ -851,7 +851,7 @@ const handleStartBot = async (botId) => {
 const handleStopBot = async (botId) => {
   try {
     // 查询该机器人的持仓信息
-    const positionsResponse = await botAPI.getPositions({ bot_id: botId, status: 'open' })
+    const positionsResponse = await botAPI.getPositionList({ bot_id: botId, status: 'open' })
     const openPositions = positionsResponse.results || []
 
     if (openPositions.length > 0) {

@@ -135,6 +135,13 @@
             <CheckIntervalConfig v-model="formData.check_interval" />
           </Card>
 
+          <!-- 信号质量控制 -->
+          <SignalQualityConfig
+            v-if="formData.signal_type && formData.signal_type !== 'price_alert'"
+            :config="signalQualityConfig"
+            @update:config="signalQualityConfig = $event"
+          />
+
           <!-- AI 分析配置 -->
           <AIAnalysisConfig
             :enabled="formData.use_advanced_analysis"
@@ -217,6 +224,7 @@ import IndicatorAlertConfig from '../signals/IndicatorAlertConfig.vue'
 import VolatilitySignalConfig from '../signals/VolatilitySignalConfig.vue'
 import VolumeSignalConfig from '../signals/VolumeSignalConfig.vue'
 import CheckIntervalConfig from '../signals/CheckIntervalConfig.vue'
+import SignalQualityConfig from '../signals/SignalQualityConfig.vue'
 import AIAnalysisConfig from '../signals/AIAnalysisConfig.vue'
 import NotificationConfig from '../signals/NotificationConfig.vue'
 import BasicInfoConfig from '../signals/BasicInfoConfig.vue'
@@ -482,7 +490,22 @@ const handleSubmit = async () => {
       notify_app: formData.value.notify_app,
       check_interval: formData.value.check_interval,
       config: config,
-      bot_type: 'signal'
+      bot_type: 'signal',
+      // 信号质量控制参数（价格提醒不需要）
+      ...(formData.value.signal_type !== 'price_alert' && {
+        signal_confirmation_bars: Number(signalQualityConfig.value.signal_confirmation_bars),
+        signal_expiration_hours: Number(signalQualityConfig.value.signal_expiration_hours),
+        signal_strength_threshold: Number(signalQualityConfig.value.signal_strength_threshold)
+      }),
+      // 多时间周期配置（价格提醒不需要）
+      ...(formData.value.signal_type !== 'price_alert' && {
+        timeframes_config: {
+          primary: timeframesConfig.value.primary,
+          confirm: timeframesConfig.value.confirm,
+          require_all_confirm: timeframesConfig.value.require_all_confirm,
+          min_confirm_count: Number(timeframesConfig.value.min_confirm_count)
+        }
+      })
     }
 
     console.log('提交数据:', submitData)
@@ -826,6 +849,13 @@ const timeframesConfig = ref({
   min_confirm_count: 1
 })
 
+// 信号质量控制配置
+const signalQualityConfig = ref({
+  signal_confirmation_bars: 1,      // 默认：1根K线确认
+  signal_expiration_hours: 24,      // 默认：24小时过期
+  signal_strength_threshold: 60     // 默认：60分强度阈值
+})
+
 // 波动性配置
 const volatilityConfig = ref({
   volatility_threshold: 5.0,
@@ -1165,6 +1195,26 @@ const loadBotData = async () => {
 
       // 加载时间周期配置
       const timeframesConf = config.timeframes_config || {}
+      timeframesConfig.value = {
+        primary: timeframesConf.primary || '1h',
+        confirm: timeframesConf.confirm || [],
+        require_all_confirm: timeframesConf.require_all_confirm || false,
+        min_confirm_count: timeframesConf.min_confirm_count || 1
+      }
+    }
+
+    // 加载信号质量控制配置（从 signal_bot 对象中加载）
+    if (bot.signal_bot) {
+      signalQualityConfig.value = {
+        signal_confirmation_bars: bot.signal_bot.signal_confirmation_bars || 1,
+        signal_expiration_hours: bot.signal_bot.signal_expiration_hours || 24,
+        signal_strength_threshold: bot.signal_bot.signal_strength_threshold || 60
+      }
+    }
+
+    // 加载多时间周期配置（从 signal_bot 对象中加载）
+    if (bot.signal_bot && bot.signal_bot.timeframes_config) {
+      const timeframesConf = bot.signal_bot.timeframes_config
       timeframesConfig.value = {
         primary: timeframesConf.primary || '1h',
         confirm: timeframesConf.confirm || [],

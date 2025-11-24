@@ -66,7 +66,9 @@ export const API_ENDPOINTS = {
   BOT_TRADES: (id) => `${API_BASE_URL}/trading/bots/${id}/trades/`,
   BOT_SIGNALS: (id) => `${API_BASE_URL}/trading/bots/${id}/signals/`,
   BOT_STATISTICS: `${API_BASE_URL}/trading/bots/statistics/`,
+  BOT_PERFORMANCE_ANALYSIS: `${API_BASE_URL}/trading/bots/performance_analysis/`,
   TRADING_PAIRS: `${API_BASE_URL}/trading/trading-pairs/`,
+  TRADING_PAIR_INFO: `${API_BASE_URL}/market/trading-pair-info/`,
   EXCHANGE_API_SYNC: (id) => `${API_BASE_URL}/auth/exchange-apis/${id}/sync/`,
   EXCHANGE_API_TEST: `${API_BASE_URL}/auth/exchange-apis/test/`,
 
@@ -528,6 +530,13 @@ export const botAPI = {
   // 获取机器人统计数据
   async getBotStatistics() {
     return apiRequest(API_ENDPOINTS.BOT_STATISTICS)
+  },
+
+  // 获取性能分析数据
+  async getPerformanceAnalysis(params = {}) {
+    const queryParams = new URLSearchParams(params).toString()
+    const url = queryParams ? `${API_ENDPOINTS.BOT_PERFORMANCE_ANALYSIS}?${queryParams}` : API_ENDPOINTS.BOT_PERFORMANCE_ANALYSIS
+    return apiRequest(url)
   },
 
   // 获取信号列表

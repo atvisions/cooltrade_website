@@ -1,5 +1,5 @@
 <template>
-  <div class="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+  <div class="mt-6 mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
     <div class="flex items-center gap-3">
       <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
         <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

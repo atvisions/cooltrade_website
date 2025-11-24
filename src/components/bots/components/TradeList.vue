@@ -44,72 +44,166 @@
     </div>
 
     <!-- 筛选器 -->
-    <div class="bg-white rounded-xl p-4 border border-slate-200">
-      <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <div>
-          <label class="block text-sm font-medium text-slate-700 mb-2">状态</label>
-          <select 
-            v-model="filters.status" 
-            @change="loadTrades"
-            class="w-full rounded-lg bg-slate-50 border border-slate-200 px-4 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">全部</option>
-            <option value="filled">已成交</option>
-            <option value="pending">待执行</option>
-            <option value="submitted">已提交</option>
-            <option value="partially_filled">部分成交</option>
-            <option value="cancelled">已取消</option>
-            <option value="failed">失败</option>
-          </select>
+    <div class="bg-white rounded-xl p-6 border border-slate-200">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
+        <!-- 状态筛选 -->
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-slate-700">状态</label>
+          <Listbox v-model="filters.status" @update:modelValue="loadTrades">
+            <div class="relative">
+              <ListboxButton class="relative w-full cursor-default rounded-xl bg-slate-50 py-3 pl-4 pr-10 text-left border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <span class="block truncate text-slate-700">
+                  {{ statusOptions.find(option => option.value === filters.status)?.label || '全部状态' }}
+                </span>
+                <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                  <ChevronUpDownIcon class="h-5 w-5 text-slate-400" aria-hidden="true" />
+                </span>
+              </ListboxButton>
+              <transition leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
+                <ListboxOptions class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                  <ListboxOption
+                    v-slot="{ active, selected }"
+                    v-for="option in statusOptions"
+                    :key="option.value"
+                    :value="option.value"
+                    as="template"
+                  >
+                    <li :class="[active ? 'bg-slate-100 text-slate-900' : 'text-slate-700', 'relative cursor-default select-none py-3 pl-4 pr-4']">
+                      <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">{{ option.label }}</span>
+                      <span v-if="selected" class="absolute inset-y-0 right-0 flex items-center pr-3 text-blue-600">
+                        <CheckIcon class="h-5 w-5" aria-hidden="true" />
+                      </span>
+                    </li>
+                  </ListboxOption>
+                </ListboxOptions>
+              </transition>
+            </div>
+          </Listbox>
         </div>
 
-        <div>
-          <label class="block text-sm font-medium text-slate-700 mb-2">方向</label>
-          <select 
-            v-model="filters.side" 
-            @change="loadTrades"
-            class="w-full rounded-lg bg-slate-50 border border-slate-200 px-4 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">全部</option>
-            <option value="buy">买入</option>
-            <option value="sell">卖出</option>
-          </select>
+        <!-- 方向筛选 -->
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-slate-700">方向</label>
+          <Listbox v-model="filters.side" @update:modelValue="loadTrades">
+            <div class="relative">
+              <ListboxButton class="relative w-full cursor-default rounded-xl bg-slate-50 py-3 pl-4 pr-10 text-left border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <span class="block truncate text-slate-700">
+                  {{ sideOptions.find(option => option.value === filters.side)?.label || '全部方向' }}
+                </span>
+                <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                  <ChevronUpDownIcon class="h-5 w-5 text-slate-400" aria-hidden="true" />
+                </span>
+              </ListboxButton>
+              <transition leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
+                <ListboxOptions class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                  <ListboxOption
+                    v-slot="{ active, selected }"
+                    v-for="option in sideOptions"
+                    :key="option.value"
+                    :value="option.value"
+                    as="template"
+                  >
+                    <li :class="[active ? 'bg-slate-100 text-slate-900' : 'text-slate-700', 'relative cursor-default select-none py-3 pl-4 pr-4']">
+                      <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">{{ option.label }}</span>
+                      <span v-if="selected" class="absolute inset-y-0 right-0 flex items-center pr-3 text-blue-600">
+                        <CheckIcon class="h-5 w-5" aria-hidden="true" />
+                      </span>
+                    </li>
+                  </ListboxOption>
+                </ListboxOptions>
+              </transition>
+            </div>
+          </Listbox>
         </div>
 
-        <div>
-          <label class="block text-sm font-medium text-slate-700 mb-2">类型</label>
-          <select 
-            v-model="filters.trade_type" 
-            @change="loadTrades"
-            class="w-full rounded-lg bg-slate-50 border border-slate-200 px-4 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">全部</option>
-            <option value="open">开仓</option>
-            <option value="close">平仓</option>
-            <option value="add">加仓</option>
-            <option value="reduce">减仓</option>
-          </select>
+        <!-- 类型筛选 -->
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-slate-700">类型</label>
+          <Listbox v-model="filters.trade_type" @update:modelValue="loadTrades">
+            <div class="relative">
+              <ListboxButton class="relative w-full cursor-default rounded-xl bg-slate-50 py-3 pl-4 pr-10 text-left border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <span class="block truncate text-slate-700">
+                  {{ tradeTypeOptions.find(option => option.value === filters.trade_type)?.label || '全部类型' }}
+                </span>
+                <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                  <ChevronUpDownIcon class="h-5 w-5 text-slate-400" aria-hidden="true" />
+                </span>
+              </ListboxButton>
+              <transition leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
+                <ListboxOptions class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                  <ListboxOption
+                    v-slot="{ active, selected }"
+                    v-for="option in tradeTypeOptions"
+                    :key="option.value"
+                    :value="option.value"
+                    as="template"
+                  >
+                    <li :class="[active ? 'bg-slate-100 text-slate-900' : 'text-slate-700', 'relative cursor-default select-none py-3 pl-4 pr-4']">
+                      <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">{{ option.label }}</span>
+                      <span v-if="selected" class="absolute inset-y-0 right-0 flex items-center pr-3 text-blue-600">
+                        <CheckIcon class="h-5 w-5" aria-hidden="true" />
+                      </span>
+                    </li>
+                  </ListboxOption>
+                </ListboxOptions>
+              </transition>
+            </div>
+          </Listbox>
         </div>
 
-        <div>
-          <label class="block text-sm font-medium text-slate-700 mb-2">机器人</label>
-          <select 
-            v-model="filters.bot_id" 
-            @change="loadTrades"
-            class="w-full rounded-lg bg-slate-50 border border-slate-200 px-4 py-2 text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">全部</option>
-            <option v-for="bot in bots" :key="bot.id" :value="bot.id">
-              {{ bot.name }}
-            </option>
-          </select>
+        <!-- 机器人筛选 -->
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-slate-700">机器人</label>
+          <Listbox v-model="filters.bot_id" @update:modelValue="loadTrades">
+            <div class="relative">
+              <ListboxButton class="relative w-full cursor-default rounded-xl bg-slate-50 py-3 pl-4 pr-10 text-left border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <span class="block truncate text-slate-700">
+                  {{ bots.find(bot => bot.id === filters.bot_id)?.name || '全部机器人' }}
+                </span>
+                <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                  <ChevronUpDownIcon class="h-5 w-5 text-slate-400" aria-hidden="true" />
+                </span>
+              </ListboxButton>
+              <transition leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
+                <ListboxOptions class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                  <ListboxOption
+                    v-slot="{ active, selected }"
+                    :value="''"
+                    as="template"
+                  >
+                    <li :class="[active ? 'bg-slate-100 text-slate-900' : 'text-slate-700', 'relative cursor-default select-none py-3 pl-4 pr-4']">
+                      <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">全部机器人</span>
+                      <span v-if="selected" class="absolute inset-y-0 right-0 flex items-center pr-3 text-blue-600">
+                        <CheckIcon class="h-5 w-5" aria-hidden="true" />
+                      </span>
+                    </li>
+                  </ListboxOption>
+                  <ListboxOption
+                    v-slot="{ active, selected }"
+                    v-for="bot in bots"
+                    :key="bot.id"
+                    :value="bot.id"
+                    as="template"
+                  >
+                    <li :class="[active ? 'bg-slate-100 text-slate-900' : 'text-slate-700', 'relative cursor-default select-none py-3 pl-4 pr-4']">
+                      <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">{{ bot.name }}</span>
+                      <span v-if="selected" class="absolute inset-y-0 right-0 flex items-center pr-3 text-blue-600">
+                        <CheckIcon class="h-5 w-5" aria-hidden="true" />
+                      </span>
+                    </li>
+                  </ListboxOption>
+                </ListboxOptions>
+              </transition>
+            </div>
+          </Listbox>
         </div>
 
+        <!-- 刷新按钮 -->
         <div class="flex items-end">
           <button
             @click="loadTrades"
             :disabled="loading"
-            class="w-full px-4 py-2 bg-slate-600 text-white rounded-lg hover:bg-slate-700 disabled:opacity-50 transition-colors"
+            class="w-full px-4 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 disabled:opacity-50 transition-colors font-medium"
           >
             刷新
           </button>
@@ -162,7 +256,33 @@
                 <div class="text-xs text-slate-500">{{ trade.exchange }}</div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <span class="text-sm font-medium text-slate-900">{{ trade.symbol }}</span>
+                <div class="flex items-center gap-2">
+                  <!-- Token Logo -->
+                  <div class="flex items-center -space-x-1">
+                    <img
+                      v-if="trade.token_logo"
+                      :src="trade.token_logo"
+                      :alt="trade.token_symbol"
+                      class="w-6 h-6 rounded-full border border-white shadow-sm"
+                      @error="handleImageError"
+                    />
+                    <div
+                      v-else
+                      class="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold border border-white shadow-sm"
+                    >
+                      {{ trade.token_symbol?.charAt(0) || '?' }}
+                    </div>
+                    <img
+                      src="https://s2.coinmarketcap.com/static/img/coins/64x64/825.png"
+                      alt="USDT"
+                      class="w-6 h-6 rounded-full border border-white shadow-sm"
+                      @error="handleImageError"
+                    />
+                  </div>
+                  <span class="text-sm font-medium text-slate-900">
+                    {{ trade.token_symbol }}/{{ trade.trading_pair || 'USDT' }}
+                  </span>
+                </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex flex-col gap-1">
@@ -183,14 +303,20 @@
                 <span class="text-sm font-medium text-slate-900">${{ Number(trade.price).toFixed(2) }}</span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-slate-900">{{ Number(trade.quantity).toFixed(8) }}</div>
-                <div v-if="trade.filled_quantity" class="text-xs text-slate-500">
+                <div class="text-sm text-slate-900">
+                  {{ Number(trade.quantity).toFixed(8) }}
+                  <span class="text-xs text-slate-500 ml-1">
+                    {{ trade.market_type === 'linear' ? '张' : trade.token_symbol }}
+                  </span>
+                </div>
+                <div v-if="trade.filled_quantity && Number(trade.filled_quantity) > 0" class="text-xs text-slate-500">
                   已成交: {{ Number(trade.filled_quantity).toFixed(8) }}
+                  {{ trade.market_type === 'linear' ? '张' : trade.token_symbol }}
                 </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <span class="text-sm font-medium text-slate-900">
-                  ${{ (Number(trade.price) * Number(trade.quantity)).toFixed(2) }}
+                  ${{ Number(trade.total_value).toFixed(2) }}
                 </span>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
@@ -240,6 +366,8 @@
 
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
+import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue'
+import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid'
 import { botAPI } from '../../../utils/api'
 import { showError } from '../../../utils/notification'
 
@@ -256,6 +384,31 @@ const filters = ref({
   trade_type: '',
   bot_id: ''
 })
+
+// 筛选选项
+const statusOptions = [
+  { label: '全部状态', value: '' },
+  { label: '已成交', value: 'filled' },
+  { label: '待执行', value: 'pending' },
+  { label: '已提交', value: 'submitted' },
+  { label: '部分成交', value: 'partially_filled' },
+  { label: '已取消', value: 'cancelled' },
+  { label: '失败', value: 'failed' }
+]
+
+const sideOptions = [
+  { label: '全部方向', value: '' },
+  { label: '买入', value: 'buy' },
+  { label: '卖出', value: 'sell' }
+]
+
+const tradeTypeOptions = [
+  { label: '全部类型', value: '' },
+  { label: '开仓', value: 'open' },
+  { label: '平仓', value: 'close' },
+  { label: '加仓', value: 'add' },
+  { label: '减仓', value: 'reduce' }
+]
 
 const statistics = computed(() => {
   return {
@@ -352,6 +505,28 @@ const formatDate = (dateString) => {
     hour: '2-digit',
     minute: '2-digit'
   })
+}
+
+// 从交易对中提取代币符号（例如：BTC/USDT:USDT -> BTC）
+const getSymbolFromPair = (symbol) => {
+  if (!symbol) return ''
+  // 处理 BTC/USDT:USDT 格式
+  const parts = symbol.split('/')
+  return parts[0] || symbol
+}
+
+// 获取代币 logo
+const getTokenLogo = (symbol) => {
+  if (!symbol) return 'https://via.placeholder.com/24'
+
+  // CryptoLogos CDN
+  const symbolLower = symbol.toLowerCase()
+  return `https://cryptologos.cc/logos/${symbolLower}-${symbolLower}-logo.png`
+}
+
+// 图片加载失败处理
+const handleImageError = (event) => {
+  event.target.src = 'https://via.placeholder.com/24?text=' + (event.target.alt || '?')
 }
 
 // 监听分页变化

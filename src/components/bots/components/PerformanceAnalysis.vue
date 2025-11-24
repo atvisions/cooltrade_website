@@ -292,38 +292,17 @@ const topBots = ref([])
 const loadPerformance = async () => {
   loading.value = true
   try {
-    // 这里应该调用实际的性能分析 API
-    // 目前使用模拟数据
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    // 模拟数据
-    statistics.value = {
-      total_profit: 1234.56,
-      profit_rate: 12.34,
-      win_rate: 65.5,
-      total_trades: 150,
-      winning_trades: 98,
-      losing_trades: 52,
-      avg_profit: 8.23,
-      max_drawdown: 15.6,
-      max_profit: 234.56,
-      max_loss: -123.45,
-      profit_loss_ratio: 1.9,
-      avg_holding_time: 24.5,
-      sharpe_ratio: 1.85,
-      volatility: 18.5,
-      risk_reward_ratio: 2.1
-    }
+    const response = await botAPI.getPerformanceAnalysis(filters.value)
 
-    topBots.value = [
-      { id: 1, name: 'BTC 趋势跟踪', profit: 456.78, win_rate: 72.5, trades: 45 },
-      { id: 2, name: 'ETH 信号交易', profit: 345.67, win_rate: 68.3, trades: 38 },
-      { id: 3, name: 'BNB 网格交易', profit: 234.56, win_rate: 65.2, trades: 52 },
-      { id: 4, name: 'SOL 定投策略', profit: 197.55, win_rate: 61.8, trades: 15 }
-    ]
+    if (response.success && response.data) {
+      statistics.value = response.data.statistics
+      topBots.value = response.data.top_bots || []
+    } else {
+      showError('加载性能数据失败')
+    }
   } catch (error) {
     console.error('加载性能数据失败:', error)
-    showError('加载性能数据失败')
+    showError(error.message || '加载性能数据失败')
   } finally {
     loading.value = false
   }

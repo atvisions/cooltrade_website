@@ -116,7 +116,7 @@
             <div v-if="activeTab === 0">
               <!-- 筛选和搜索 - HeadlessUI 组件 -->
               <div class="bg-white rounded-2xl p-6 mb-6 border border-slate-200">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                   <!-- 状态筛选 -->
                   <div class="space-y-2">
                     <label class="block text-sm font-medium text-slate-700">状态</label>
@@ -135,6 +135,41 @@
                             <ListboxOption
                               v-slot="{ active, selected }"
                               v-for="option in statusOptionsWithAll"
+                              :key="option.value"
+                              :value="option.value"
+                              as="template"
+                            >
+                              <li :class="[active ? 'bg-slate-100 text-slate-900' : 'text-slate-700', 'relative cursor-default select-none py-3 pl-4 pr-4']">
+                                <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">{{ option.label }}</span>
+                                <span v-if="selected" class="absolute inset-y-0 right-0 flex items-center pr-3 text-blue-600">
+                                  <CheckIcon class="h-5 w-5" aria-hidden="true" />
+                                </span>
+                              </li>
+                            </ListboxOption>
+                          </ListboxOptions>
+                        </transition>
+                      </div>
+                    </Listbox>
+                  </div>
+
+                  <!-- 市场类型筛选 -->
+                  <div class="space-y-2">
+                    <label class="block text-sm font-medium text-slate-700">市场类型</label>
+                    <Listbox v-model="filters.market_type">
+                      <div class="relative">
+                        <ListboxButton class="relative w-full cursor-default rounded-xl bg-slate-50 py-3 pl-4 pr-10 text-left border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                          <span class="block truncate text-slate-700">
+                            {{ marketTypeOptionsWithAll.find(option => option.value === filters.market_type)?.label || '全部类型' }}
+                          </span>
+                          <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                            <ChevronUpDownIcon class="h-5 w-5 text-slate-400" aria-hidden="true" />
+                          </span>
+                        </ListboxButton>
+                        <transition leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
+                          <ListboxOptions class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                            <ListboxOption
+                              v-slot="{ active, selected }"
+                              v-for="option in marketTypeOptionsWithAll"
                               :key="option.value"
                               :value="option.value"
                               as="template"
@@ -207,9 +242,9 @@
                   <div class="flex items-end">
                     <button
                       @click="resetFilters"
-                      class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl px-4 py-3 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
+                      class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium rounded-xl px-6 py-3 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2"
                     >
-                      重置筛选
+                      重置
                     </button>
                   </div>
                 </div>
@@ -231,7 +266,7 @@
                     <thead>
                       <tr class="border-b border-slate-200 bg-slate-50">
                         <th class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">机器人名称</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">类型</th>
+                        <th class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">市场类型</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">状态</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">总盈亏</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">胜率</th>
@@ -283,17 +318,17 @@
                             </div>
                           </div>
                         </td>
-                        <!-- 交易机器人显示类型 -->
+                        <!-- 市场类型 -->
                         <td class="px-6 py-4">
                           <span :class="[
                             'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium',
-                            bot.bot_type === 'trend_following'
-                              ? 'bg-green-100 text-green-700'
-                              : bot.bot_type === 'grid_trading'
-                              ? 'bg-orange-100 text-orange-700'
-                              : 'bg-purple-100 text-purple-700'
+                            bot.market_type === 'spot'
+                              ? 'bg-blue-100 text-blue-700'
+                              : bot.market_type === 'linear'
+                              ? 'bg-purple-100 text-purple-700'
+                              : 'bg-orange-100 text-orange-700'
                           ]">
-                            {{ getBotTypeLabel(bot.bot_type) }}
+                            {{ getMarketTypeLabel(bot.market_type) }}
                           </span>
                         </td>
                         <td class="px-6 py-4">
@@ -319,10 +354,9 @@
                         </td>
                         <td class="px-6 py-4">
                           <div class="flex items-center justify-center gap-1">
-                            <!-- 启动/停止按钮 -->
-                            <div class="relative">
+                            <!-- 启动按钮 -->
+                            <div v-if="bot.status !== 'running'" class="relative">
                               <button
-                                v-if="bot.status !== 'running'"
                                 @click="handleStartBot(bot.id)"
                                 @mouseenter="showTooltip(`start-${bot.id}`)"
                                 @mouseleave="hideTooltip"
@@ -331,8 +365,40 @@
                               >
                                 <PlayIcon class="h-4 w-4" />
                               </button>
+                              <div
+                                v-if="hoveredButton === `start-${bot.id}`"
+                                class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-slate-900 text-white text-xs rounded-lg whitespace-nowrap z-50 pointer-events-none"
+                              >
+                                启动机器人
+                                <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
+                              </div>
+                            </div>
+
+                            <!-- 暂停按钮（仅运行中显示） -->
+                            <div v-if="bot.status === 'running'" class="relative">
                               <button
-                                v-else
+                                @click="handlePauseBot(bot.id)"
+                                @mouseenter="showTooltip(`pause-${bot.id}`)"
+                                @mouseleave="hideTooltip"
+                                :disabled="loadingBotId === bot.id"
+                                class="p-2 text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50 rounded-lg transition-colors duration-200"
+                              >
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                              </button>
+                              <div
+                                v-if="hoveredButton === `pause-${bot.id}`"
+                                class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-slate-900 text-white text-xs rounded-lg whitespace-nowrap z-50 pointer-events-none"
+                              >
+                                暂停（保留持仓）
+                                <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
+                              </div>
+                            </div>
+
+                            <!-- 停止按钮（仅运行中显示） -->
+                            <div v-if="bot.status === 'running'" class="relative">
+                              <button
                                 @click="handleStopBot(bot.id)"
                                 @mouseenter="showTooltip(`stop-${bot.id}`)"
                                 @mouseleave="hideTooltip"
@@ -342,10 +408,10 @@
                                 <StopIcon class="h-4 w-4" />
                               </button>
                               <div
-                                v-if="hoveredButton === `start-${bot.id}` || hoveredButton === `stop-${bot.id}`"
+                                v-if="hoveredButton === `stop-${bot.id}`"
                                 class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-slate-900 text-white text-xs rounded-lg whitespace-nowrap z-50 pointer-events-none"
                               >
-                                {{ hoveredButton === `start-${bot.id}` ? '启动机器人' : '停止机器人' }}
+                                停止（平仓）
                                 <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
                               </div>
                             </div>
@@ -446,23 +512,18 @@
               <OrderList />
             </div>
 
-            <!-- TAB 4: 交易审批 -->
+            <!-- TAB 4: 交易记录 -->
             <div v-if="activeTab === 3">
-              <RecommendationList />
-            </div>
-
-            <!-- TAB 5: 交易记录 -->
-            <div v-if="activeTab === 4">
               <TradeList />
             </div>
 
-            <!-- TAB 6: 策略回测 -->
-            <div v-if="activeTab === 5">
+            <!-- TAB 5: 策略回测 -->
+            <div v-if="activeTab === 4">
               <BacktestPanel />
             </div>
 
-            <!-- TAB 7: 性能分析 -->
-            <div v-if="activeTab === 6">
+            <!-- TAB 6: 性能分析 -->
+            <div v-if="activeTab === 5">
               <PerformanceAnalysis />
             </div>
           </div>
@@ -478,13 +539,13 @@
       @cancel="handleCancelShare"
     />
 
-    <!-- 停止机器人确认对话框 -->
+    <!-- 暂停机器人确认对话框（编辑时） -->
     <ConfirmModal
       v-if="showStopConfirm"
       type="warning"
-      title="停止机器人"
-      message="该机器人正在运行中。编辑运行中的机器人需要先停止它。是否停止机器人并继续编辑？"
-      confirm-text="停止并编辑"
+      title="暂停机器人"
+      message="该机器人正在运行中。编辑运行中的机器人需要先暂停它（持仓将被保留）。是否暂停机器人并继续编辑？"
+      confirm-text="暂停并编辑"
       cancel-text="取消"
       @confirm="handleConfirmStopAndEdit"
       @cancel="handleCancelStopAndEdit"
@@ -500,6 +561,18 @@
       cancel-text="取消"
       @confirm="handleConfirmDelete"
       @cancel="handleCancelDelete"
+    />
+
+    <!-- 停止机器人并平仓确认对话框 -->
+    <ConfirmModal
+      v-if="showStopAndCloseConfirm"
+      type="warning"
+      title="停止机器人并平仓"
+      :message="stopConfirmMessage"
+      confirm-text="确认停止并平仓"
+      cancel-text="取消"
+      @confirm="handleConfirmStopAndClose"
+      @cancel="handleCancelStopAndClose"
     />
 
     <!-- 升级会员弹窗 -->
@@ -523,7 +596,6 @@ import ShareBotModal from '../../common/ShareBotModal.vue'
 import ConfirmModal from '../../common/ConfirmModal.vue'
 import PositionList from '../components/PositionList.vue'
 import OrderList from '../components/OrderList.vue'
-import RecommendationList from '../components/RecommendationList.vue'
 import TradeList from '../components/TradeList.vue'
 import BacktestPanel from '../components/BacktestPanel.vue'
 import PerformanceAnalysis from '../components/PerformanceAnalysis.vue'
@@ -578,17 +650,26 @@ const pageConfig = computed(() => {
   return botTypeConfigs[currentBotType.value] || botTypeConfigs.trend_following
 })
 
-// TAB 配置
-const activeTab = ref(0)  // 默认显示"机器人列表"
+// TAB 配置 - 从 localStorage 恢复上次选择的 TAB
+const getInitialTab = () => {
+  const savedTab = localStorage.getItem('botListActiveTab')
+  return savedTab ? parseInt(savedTab) : 0
+}
+
+const activeTab = ref(getInitialTab())  // 从 localStorage 恢复
 const tabs = ref([
   { label: '机器人列表', icon: 'list' },
   { label: '持仓管理', icon: 'wallet' },
   { label: '委托订单', icon: 'document-text' },
-  { label: '交易审批', icon: 'bolt' },
   { label: '交易记录', icon: 'clock' },
   { label: '策略回测', icon: 'chart-bar' },
   { label: '性能分析', icon: 'chart-line' }
 ])
+
+// 监听 activeTab 变化，保存到 localStorage
+watch(activeTab, (newTab) => {
+  localStorage.setItem('botListActiveTab', newTab.toString())
+})
 
 const loading = ref(false)
 const loadingBotId = ref(null)
@@ -607,6 +688,9 @@ const showStopConfirm = ref(false)
 const pendingEditBotId = ref(null)
 const showDeleteConfirm = ref(false)
 const pendingDeleteBotId = ref(null)
+const showStopAndCloseConfirm = ref(false)
+const pendingStopBotId = ref(null)
+const stopConfirmMessage = ref('')
 
 // Tooltip 状态
 const hoveredButton = ref(null)
@@ -614,6 +698,7 @@ const hoveredButton = ref(null)
 const filters = ref({
   status: '',
   bot_type: '',
+  market_type: '',
   exchange: '',
   search: ''
 })
@@ -628,6 +713,17 @@ const statusOptions = [
 const statusOptionsWithAll = [
   { label: '全部状态', value: '' },
   ...statusOptions
+]
+
+const marketTypeOptions = [
+  { label: '现货', value: 'spot' },
+  { label: 'USDT合约', value: 'linear' },
+  { label: '币本位合约', value: 'inverse' }
+]
+
+const marketTypeOptionsWithAll = [
+  { label: '全部类型', value: '' },
+  ...marketTypeOptions
 ]
 
 
@@ -647,6 +743,10 @@ const filteredBots = computed(() => {
 
   if (filters.value.status && filters.value.status !== '') {
     result = result.filter(bot => bot.status === filters.value.status)
+  }
+
+  if (filters.value.market_type && filters.value.market_type !== '') {
+    result = result.filter(bot => bot.market_type === filters.value.market_type)
   }
 
   if (filters.value.exchange && filters.value.exchange !== '') {
@@ -717,16 +817,16 @@ const updateStatistics = () => {
     total_bots: bots.value.length,
     running_bots: bots.value.filter(bot => bot.status === 'running').length,
     paused_bots: bots.value.filter(bot => bot.status === 'paused').length,
-    total_profit: bots.value.reduce((sum, bot) => sum + (bot.total_profit || 0), 0),
-    total_trades: bots.value.reduce((sum, bot) => sum + (bot.total_trades || 0), 0),
+    total_profit: bots.value.reduce((sum, bot) => sum + (Number(bot.total_profit) || 0), 0),
+    total_trades: bots.value.reduce((sum, bot) => sum + (Number(bot.total_trades) || 0), 0),
     win_rate: bots.value.length > 0
-      ? Math.round(bots.value.reduce((sum, bot) => sum + (bot.win_rate || 0), 0) / bots.value.length)
+      ? Math.round(bots.value.reduce((sum, bot) => sum + (Number(bot.win_rate) || 0), 0) / bots.value.length)
       : 0
   }
 }
 
 const resetFilters = () => {
-  filters.value = { status: '', bot_type: '', exchange: '', search: '' }
+  filters.value = { status: '', bot_type: '', market_type: '', exchange: '', search: '' }
 }
 
 const handleStartBot = async (botId) => {
@@ -750,9 +850,33 @@ const handleStartBot = async (botId) => {
 
 const handleStopBot = async (botId) => {
   try {
+    // 查询该机器人的持仓信息
+    const positionsResponse = await botAPI.getPositions({ bot_id: botId, status: 'open' })
+    const openPositions = positionsResponse.results || []
+
+    if (openPositions.length > 0) {
+      // 有持仓，显示确认对话框
+      const positionInfo = openPositions.map(p =>
+        `${p.side_display} ${p.quantity} ${p.quantity_unit} @ $${p.entry_price}`
+      ).join('、')
+
+      stopConfirmMessage.value = `该机器人当前有 ${openPositions.length} 个持仓（${positionInfo}）。\n\n停止机器人将自动平仓所有持仓。如果您想保留持仓，请使用"暂停"功能。\n\n确定要停止并平仓吗？`
+      pendingStopBotId.value = botId
+      showStopAndCloseConfirm.value = true
+    } else {
+      // 没有持仓，直接停止
+      await executeStopBot(botId)
+    }
+  } catch (error) {
+    showError(error.message || '停止失败')
+  }
+}
+
+const executeStopBot = async (botId) => {
+  try {
     loadingBotId.value = botId
     await botAPI.stopBot(botId)
-    showSuccess('机器人已停止')
+    showSuccess('机器人已停止并平仓')
 
     // 只更新特定机器人的状态，而不是重新加载整个列表
     const botIndex = bots.value.findIndex(bot => bot.id === botId)
@@ -762,6 +886,38 @@ const handleStopBot = async (botId) => {
     }
   } catch (error) {
     showError(error.message || '停止失败')
+  } finally {
+    loadingBotId.value = null
+  }
+}
+
+const handleConfirmStopAndClose = async () => {
+  showStopAndCloseConfirm.value = false
+  if (pendingStopBotId.value) {
+    await executeStopBot(pendingStopBotId.value)
+    pendingStopBotId.value = null
+  }
+}
+
+const handleCancelStopAndClose = () => {
+  showStopAndCloseConfirm.value = false
+  pendingStopBotId.value = null
+}
+
+const handlePauseBot = async (botId) => {
+  try {
+    loadingBotId.value = botId
+    await botAPI.pauseBot(botId)
+    showSuccess('机器人已暂停，持仓已保留')
+
+    // 只更新特定机器人的状态
+    const botIndex = bots.value.findIndex(bot => bot.id === botId)
+    if (botIndex !== -1) {
+      bots.value[botIndex].status = 'paused'
+      bots.value[botIndex].is_active = false
+    }
+  } catch (error) {
+    showError(error.message || '暂停失败')
   } finally {
     loadingBotId.value = null
   }
@@ -781,22 +937,22 @@ const handleEditBot = (botId) => {
   }
 }
 
-// 确认停止并编辑
+// 确认暂停并编辑
 const handleConfirmStopAndEdit = async () => {
   const botId = pendingEditBotId.value
 
   try {
     loadingBotId.value = botId
-    await botAPI.stopBot(botId)
+    await botAPI.pauseBot(botId)
 
     // 更新本地状态
     const botIndex = bots.value.findIndex(b => b.id === botId)
     if (botIndex !== -1) {
-      bots.value[botIndex].status = 'stopped'
+      bots.value[botIndex].status = 'paused'
       bots.value[botIndex].is_active = false
     }
 
-    showSuccess('机器人已停止，现在可以编辑')
+    showSuccess('机器人已暂停（持仓已保留），现在可以编辑')
 
     // 关闭对话框
     showStopConfirm.value = false
@@ -804,14 +960,14 @@ const handleConfirmStopAndEdit = async () => {
     // 跳转到编辑页面
     router.push(`/bots/edit/${botId}`)
   } catch (error) {
-    showError('停止机器人失败: ' + (error.message || '未知错误'))
+    showError('暂停机器人失败: ' + (error.message || '未知错误'))
   } finally {
     loadingBotId.value = null
     pendingEditBotId.value = null
   }
 }
 
-// 取消停止并编辑
+// 取消暂停并编辑
 const handleCancelStopAndEdit = () => {
   showStopConfirm.value = false
   pendingEditBotId.value = null
@@ -965,6 +1121,16 @@ const getBotTypeLabel = (botType) => {
     'martingale': '马丁格尔'
   }
   return labels[botType] || botType
+}
+
+// 获取市场类型标签
+const getMarketTypeLabel = (marketType) => {
+  const labels = {
+    'spot': '现货',
+    'linear': 'USDT合约',
+    'inverse': '币本位合约'
+  }
+  return labels[marketType] || marketType
 }
 
 // 获取交易所 Logo URL（使用本地文件）

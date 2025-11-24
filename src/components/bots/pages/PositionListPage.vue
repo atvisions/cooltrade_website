@@ -28,32 +28,158 @@
             </div>
 
             <!-- 筛选器 -->
-            <div class="bg-white rounded-xl p-4 border border-slate-200 mb-6">
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">状态</label>
-                  <Select v-model="filters.status" @change="loadPositions">
-                    <option value="">全部</option>
-                    <option value="open">持仓中</option>
-                    <option value="closed">已平仓</option>
-                  </Select>
+            <div class="bg-white rounded-xl p-6 border border-slate-200 mb-6">
+              <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                <!-- 状态筛选 -->
+                <div class="space-y-2">
+                  <label class="block text-sm font-medium text-slate-700">状态</label>
+                  <Listbox v-model="filters.status" @update:modelValue="loadPositions">
+                    <div class="relative">
+                      <ListboxButton class="relative w-full cursor-default rounded-xl bg-slate-50 py-3 pl-4 pr-10 text-left border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <span class="block truncate text-slate-700">
+                          {{ statusOptions.find(option => option.value === filters.status)?.label || '全部状态' }}
+                        </span>
+                        <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                          <ChevronUpDownIcon class="h-5 w-5 text-slate-400" aria-hidden="true" />
+                        </span>
+                      </ListboxButton>
+                      <transition leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
+                        <ListboxOptions class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                          <ListboxOption
+                            v-slot="{ active, selected }"
+                            v-for="option in statusOptions"
+                            :key="option.value"
+                            :value="option.value"
+                            as="template"
+                          >
+                            <li :class="[active ? 'bg-slate-100 text-slate-900' : 'text-slate-700', 'relative cursor-default select-none py-3 pl-4 pr-4']">
+                              <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">{{ option.label }}</span>
+                              <span v-if="selected" class="absolute inset-y-0 right-0 flex items-center pr-3 text-blue-600">
+                                <CheckIcon class="h-5 w-5" aria-hidden="true" />
+                              </span>
+                            </li>
+                          </ListboxOption>
+                        </ListboxOptions>
+                      </transition>
+                    </div>
+                  </Listbox>
                 </div>
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">方向</label>
-                  <Select v-model="filters.side" @change="loadPositions">
-                    <option value="">全部</option>
-                    <option value="long">做多</option>
-                    <option value="short">做空</option>
-                  </Select>
+
+                <!-- 方向筛选 -->
+                <div class="space-y-2">
+                  <label class="block text-sm font-medium text-slate-700">方向</label>
+                  <Listbox v-model="filters.side" @update:modelValue="loadPositions">
+                    <div class="relative">
+                      <ListboxButton class="relative w-full cursor-default rounded-xl bg-slate-50 py-3 pl-4 pr-10 text-left border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <span class="block truncate text-slate-700">
+                          {{ sideOptions.find(option => option.value === filters.side)?.label || '全部方向' }}
+                        </span>
+                        <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                          <ChevronUpDownIcon class="h-5 w-5 text-slate-400" aria-hidden="true" />
+                        </span>
+                      </ListboxButton>
+                      <transition leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
+                        <ListboxOptions class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                          <ListboxOption
+                            v-slot="{ active, selected }"
+                            v-for="option in sideOptions"
+                            :key="option.value"
+                            :value="option.value"
+                            as="template"
+                          >
+                            <li :class="[active ? 'bg-slate-100 text-slate-900' : 'text-slate-700', 'relative cursor-default select-none py-3 pl-4 pr-4']">
+                              <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">{{ option.label }}</span>
+                              <span v-if="selected" class="absolute inset-y-0 right-0 flex items-center pr-3 text-blue-600">
+                                <CheckIcon class="h-5 w-5" aria-hidden="true" />
+                              </span>
+                            </li>
+                          </ListboxOption>
+                        </ListboxOptions>
+                      </transition>
+                    </div>
+                  </Listbox>
                 </div>
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">机器人</label>
-                  <Select v-model="filters.bot_id" @change="loadPositions">
-                    <option value="">全部</option>
-                    <option v-for="bot in bots" :key="bot.id" :value="bot.id">
-                      {{ bot.name }}
-                    </option>
-                  </Select>
+
+                <!-- 市场类型筛选 -->
+                <div class="space-y-2">
+                  <label class="block text-sm font-medium text-slate-700">市场类型</label>
+                  <Listbox v-model="filters.market_type" @update:modelValue="loadPositions">
+                    <div class="relative">
+                      <ListboxButton class="relative w-full cursor-default rounded-xl bg-slate-50 py-3 pl-4 pr-10 text-left border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <span class="block truncate text-slate-700">
+                          {{ marketTypeOptions.find(option => option.value === filters.market_type)?.label || '全部类型' }}
+                        </span>
+                        <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                          <ChevronUpDownIcon class="h-5 w-5 text-slate-400" aria-hidden="true" />
+                        </span>
+                      </ListboxButton>
+                      <transition leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
+                        <ListboxOptions class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                          <ListboxOption
+                            v-slot="{ active, selected }"
+                            v-for="option in marketTypeOptions"
+                            :key="option.value"
+                            :value="option.value"
+                            as="template"
+                          >
+                            <li :class="[active ? 'bg-slate-100 text-slate-900' : 'text-slate-700', 'relative cursor-default select-none py-3 pl-4 pr-4']">
+                              <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">{{ option.label }}</span>
+                              <span v-if="selected" class="absolute inset-y-0 right-0 flex items-center pr-3 text-blue-600">
+                                <CheckIcon class="h-5 w-5" aria-hidden="true" />
+                              </span>
+                            </li>
+                          </ListboxOption>
+                        </ListboxOptions>
+                      </transition>
+                    </div>
+                  </Listbox>
+                </div>
+
+                <!-- 机器人筛选 -->
+                <div class="space-y-2">
+                  <label class="block text-sm font-medium text-slate-700">机器人</label>
+                  <Listbox v-model="filters.bot_id" @update:modelValue="loadPositions">
+                    <div class="relative">
+                      <ListboxButton class="relative w-full cursor-default rounded-xl bg-slate-50 py-3 pl-4 pr-10 text-left border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <span class="block truncate text-slate-700">
+                          {{ bots.find(bot => bot.id === filters.bot_id)?.name || '全部机器人' }}
+                        </span>
+                        <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                          <ChevronUpDownIcon class="h-5 w-5 text-slate-400" aria-hidden="true" />
+                        </span>
+                      </ListboxButton>
+                      <transition leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
+                        <ListboxOptions class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                          <ListboxOption
+                            v-slot="{ active, selected }"
+                            :value="''"
+                            as="template"
+                          >
+                            <li :class="[active ? 'bg-slate-100 text-slate-900' : 'text-slate-700', 'relative cursor-default select-none py-3 pl-4 pr-4']">
+                              <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">全部机器人</span>
+                              <span v-if="selected" class="absolute inset-y-0 right-0 flex items-center pr-3 text-blue-600">
+                                <CheckIcon class="h-5 w-5" aria-hidden="true" />
+                              </span>
+                            </li>
+                          </ListboxOption>
+                          <ListboxOption
+                            v-slot="{ active, selected }"
+                            v-for="bot in bots"
+                            :key="bot.id"
+                            :value="bot.id"
+                            as="template"
+                          >
+                            <li :class="[active ? 'bg-slate-100 text-slate-900' : 'text-slate-700', 'relative cursor-default select-none py-3 pl-4 pr-4']">
+                              <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">{{ bot.name }}</span>
+                              <span v-if="selected" class="absolute inset-y-0 right-0 flex items-center pr-3 text-blue-600">
+                                <CheckIcon class="h-5 w-5" aria-hidden="true" />
+                              </span>
+                            </li>
+                          </ListboxOption>
+                        </ListboxOptions>
+                      </transition>
+                    </div>
+                  </Listbox>
                 </div>
               </div>
             </div>
@@ -82,52 +208,92 @@
             >
               <div class="flex items-start justify-between mb-4">
                 <div class="flex-1">
-                  <div class="flex items-center gap-3 mb-2">
-                    <h3 class="text-lg font-semibold text-slate-900">
-                      {{ position.bot_name }}
-                    </h3>
+                  <div class="flex items-center gap-3 mb-3">
+                    <!-- Token Logo -->
+                    <div class="flex items-center -space-x-2">
+                      <img
+                        :src="getTokenLogo(position.token_symbol)"
+                        :alt="position.token_symbol"
+                        class="w-10 h-10 rounded-full border-2 border-white shadow-sm"
+                        @error="handleImageError"
+                      />
+                      <img
+                        src="https://cryptologos.cc/logos/tether-usdt-logo.png"
+                        alt="USDT"
+                        class="w-10 h-10 rounded-full border-2 border-white shadow-sm"
+                        @error="handleImageError"
+                      />
+                    </div>
+
+                    <div>
+                      <h3 class="text-lg font-semibold text-slate-900">
+                        {{ position.bot_name }}
+                      </h3>
+                      <p class="text-sm text-slate-600">
+                        {{ position.token_symbol }}/{{ position.trading_pair || 'USDT' }}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-2">
                     <Tag :severity="getSideSeverity(position.side)">
                       {{ position.side_display }}
                     </Tag>
                     <Tag :severity="getStatusSeverity(position.status)">
                       {{ position.status_display }}
                     </Tag>
+                    <Tag severity="info">
+                      {{ position.market_type_display }}
+                    </Tag>
+                    <Tag v-if="position.leverage > 1" severity="warning">
+                      {{ position.leverage }}x
+                    </Tag>
                   </div>
                 </div>
                 <div class="text-right">
-                  <div class="text-sm text-slate-500 mb-1">盈亏</div>
-                  <div class="text-2xl font-bold" :class="parseFloat(position.unrealized_profit) >= 0 ? 'text-green-600' : 'text-red-600'">
-                    ${{ position.unrealized_profit }}
+                  <div class="text-sm text-slate-500 mb-1">未实现盈亏</div>
+                  <div class="text-2xl font-bold" :class="parseFloat(position.unrealized_profit || 0) >= 0 ? 'text-green-600' : 'text-red-600'">
+                    {{ parseFloat(position.unrealized_profit || 0) >= 0 ? '+' : '' }}${{ Number(position.unrealized_profit || 0).toFixed(2) }}
                   </div>
-                  <div class="text-sm" :class="parseFloat(position.unrealized_profit_percentage) >= 0 ? 'text-green-600' : 'text-red-600'">
-                    {{ position.unrealized_profit_percentage }}%
+                  <div class="text-sm" :class="parseFloat(position.unrealized_profit_percentage || 0) >= 0 ? 'text-green-600' : 'text-red-600'">
+                    {{ parseFloat(position.unrealized_profit_percentage || 0) >= 0 ? '+' : '' }}{{ Number(position.unrealized_profit_percentage || 0).toFixed(2) }}%
                   </div>
                 </div>
               </div>
 
               <!-- 持仓信息 -->
-              <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4 p-4 bg-slate-50 rounded-lg">
+              <div class="grid grid-cols-2 md:grid-cols-6 gap-4 mb-4 p-4 bg-slate-50 rounded-lg">
                 <div>
                   <div class="text-xs text-slate-500 mb-1">入场价</div>
-                  <div class="text-sm font-semibold text-slate-900">${{ position.entry_price }}</div>
+                  <div class="text-sm font-semibold text-slate-900">${{ Number(position.entry_price).toFixed(2) }}</div>
                 </div>
                 <div>
                   <div class="text-xs text-slate-500 mb-1">当前价</div>
-                  <div class="text-sm font-semibold text-slate-900">${{ position.current_price }}</div>
+                  <div class="text-sm font-semibold text-slate-900">${{ Number(position.current_price || position.entry_price).toFixed(2) }}</div>
                 </div>
                 <div>
-                  <div class="text-xs text-slate-500 mb-1">数量</div>
-                  <div class="text-sm font-semibold text-slate-900">{{ position.quantity }}</div>
+                  <div class="text-xs text-slate-500 mb-1">持仓数量</div>
+                  <div class="text-sm font-semibold text-slate-900">
+                    {{ Number(position.quantity).toFixed(position.market_type === 'spot' ? 4 : 0) }} {{ position.quantity_unit }}
+                  </div>
                 </div>
                 <div>
-                  <div class="text-xs text-slate-500 mb-1">初始数量</div>
-                  <div class="text-sm font-semibold text-slate-900">{{ position.initial_quantity }}</div>
+                  <div class="text-xs text-slate-500 mb-1">持仓价值</div>
+                  <div class="text-sm font-semibold text-slate-900">${{ Number(position.position_value || 0).toFixed(2) }}</div>
                 </div>
                 <div>
                   <div class="text-xs text-slate-500 mb-1">已实现盈亏</div>
-                  <div class="text-sm font-semibold" :class="parseFloat(position.realized_profit) >= 0 ? 'text-green-600' : 'text-red-600'">
-                    ${{ position.realized_profit }}
+                  <div class="text-sm font-semibold" :class="parseFloat(position.realized_profit || 0) >= 0 ? 'text-green-600' : 'text-red-600'">
+                    {{ parseFloat(position.realized_profit || 0) >= 0 ? '+' : '' }}${{ Number(position.realized_profit || 0).toFixed(2) }}
                   </div>
+                </div>
+                <div v-if="position.market_type !== 'spot'">
+                  <div class="text-xs text-slate-500 mb-1">合约大小</div>
+                  <div class="text-sm font-semibold text-slate-900">{{ position.contract_size }} {{ position.token_symbol }}</div>
+                </div>
+                <div v-else>
+                  <div class="text-xs text-slate-500 mb-1">初始数量</div>
+                  <div class="text-sm font-semibold text-slate-900">{{ Number(position.initial_quantity).toFixed(4) }} {{ position.quantity_unit }}</div>
                 </div>
               </div>
 
@@ -184,10 +350,11 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useConfirm } from 'primevue/useconfirm'
+import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue'
+import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid'
 import Header from '../../common/Header.vue'
 import UserSidebar from '../../common/UserSidebar.vue'
 import Button from '../../common/ui/Button.vue'
-import Select from '../../common/ui/Select.vue'
 import Tag from 'primevue/tag'
 import ConfirmDialog from 'primevue/confirmdialog'
 import { botAPI } from '../../../utils/api'
@@ -204,8 +371,29 @@ const bots = ref([])
 const filters = ref({
   status: 'open',  // 默认只显示未平仓
   side: '',
+  market_type: '',  // 新增：市场类型筛选
   bot_id: ''
 })
+
+// 筛选选项
+const statusOptions = [
+  { label: '全部状态', value: '' },
+  { label: '持仓中', value: 'open' },
+  { label: '已平仓', value: 'closed' }
+]
+
+const sideOptions = [
+  { label: '全部方向', value: '' },
+  { label: '做多', value: 'long' },
+  { label: '做空', value: 'short' }
+]
+
+const marketTypeOptions = [
+  { label: '全部类型', value: '' },
+  { label: '现货', value: 'spot' },
+  { label: 'USDT合约', value: 'linear' },
+  { label: '币本位合约', value: 'inverse' }
+]
 
 // 加载持仓列表
 const loadPositions = async () => {
@@ -214,6 +402,7 @@ const loadPositions = async () => {
     const params = {}
     if (filters.value.status) params.status = filters.value.status
     if (filters.value.side) params.side = filters.value.side
+    if (filters.value.market_type) params.market_type = filters.value.market_type
     if (filters.value.bot_id) params.bot_id = filters.value.bot_id
 
     const response = await botAPI.getPositionList(params)
@@ -282,6 +471,20 @@ const formatDate = (date) => {
     hour: '2-digit',
     minute: '2-digit'
   })
+}
+
+// 获取代币 logo
+const getTokenLogo = (symbol) => {
+  if (!symbol) return 'https://via.placeholder.com/40'
+
+  // CryptoLogos CDN
+  const symbolLower = symbol.toLowerCase()
+  return `https://cryptologos.cc/logos/${symbolLower}-${symbolLower}-logo.png`
+}
+
+// 图片加载失败处理
+const handleImageError = (event) => {
+  event.target.src = 'https://via.placeholder.com/40?text=' + (event.target.alt || '?')
 }
 
 onMounted(() => {

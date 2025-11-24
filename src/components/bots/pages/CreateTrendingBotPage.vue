@@ -243,43 +243,6 @@
                           ({{ formData.market_type === 'spot' ? '现货账户' : '合约账户' }})
                         </div>
                       </div>
-
-                      <!-- 预计所需 -->
-                      <div v-if="formData.position_size_value > 0" class="text-xs">
-                        <div class="font-medium text-blue-900 mb-1">预计所需：</div>
-                        <div class="space-y-1 text-slate-700">
-                          <div class="flex items-center justify-between">
-                            <span>• 买入信号：</span>
-                            <span class="font-medium">{{ balanceCheckResult.requiredForBuy }} {{ formData.trading_pair || 'USDT' }}</span>
-                          </div>
-                          <div class="flex items-center justify-between">
-                            <span>• 卖出信号：</span>
-                            <span class="font-medium">{{ balanceCheckResult.requiredForSell }} {{ selectedSignalBotData.token?.symbol || '-' }}</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <!-- 警告提示 -->
-                      <div v-if="balanceCheckResult.warnings.length > 0" class="space-y-2">
-                        <div v-for="(warning, index) in balanceCheckResult.warnings" :key="index" class="flex items-start gap-2 text-xs">
-                          <span class="text-amber-600">⚠️</span>
-                          <span class="text-amber-700">{{ warning }}</span>
-                        </div>
-                      </div>
-
-                      <!-- 建议 -->
-                      <div v-if="balanceCheckResult.suggestions.length > 0" class="space-y-1">
-                        <div v-for="(suggestion, index) in balanceCheckResult.suggestions" :key="index" class="flex items-start gap-2 text-xs">
-                          <span class="text-blue-600">💡</span>
-                          <span class="text-blue-700">{{ suggestion }}</span>
-                        </div>
-                      </div>
-
-                      <!-- 成功提示 -->
-                      <div v-if="balanceCheckResult.warnings.length === 0 && formData.position_size_value > 0" class="flex items-center gap-2 text-xs text-green-700">
-                        <span>✅</span>
-                        <span>余额充足，可以正常执行交易</span>
-                      </div>
                     </div>
 
                     <!-- 无余额数据 -->
@@ -597,10 +560,314 @@
               </div>
             </div>
             <div class="space-y-6">
-              <!-- 1. 持仓管理 -->
-              <div>
+              <!-- 1. 科学仓位管理 -->
+              <div class="bg-slate-50 rounded-lg p-6">
                 <div class="mb-4">
-                  <h3 class="text-sm font-semibold text-slate-900">持仓管理</h3>
+                  <h3 class="text-sm font-semibold text-slate-900">科学仓位管理</h3>
+                  <p class="text-xs text-slate-500 mt-1">决定每笔交易投入多少资金</p>
+                </div>
+
+                <div class="space-y-4">
+                  <!-- 仓位计算方法 -->
+                  <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-3">
+                      仓位计算方法
+                    </label>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <button
+                        v-for="method in [
+                          { value: 'fixed_amount', label: '固定金额', desc: '每次固定金额' },
+                          { value: 'fixed_risk', label: '固定风险', desc: '每次风险1%' },
+                          { value: 'kelly', label: '凯利公式', desc: '最优仓位' },
+                          { value: 'atr_based', label: 'ATR调整', desc: '波动率调整' }
+                        ]"
+                        :key="method.value"
+                        type="button"
+                        @click="formData.position_sizing_method = method.value"
+                        :class="[
+                          'relative flex flex-col items-start p-3 rounded-lg border-2 transition-all text-left',
+                          formData.position_sizing_method === method.value
+                            ? 'border-blue-500 bg-blue-50'
+                            : 'border-slate-200 hover:border-slate-300 bg-white'
+                        ]"
+                      >
+                        <span class="text-sm font-medium mb-0.5" :class="formData.position_sizing_method === method.value ? 'text-blue-900' : 'text-slate-700'">
+                          {{ method.label }}
+                        </span>
+                        <span class="text-xs" :class="formData.position_sizing_method === method.value ? 'text-blue-600' : 'text-slate-500'">
+                          {{ method.desc }}
+                        </span>
+                        <div v-if="formData.position_sizing_method === method.value" class="absolute top-2 right-2">
+                          <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                          </svg>
+                        </div>
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- 固定金额参数 -->
+                  <div v-if="formData.position_sizing_method === 'fixed_amount'" class="pl-4 border-l-2 border-blue-200">
+                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                      {{ formData.market_type === 'spot' ? '每笔交易金额' : '每笔交易数量' }}
+                    </label>
+                    <div class="flex gap-2">
+                      <input
+                        v-model.number="formData.position_size_value"
+                        type="number"
+                        :min="formData.market_type === 'spot' ? 10 : 1"
+                        :step="formData.market_type === 'spot' ? 10 : 1"
+                        :placeholder="formData.market_type === 'spot' ? '100' : '10'"
+                        :class="[
+                          'flex-1 px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2',
+                          isPositionSizeExceedingBalance || isFieldExceedingLimit('position_size_value') || (formData.position_size_value <= 0)
+                            ? 'border-red-500 focus:ring-red-500'
+                            : 'border-slate-300 focus:ring-blue-500'
+                        ]"
+                      />
+                      <!-- 单位选择（仅合约模式显示） -->
+                      <div v-if="formData.market_type !== 'spot'" class="relative">
+                        <select
+                          v-model="formData.position_size_unit"
+                          class="appearance-none w-28 px-4 py-2.5 pr-10 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-slate-700 font-medium cursor-pointer hover:border-slate-400 transition-colors"
+                        >
+                          <option value="contracts">张</option>
+                          <option value="usdt">USDT</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-slate-500">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div>
+                      </div>
+                      <!-- 现货模式固定显示 USDT -->
+                      <div v-else class="px-4 py-2.5 border border-slate-300 rounded-lg bg-slate-50 text-slate-700 font-medium">
+                        USDT
+                      </div>
+                    </div>
+                    <p class="mt-1 text-xs text-slate-500">
+                      {{ formData.market_type === 'spot' ? '每笔交易固定投入的金额' : (formData.position_size_unit === 'contracts' ? '每笔交易固定开仓的张数' : '每笔交易固定投入的保证金') }}
+                    </p>
+
+                    <!-- 数量为0的错误提示 -->
+                    <p v-if="formData.position_size_value <= 0" class="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded font-medium">
+                      ⚠️ {{ formData.market_type === 'spot' ? '交易金额必须大于 0' : (formData.position_size_unit === 'contracts' ? '交易数量必须大于 0 张' : '交易金额必须大于 0 USDT') }}
+                    </p>
+                    <!-- 超出系统限制提示 -->
+                    <p v-else-if="isFieldExceedingLimit('position_size_value')" class="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded font-medium">
+                      ⚠️ {{ getExceedingLimitText('position_size_value') }}
+                    </p>
+                    <!-- 系统风控限制提示 -->
+                    <p v-else-if="userRiskConfig && formData.market_type === 'spot'" class="mt-2 text-xs text-slate-500 bg-slate-50 p-2 rounded">
+                      <span class="font-medium">系统限制:</span>
+                      单个机器人最大仓位 {{ userRiskConfig.max_position_per_bot }} USDT
+                      <span v-if="userRiskConfig.min_position_size"> | 最小建仓 {{ userRiskConfig.min_position_size }} USDT</span>
+                    </p>
+                    <!-- 合约规格提示 -->
+                    <p v-else-if="formData.market_type !== 'spot' && contractSpecInfo" class="mt-2 text-xs text-slate-500 bg-blue-50 p-2 rounded">
+                      <span class="font-medium">💡 合约规格:</span>
+                      1张 = {{ contractSpecInfo.contract_size }} {{ (formData.token || selectedSignalBotData.token)?.symbol || 'BTC' }}
+                      <span v-if="(formData.token || selectedSignalBotData.token)?.current_price">
+                        （约 ${{ (contractSpecInfo.contract_size * (formData.token || selectedSignalBotData.token).current_price).toFixed(2) }}）
+                      </span>
+                    </p>
+                    <!-- 合约规格加载中或默认提示 -->
+                    <p v-else-if="formData.market_type !== 'spot'" class="mt-2 text-xs text-slate-500 bg-blue-50 p-2 rounded">
+                      <span class="font-medium">💡 提示:</span>
+                      合约交易以"张"为单位，1张的价值取决于合约规格
+                    </p>
+
+                    <!-- 预计所需 -->
+                    <div v-if="formData.position_size_value > 0 && balanceCheckResult" class="mt-3 p-3 rounded-lg border" :class="isPositionSizeExceedingBalance ? 'bg-red-50 border-red-300' : 'bg-slate-50 border-slate-200'">
+                      <div class="font-medium mb-2 text-sm" :class="isPositionSizeExceedingBalance ? 'text-red-700' : 'text-slate-700'">预计所需：</div>
+                      <div v-if="formData.market_type === 'spot'" class="space-y-1.5 text-xs text-slate-600">
+                        <div class="flex items-center justify-between">
+                          <span>• 买入信号：</span>
+                          <span class="font-medium text-slate-900">{{ balanceCheckResult.requiredForBuy }} {{ formData.trading_pair || 'USDT' }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                          <span>• 卖出信号：</span>
+                          <span class="font-medium text-slate-900">{{ balanceCheckResult.requiredForSell }} {{ (formData.token || selectedSignalBotData.token)?.symbol || '-' }}</span>
+                        </div>
+                      </div>
+                      <div v-else class="space-y-1.5 text-xs text-slate-600">
+                        <div class="flex items-center justify-between">
+                          <span>• 开仓保证金：</span>
+                          <span v-if="!contractSpecInfo || !(formData.token || selectedSignalBotData.token)?.current_price" class="text-slate-400">
+                            加载中...
+                          </span>
+                          <span v-else class="font-medium" :class="isPositionSizeExceedingBalance ? 'text-red-700' : 'text-slate-900'">{{ balanceCheckResult.requiredForBuy }} {{ formData.trading_pair || 'USDT' }}</span>
+                        </div>
+                        <div v-if="contractSpecInfo && (formData.token || selectedSignalBotData.token)?.current_price" class="text-slate-500 mt-1">
+                          <span>（{{ formData.position_size_value }} 张 × {{ contractSpecInfo.contract_size }} {{ (formData.token || selectedSignalBotData.token)?.symbol }} × ${{ (formData.token || selectedSignalBotData.token).current_price.toFixed(2) }} ÷ {{ formData.leverage || 1 }}x）</span>
+                        </div>
+                      </div>
+
+                      <!-- 余额不足错误提示 -->
+                      <div v-if="isPositionSizeExceedingBalance" class="mt-3 pt-3 border-t border-red-200">
+                        <div class="flex items-start gap-2 text-xs text-red-700">
+                          <span class="text-red-600">⚠️</span>
+                          <span class="font-medium">{{ positionSizeBalanceError }}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 固定风险参数 -->
+                  <div v-if="formData.position_sizing_method === 'fixed_risk'" class="pl-4 border-l-2 border-blue-200">
+                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                      每笔交易风险 (%)
+                    </label>
+                    <input
+                      v-model.number="formData.risk_per_trade"
+                      type="number"
+                      min="0.1"
+                      max="5"
+                      step="0.1"
+                      placeholder="1.0"
+                      class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <p class="mt-1 text-xs text-slate-500">账户总资金的风险百分比，建议0.5-2%</p>
+                  </div>
+
+                  <!-- 凯利公式参数 -->
+                  <div v-if="formData.position_sizing_method === 'kelly'" class="pl-4 border-l-2 border-blue-200">
+                    <label class="block text-sm font-medium text-slate-700 mb-2">
+                      凯利分数
+                    </label>
+                    <input
+                      v-model.number="formData.kelly_fraction"
+                      type="number"
+                      min="0.1"
+                      max="1"
+                      step="0.05"
+                      placeholder="0.25"
+                      class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <p class="mt-1 text-xs text-slate-500">使用凯利公式的百分比，0.25表示使用25%的凯利值（更保守）</p>
+                  </div>
+
+                  <!-- ATR调整参数 -->
+                  <div v-if="formData.position_sizing_method === 'atr_based'" class="pl-4 border-l-2 border-blue-200">
+                    <div class="space-y-4">
+                      <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">
+                          {{ formData.market_type === 'spot' ? '基础仓位 (USDT)' : '基础仓位 (张)' }}
+                        </label>
+                        <input
+                          v-model.number="formData.position_size_value"
+                          type="number"
+                          :min="formData.market_type === 'spot' ? 10 : 1"
+                          :step="formData.market_type === 'spot' ? 10 : 1"
+                          :placeholder="formData.market_type === 'spot' ? '100' : '10'"
+                          :class="[
+                            'w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2',
+                            isFieldExceedingLimit('position_size_value')
+                              ? 'border-red-500 focus:ring-red-500'
+                              : 'border-slate-300 focus:ring-blue-500'
+                          ]"
+                        />
+                        <p class="mt-1 text-xs text-slate-500">
+                          {{ formData.market_type === 'spot' ? '基础仓位大小，会根据ATR动态调整' : '基础仓位张数，会根据ATR动态调整' }}
+                        </p>
+
+                        <!-- 超出系统限制提示 -->
+                        <p v-if="isFieldExceedingLimit('position_size_value')" class="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded font-medium">
+                          ⚠️ {{ getExceedingLimitText('position_size_value') }}
+                        </p>
+                        <!-- 系统风控限制提示 -->
+                        <p v-else-if="userRiskConfig && formData.market_type === 'spot'" class="mt-2 text-xs text-slate-500 bg-slate-50 p-2 rounded">
+                          <span class="font-medium">系统限制:</span>
+                          单个机器人最大仓位 {{ userRiskConfig.max_position_per_bot }} USDT
+                          <span v-if="userRiskConfig.min_position_size"> | 最小建仓 {{ userRiskConfig.min_position_size }} USDT</span>
+                        </p>
+                        <!-- 合约规格提示 -->
+                        <p v-else-if="formData.market_type !== 'spot' && contractSpecInfo" class="mt-2 text-xs text-slate-500 bg-blue-50 p-2 rounded">
+                          <span class="font-medium">💡 合约规格:</span>
+                          1张 = {{ contractSpecInfo.contract_size }} {{ (formData.token || selectedSignalBotData.token)?.symbol || 'BTC' }}
+                          <span v-if="(formData.token || selectedSignalBotData.token)?.current_price">
+                            （约 ${{ (contractSpecInfo.contract_size * (formData.token || selectedSignalBotData.token).current_price).toFixed(2) }}）
+                          </span>
+                        </p>
+                        <!-- 合约规格加载中或默认提示 -->
+                        <p v-else-if="formData.market_type !== 'spot'" class="mt-2 text-xs text-slate-500 bg-blue-50 p-2 rounded">
+                          <span class="font-medium">💡 提示:</span>
+                          合约交易以"张"为单位，1张的价值取决于合约规格
+                        </p>
+
+                        <!-- 预计所需 -->
+                        <div v-if="formData.position_size_value > 0 && balanceCheckResult" class="mt-3 p-3 rounded-lg border" :class="isPositionSizeExceedingBalance ? 'bg-red-50 border-red-300' : 'bg-slate-50 border-slate-200'">
+                          <div class="font-medium mb-2 text-sm" :class="isPositionSizeExceedingBalance ? 'text-red-700' : 'text-slate-700'">预计所需：</div>
+                          <div v-if="formData.market_type === 'spot'" class="space-y-1.5 text-xs text-slate-600">
+                            <div class="flex items-center justify-between">
+                              <span>• 买入信号：</span>
+                              <span class="font-medium text-slate-900">{{ balanceCheckResult.requiredForBuy }} {{ formData.trading_pair || 'USDT' }}</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                              <span>• 卖出信号：</span>
+                              <span class="font-medium text-slate-900">{{ balanceCheckResult.requiredForSell }} {{ (formData.token || selectedSignalBotData.token)?.symbol || '-' }}</span>
+                            </div>
+                          </div>
+                          <div v-else class="space-y-1.5 text-xs text-slate-600">
+                            <div class="flex items-center justify-between">
+                              <span>• 开仓保证金：</span>
+                              <span v-if="!contractSpecInfo || !(formData.token || selectedSignalBotData.token)?.current_price" class="text-slate-400">
+                                加载中...
+                              </span>
+                              <span v-else class="font-medium" :class="isPositionSizeExceedingBalance ? 'text-red-700' : 'text-slate-900'">{{ balanceCheckResult.requiredForBuy }} {{ formData.trading_pair || 'USDT' }}</span>
+                            </div>
+                            <div v-if="contractSpecInfo && (formData.token || selectedSignalBotData.token)?.current_price" class="text-slate-500 mt-1">
+                              <span>（{{ formData.position_size_value }} 张 × {{ contractSpecInfo.contract_size }} {{ (formData.token || selectedSignalBotData.token)?.symbol }} × ${{ (formData.token || selectedSignalBotData.token).current_price.toFixed(2) }} ÷ {{ formData.leverage || 1 }}x）</span>
+                            </div>
+                          </div>
+
+                          <!-- 余额不足错误提示 -->
+                          <div v-if="isPositionSizeExceedingBalance" class="mt-3 pt-3 border-t border-red-200">
+                            <div class="flex items-start gap-2 text-xs text-red-700">
+                              <span class="text-red-600">⚠️</span>
+                              <span class="font-medium">{{ positionSizeBalanceError }}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">
+                          ATR周期
+                        </label>
+                        <input
+                          v-model.number="formData.atr_period"
+                          type="number"
+                          min="5"
+                          max="50"
+                          placeholder="14"
+                          class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                        <p class="mt-1 text-xs text-slate-500">计算ATR的K线周期数，建议14</p>
+                      </div>
+                      <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-2">
+                          ATR倍数
+                        </label>
+                        <input
+                          v-model.number="formData.atr_multiplier"
+                          type="number"
+                          min="0.5"
+                          max="5"
+                          step="0.5"
+                          placeholder="2.0"
+                          class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                        <p class="mt-1 text-xs text-slate-500">ATR倍数，波动率越大仓位越小</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 2. 开仓配置（持仓管理）-->
+              <div class="bg-slate-50 rounded-lg p-6">
+                <div class="mb-4">
+                  <h3 class="text-sm font-semibold text-slate-900">开仓配置</h3>
                   <p class="text-xs text-slate-500 mt-1">控制同时持有的仓位数量和交易频率</p>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -695,94 +962,8 @@
               </div>
               </div>
 
-              <!-- 2. 风险控制 -->
-              <div>
-                <div class="mb-4">
-                  <h3 class="text-sm font-semibold text-slate-900">风险控制</h3>
-                  <p class="text-xs text-slate-500 mt-1">设置每日亏损上限，保护账户安全</p>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- 每日最大亏损 -->
-                <div>
-                  <label class="block text-sm font-medium text-slate-700 mb-2">
-                    每日最大亏损 (USDT)
-                    <div class="relative inline-block ml-2">
-                      <button
-                        type="button"
-                        @mouseenter="showTooltips.maxDailyLoss = true"
-                        @mouseleave="showTooltips.maxDailyLoss = false"
-                        class="inline-flex items-center justify-center w-4 h-4 text-slate-400 hover:text-slate-600 transition-colors"
-                      >
-                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </button>
-                      <div
-                        v-if="showTooltips.maxDailyLoss"
-                        class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg z-50 pointer-events-none whitespace-nowrap"
-                      >
-                        可选，超过则停止交易
-                        <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
-                      </div>
-                    </div>
-                  </label>
-                  <input
-                    v-model.number="formData.max_daily_loss"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    placeholder="500"
-                    :class="[
-                      'w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2',
-                      isFieldExceedingLimit('max_daily_loss')
-                        ? 'border-red-500 focus:ring-red-500'
-                        : 'border-slate-300 focus:ring-blue-500'
-                    ]"
-                  />
-                  <p v-if="errors.max_daily_loss" class="mt-1 text-sm text-red-500">{{ errors.max_daily_loss }}</p>
-                  <!-- 超出限制提示 -->
-                  <p v-if="isFieldExceedingLimit('max_daily_loss')" class="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded font-medium">
-                    ⚠️ {{ getExceedingLimitText('max_daily_loss') }}
-                  </p>
-                  <!-- 系统风控限制提示 -->
-                  <p v-else-if="userRiskConfig" class="mt-2 text-xs text-slate-500 bg-slate-50 p-2 rounded">
-                    <span class="font-medium">系统限制:</span> 最多 {{ userRiskConfig.max_daily_loss }} USDT/天
-                  </p>
-                </div>
-
-                <!-- 杠杆倍数（仅合约） -->
-                <div v-if="formData.market_type !== 'spot'">
-                  <label class="block text-sm font-medium text-slate-700 mb-2">
-                    杠杆倍数 <span class="text-red-500">*</span>
-                  </label>
-                  <input
-                    v-model.number="formData.leverage"
-                    type="number"
-                    min="1"
-                    max="125"
-                    :class="[
-                      'w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2',
-                      isFieldExceedingLimit('leverage')
-                        ? 'border-red-500 focus:ring-red-500'
-                        : 'border-slate-300 focus:ring-blue-500'
-                    ]"
-                    placeholder="1-125"
-                  />
-                  <p v-if="errors.leverage" class="mt-1 text-sm text-red-500">{{ errors.leverage }}</p>
-                  <!-- 超出限制提示 -->
-                  <p v-if="isFieldExceedingLimit('leverage')" class="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded font-medium">
-                    ⚠️ {{ getExceedingLimitText('leverage') }}
-                  </p>
-                  <!-- 系统风控限制提示 -->
-                  <p v-else-if="userRiskConfig" class="mt-2 text-xs text-slate-500 bg-slate-50 p-2 rounded">
-                    <span class="font-medium">系统限制:</span> 最多 {{ userRiskConfig.max_leverage }}x
-                  </p>
-                </div>
-              </div>
-              </div>
-
               <!-- 3. 止盈策略 -->
-              <div>
+              <div class="bg-slate-50 rounded-lg p-6">
                 <div class="mb-4">
                   <h3 class="text-sm font-semibold text-slate-900">止盈策略</h3>
                   <p class="text-xs text-slate-500 mt-1">设置盈利目标，自动锁定利润</p>
@@ -1003,10 +1184,10 @@
                 </div>
               </div>
 
-              <!-- 4. 初始止损设置 -->
-              <div class="border-t border-slate-200 pt-6 mt-6">
+              <!-- 4. 止损设置 -->
+              <div class="bg-slate-50 rounded-lg p-6">
                 <div class="mb-4">
-                  <h3 class="text-sm font-semibold text-slate-900">初始止损设置</h3>
+                  <h3 class="text-sm font-semibold text-slate-900">止损设置</h3>
                   <p class="text-xs text-slate-500 mt-1">决定入场后第一次设置止损位的方式</p>
                 </div>
 
@@ -1215,181 +1396,90 @@
                 </div>
               </div>
 
-              <!-- 5. 科学仓位管理 -->
-              <div class="border-t border-slate-200 pt-6 mt-6">
+              <!-- 5. 持仓风控管理 -->
+              <div class="bg-slate-50 rounded-lg p-6">
                 <div class="mb-4">
-                  <h3 class="text-sm font-semibold text-slate-900">科学仓位管理</h3>
-                  <p class="text-xs text-slate-500 mt-1">决定每笔交易投入多少资金</p>
+                  <h3 class="text-sm font-semibold text-slate-900">持仓风控管理</h3>
+                  <p class="text-xs text-slate-500 mt-1">设置每日亏损上限和杠杆倍数，保护账户安全</p>
                 </div>
-
-                <div class="space-y-4">
-                  <!-- 仓位计算方法 -->
-                  <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-3">
-                      仓位计算方法
-                    </label>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- 每日最大亏损 -->
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                    每日最大亏损 (USDT)
+                    <div class="relative inline-block ml-2">
                       <button
-                        v-for="method in [
-                          { value: 'fixed_amount', label: '固定金额', desc: '每次固定金额' },
-                          { value: 'fixed_risk', label: '固定风险', desc: '每次风险1%' },
-                          { value: 'kelly', label: '凯利公式', desc: '最优仓位' },
-                          { value: 'atr_based', label: 'ATR调整', desc: '波动率调整' }
-                        ]"
-                        :key="method.value"
                         type="button"
-                        @click="formData.position_sizing_method = method.value"
-                        :class="[
-                          'relative flex flex-col items-start p-3 rounded-lg border-2 transition-all text-left',
-                          formData.position_sizing_method === method.value
-                            ? 'border-blue-500 bg-blue-50'
-                            : 'border-slate-200 hover:border-slate-300 bg-white'
-                        ]"
+                        @mouseenter="showTooltips.maxDailyLoss = true"
+                        @mouseleave="showTooltips.maxDailyLoss = false"
+                        class="inline-flex items-center justify-center w-4 h-4 text-slate-400 hover:text-slate-600 transition-colors"
                       >
-                        <span class="text-sm font-medium mb-0.5" :class="formData.position_sizing_method === method.value ? 'text-blue-900' : 'text-slate-700'">
-                          {{ method.label }}
-                        </span>
-                        <span class="text-xs" :class="formData.position_sizing_method === method.value ? 'text-blue-600' : 'text-slate-500'">
-                          {{ method.desc }}
-                        </span>
-                        <div v-if="formData.position_sizing_method === method.value" class="absolute top-2 right-2">
-                          <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                          </svg>
-                        </div>
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
                       </button>
-                    </div>
-                  </div>
-
-                  <!-- 固定金额参数 -->
-                  <div v-if="formData.position_sizing_method === 'fixed_amount'" class="pl-4 border-l-2 border-blue-200">
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
-                      每笔交易金额 (USDT)
-                    </label>
-                    <input
-                      v-model.number="formData.position_size_value"
-                      type="number"
-                      min="10"
-                      step="10"
-                      placeholder="100"
-                      :class="[
-                        'w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2',
-                        isFieldExceedingLimit('position_size_value')
-                          ? 'border-red-500 focus:ring-red-500'
-                          : 'border-slate-300 focus:ring-blue-500'
-                      ]"
-                    />
-                    <p class="mt-1 text-xs text-slate-500">每笔交易固定投入的金额</p>
-                    <!-- 超出限制提示 -->
-                    <p v-if="isFieldExceedingLimit('position_size_value')" class="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded font-medium">
-                      ⚠️ {{ getExceedingLimitText('position_size_value') }}
-                    </p>
-                    <!-- 系统风控限制提示 -->
-                    <p v-else-if="userRiskConfig" class="mt-2 text-xs text-slate-500 bg-slate-50 p-2 rounded">
-                      <span class="font-medium">系统限制:</span>
-                      单个机器人最大仓位 {{ userRiskConfig.max_position_per_bot }} USDT
-                      <span v-if="userRiskConfig.min_position_size"> | 最小建仓 {{ userRiskConfig.min_position_size }} USDT</span>
-                    </p>
-                  </div>
-
-                  <!-- 固定风险参数 -->
-                  <div v-if="formData.position_sizing_method === 'fixed_risk'" class="pl-4 border-l-2 border-blue-200">
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
-                      每笔交易风险 (%)
-                    </label>
-                    <input
-                      v-model.number="formData.risk_per_trade"
-                      type="number"
-                      min="0.1"
-                      max="5"
-                      step="0.1"
-                      placeholder="1.0"
-                      class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <p class="mt-1 text-xs text-slate-500">账户总资金的风险百分比，建议0.5-2%</p>
-                  </div>
-
-                  <!-- 凯利公式参数 -->
-                  <div v-if="formData.position_sizing_method === 'kelly'" class="pl-4 border-l-2 border-blue-200">
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
-                      凯利分数
-                    </label>
-                    <input
-                      v-model.number="formData.kelly_fraction"
-                      type="number"
-                      min="0.1"
-                      max="1"
-                      step="0.05"
-                      placeholder="0.25"
-                      class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <p class="mt-1 text-xs text-slate-500">使用凯利公式的百分比，0.25表示使用25%的凯利值（更保守）</p>
-                  </div>
-
-                  <!-- ATR调整参数 -->
-                  <div v-if="formData.position_sizing_method === 'atr_based'" class="pl-4 border-l-2 border-blue-200">
-                    <div class="space-y-4">
-                      <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2">
-                          基础仓位 (USDT)
-                        </label>
-                        <input
-                          v-model.number="formData.position_size_value"
-                          type="number"
-                          min="10"
-                          step="10"
-                          placeholder="100"
-                          :class="[
-                            'w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2',
-                            isFieldExceedingLimit('position_size_value')
-                              ? 'border-red-500 focus:ring-red-500'
-                              : 'border-slate-300 focus:ring-blue-500'
-                          ]"
-                        />
-                        <p class="mt-1 text-xs text-slate-500">基础仓位大小，会根据ATR动态调整</p>
-                        <!-- 超出限制提示 -->
-                        <p v-if="isFieldExceedingLimit('position_size_value')" class="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded font-medium">
-                          ⚠️ {{ getExceedingLimitText('position_size_value') }}
-                        </p>
-                        <!-- 系统风控限制提示 -->
-                        <p v-else-if="userRiskConfig" class="mt-2 text-xs text-slate-500 bg-slate-50 p-2 rounded">
-                          <span class="font-medium">系统限制:</span>
-                          单个机器人最大仓位 {{ userRiskConfig.max_position_per_bot }} USDT
-                          <span v-if="userRiskConfig.min_position_size"> | 最小建仓 {{ userRiskConfig.min_position_size }} USDT</span>
-                        </p>
-                      </div>
-                      <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2">
-                          ATR周期
-                        </label>
-                        <input
-                          v-model.number="formData.atr_period"
-                          type="number"
-                          min="5"
-                          max="50"
-                          placeholder="14"
-                          class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                        <p class="mt-1 text-xs text-slate-500">计算ATR的K线周期数，建议14</p>
-                      </div>
-                      <div>
-                        <label class="block text-sm font-medium text-slate-700 mb-2">
-                          ATR倍数
-                        </label>
-                        <input
-                          v-model.number="formData.atr_multiplier"
-                          type="number"
-                          min="0.5"
-                          max="5"
-                          step="0.5"
-                          placeholder="2.0"
-                          class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                        <p class="mt-1 text-xs text-slate-500">ATR倍数，波动率越大仓位越小</p>
+                      <div
+                        v-if="showTooltips.maxDailyLoss"
+                        class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg z-50 pointer-events-none whitespace-nowrap"
+                      >
+                        可选，超过则停止交易
+                        <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
                       </div>
                     </div>
-                  </div>
+                  </label>
+                  <input
+                    v-model.number="formData.max_daily_loss"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="500"
+                    :class="[
+                      'w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2',
+                      isFieldExceedingLimit('max_daily_loss')
+                        ? 'border-red-500 focus:ring-red-500'
+                        : 'border-slate-300 focus:ring-blue-500'
+                    ]"
+                  />
+                  <p v-if="errors.max_daily_loss" class="mt-1 text-sm text-red-500">{{ errors.max_daily_loss }}</p>
+                  <!-- 超出限制提示 -->
+                  <p v-if="isFieldExceedingLimit('max_daily_loss')" class="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded font-medium">
+                    ⚠️ {{ getExceedingLimitText('max_daily_loss') }}
+                  </p>
+                  <!-- 系统风控限制提示 -->
+                  <p v-else-if="userRiskConfig" class="mt-2 text-xs text-slate-500 bg-slate-50 p-2 rounded">
+                    <span class="font-medium">系统限制:</span> 最多 {{ userRiskConfig.max_daily_loss }} USDT/天
+                  </p>
                 </div>
+
+                <!-- 杠杆倍数（仅合约） -->
+                <div v-if="formData.market_type !== 'spot'">
+                  <label class="block text-sm font-medium text-slate-700 mb-2">
+                    杠杆倍数 <span class="text-red-500">*</span>
+                  </label>
+                  <input
+                    v-model.number="formData.leverage"
+                    type="number"
+                    min="1"
+                    max="125"
+                    :class="[
+                      'w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2',
+                      isFieldExceedingLimit('leverage')
+                        ? 'border-red-500 focus:ring-red-500'
+                        : 'border-slate-300 focus:ring-blue-500'
+                    ]"
+                    placeholder="1-125"
+                  />
+                  <p v-if="errors.leverage" class="mt-1 text-sm text-red-500">{{ errors.leverage }}</p>
+                  <!-- 超出限制提示 -->
+                  <p v-if="isFieldExceedingLimit('leverage')" class="mt-2 text-xs text-red-600 bg-red-50 p-2 rounded font-medium">
+                    ⚠️ {{ getExceedingLimitText('leverage') }}
+                  </p>
+                  <!-- 系统风控限制提示 -->
+                  <p v-else-if="userRiskConfig" class="mt-2 text-xs text-slate-500 bg-slate-50 p-2 rounded">
+                    <span class="font-medium">系统限制:</span> 最多 {{ userRiskConfig.max_leverage }}x
+                  </p>
+                </div>
+              </div>
               </div>
             </div>
           </Card>
@@ -2288,7 +2378,7 @@
                     <div v-if="formData.position_sizing_method === 'fixed_amount'" class="flex justify-between text-xs">
                       <span class="text-slate-500">仓位大小</span>
                       <span class="font-medium text-slate-900">
-                        {{ formData.position_size_value }} USDT
+                        {{ formData.position_size_value }} {{ formData.market_type === 'spot' ? 'USDT' : '张' }}
                       </span>
                     </div>
                     <div v-if="formData.position_sizing_method === 'fixed_percent'" class="flex justify-between text-xs">
@@ -2313,7 +2403,7 @@
                       <div class="flex justify-between text-xs">
                         <span class="text-slate-500">基础仓位</span>
                         <span class="font-medium text-slate-900">
-                          {{ formData.position_size_value }} USDT
+                          {{ formData.position_size_value }} {{ formData.market_type === 'spot' ? 'USDT' : '张' }}
                         </span>
                       </div>
                       <div class="flex justify-between text-xs mt-2">
@@ -2611,6 +2701,161 @@ const popularTokens = ['BTC', 'ETH', 'BNB', 'SOL', 'XRP', 'ADA', 'DOGE', 'MATIC'
 
 // 系统风控配置
 const userRiskConfig = ref(null)
+
+// 合约规格信息
+const contractSpecInfo = ref(null)
+
+// 仓位大小是否超出余额
+const isPositionSizeExceedingBalance = computed(() => {
+  if (!formData.value.position_size_value) {
+    return false
+  }
+
+  // 🔧 修复：趋势跟踪机器人从信号机器人继承交易所API
+  const exchangeAPI = selectedExchangeAPI.value || selectedSignalBotData.value?.exchange_api
+  if (!exchangeAPI) {
+    return false
+  }
+
+  const positionSize = formData.value.position_size_value
+  const marketType = formData.value.market_type
+  const balanceSnapshot = exchangeAPI.balance_snapshot
+
+  if (!balanceSnapshot) {
+    return false
+  }
+
+  try {
+    if (marketType === 'spot') {
+      // 现货：检查 USDT 余额
+      const tradingPair = formData.value.trading_pair || 'USDT'
+      let usdtBalance = 0
+
+      if (balanceSnapshot.spot && balanceSnapshot.spot[tradingPair]) {
+        const asset = balanceSnapshot.spot[tradingPair]
+        usdtBalance = parseFloat(asset.free || asset.available || asset.total || 0)
+      }
+
+      return positionSize > usdtBalance
+    } else {
+      // 合约：检查保证金余额和系统风控限制
+      const tradingPair = formData.value.trading_pair || 'USDT'
+      let marginBalance = 0
+
+      if (balanceSnapshot.future && balanceSnapshot.future[tradingPair]) {
+        const asset = balanceSnapshot.future[tradingPair]
+        marginBalance = parseFloat(asset.free || asset.available || asset.total || 0)
+      }
+
+      // 计算所需保证金
+      const leverage = formData.value.leverage || 1
+      const contractSize = contractSpecInfo.value?.contract_size || 0.01
+      const token = formData.value.token || selectedSignalBotData.value?.token
+      const currentPrice = token?.current_price || 0
+
+      console.log('🔍 [余额检查] 合约模式:', {
+        positionSize,
+        contractSize,
+        currentPrice,
+        leverage,
+        marginBalance,
+        maxPositionPerBot: userRiskConfig.value?.max_position_per_bot
+      })
+
+      if (currentPrice > 0) {
+        const requiredMargin = (positionSize * contractSize * currentPrice) / leverage
+
+        console.log('🔍 [余额检查] 计算结果:', {
+          requiredMargin,
+          exceedsBalance: requiredMargin > marginBalance,
+          exceedsRiskLimit: userRiskConfig.value && requiredMargin > userRiskConfig.value.max_position_per_bot
+        })
+
+        // 检查是否超过余额
+        if (requiredMargin > marginBalance) {
+          return true
+        }
+
+        // 检查是否超过系统风控限制
+        if (userRiskConfig.value && requiredMargin > userRiskConfig.value.max_position_per_bot) {
+          return true
+        }
+      }
+
+      return false
+    }
+  } catch (error) {
+    console.error('检查余额失败:', error)
+    return false
+  }
+})
+
+// 仓位大小余额错误提示
+const positionSizeBalanceError = computed(() => {
+  if (!isPositionSizeExceedingBalance.value) {
+    return ''
+  }
+
+  const positionSize = formData.value.position_size_value
+  const marketType = formData.value.market_type
+
+  // 🔧 修复：趋势跟踪机器人从信号机器人继承交易所API
+  const exchangeAPI = selectedExchangeAPI.value || selectedSignalBotData.value?.exchange_api
+  const balanceSnapshot = exchangeAPI?.balance_snapshot
+
+  if (!balanceSnapshot) {
+    return ''
+  }
+
+  try {
+    if (marketType === 'spot') {
+      const tradingPair = formData.value.trading_pair || 'USDT'
+      let usdtBalance = 0
+
+      if (balanceSnapshot.spot && balanceSnapshot.spot[tradingPair]) {
+        const asset = balanceSnapshot.spot[tradingPair]
+        usdtBalance = parseFloat(asset.free || asset.available || asset.total || 0)
+      }
+
+      const shortage = positionSize - usdtBalance
+      return `余额不足！当前可用 ${usdtBalance.toFixed(2)} ${tradingPair}，需要 ${positionSize} ${tradingPair}（缺少 ${shortage.toFixed(2)} ${tradingPair}）`
+    } else {
+      const tradingPair = formData.value.trading_pair || 'USDT'
+      let marginBalance = 0
+
+      if (balanceSnapshot.future && balanceSnapshot.future[tradingPair]) {
+        const asset = balanceSnapshot.future[tradingPair]
+        marginBalance = parseFloat(asset.free || asset.available || asset.total || 0)
+      }
+
+      const leverage = formData.value.leverage || 1
+      const contractSize = contractSpecInfo.value?.contract_size || 0.01
+      const token = formData.value.token || selectedSignalBotData.value?.token
+      const currentPrice = token?.current_price || 0
+
+      if (currentPrice > 0) {
+        const requiredMargin = (positionSize * contractSize * currentPrice) / leverage
+
+        // 检查是否超过系统风控限制
+        if (userRiskConfig.value && requiredMargin > userRiskConfig.value.max_position_per_bot) {
+          const maxAllowedMargin = userRiskConfig.value.max_position_per_bot
+          return `超出系统风控限制！单个机器人最大仓位 ${maxAllowedMargin} ${tradingPair}，当前需要 ${requiredMargin.toFixed(2)} ${tradingPair}（超出 ${(requiredMargin - maxAllowedMargin).toFixed(2)} ${tradingPair}）`
+        }
+
+        // 检查是否超过余额
+        if (requiredMargin > marginBalance) {
+          const shortage = requiredMargin - marginBalance
+          return `保证金不足！当前可用 ${marginBalance.toFixed(2)} ${tradingPair}，需要 ${requiredMargin.toFixed(2)} ${tradingPair}（缺少 ${shortage.toFixed(2)} ${tradingPair}）`
+        }
+      }
+
+      return '保证金不足'
+    }
+  } catch (error) {
+    console.error('生成错误提示失败:', error)
+    return '余额不足'
+  }
+})
 const loadingRiskConfig = ref(false)
 
 // 用户交易偏好（从 localStorage 加载）
@@ -2665,6 +2910,81 @@ const loadUserRiskConfig = async () => {
     // 不显示错误提示，因为这是可选的
   } finally {
     loadingRiskConfig.value = false
+  }
+}
+
+// 加载合约规格信息
+const loadContractSpec = async () => {
+  // 优先使用 formData.token，如果没有则使用 selectedSignalBotData.token
+  const token = formData.value.token || selectedSignalBotData.value?.token
+  const tokenId = token?.id
+
+  console.log('🔍 loadContractSpec 被调用', {
+    market_type: formData.value.market_type,
+    token_id: tokenId,
+    token: token,
+    exchange: selectedExchangeType.value,
+    trading_pair: formData.value.trading_pair
+  })
+
+  if (formData.value.market_type === 'spot') {
+    console.log('⏭️ 现货模式，跳过合约规格加载')
+    contractSpecInfo.value = null
+    return
+  }
+
+  if (!tokenId || !selectedExchangeType.value) {
+    console.log('⏭️ 缺少必要参数，跳过合约规格加载', {
+      tokenId,
+      selectedExchangeType: selectedExchangeType.value
+    })
+    contractSpecInfo.value = null
+    return
+  }
+
+  try {
+    const url = `${API_ENDPOINTS.TRADING_PAIR_INFO}?token_id=${tokenId}&exchange=${selectedExchangeType.value}&quote_currency=${formData.value.trading_pair || 'USDT'}`
+    console.log('📡 请求合约规格:', url)
+
+    const response = await apiRequest(url)
+    console.log('📥 合约规格响应:', response)
+
+    if (response && response.data && response.data.contract_spec) {
+      contractSpecInfo.value = {
+        contract_size: parseFloat(response.data.contract_spec.contract_size || 1),
+        min_leverage: response.data.contract_spec.min_leverage,
+        max_leverage: response.data.contract_spec.max_leverage,
+        min_order_qty: parseFloat(response.data.contract_spec.min_order_qty || 0.001),
+        max_order_qty: response.data.contract_spec.max_order_qty ? parseFloat(response.data.contract_spec.max_order_qty) : null,
+      }
+      console.log('✅ 合约规格加载成功:', contractSpecInfo.value)
+    } else {
+      // 使用默认值
+      contractSpecInfo.value = {
+        contract_size: 1,
+        min_leverage: 1,
+        max_leverage: 125,
+        min_order_qty: 0.001,
+        max_order_qty: null,
+      }
+      console.log('⚠️ 使用默认合约规格')
+    }
+  } catch (error) {
+    console.error('❌ 加载合约规格失败:', error)
+    // 使用默认值
+    contractSpecInfo.value = {
+      contract_size: 1,
+      min_leverage: 1,
+      max_leverage: 125,
+      min_order_qty: 0.001,
+      max_order_qty: null,
+    }
+  }
+
+  // 合约规格加载完成后，重新检查余额
+  if (formData.value.position_size_value > 0) {
+    console.log('🔄 合约规格加载完成，重新检查余额')
+    checkBalance()
   }
 }
 
@@ -2860,6 +3180,7 @@ const formData = ref({
   // ============ 仓位管理（优化后：4个字段）============
   position_sizing_method: 'fixed_amount',  // fixed_amount, fixed_percent, fixed_risk, kelly, atr_based
   position_size_value: 100,  // 仓位大小值
+  position_size_unit: 'contracts',  // 仓位单位：contracts(张) 或 usdt(USDT)，仅合约模式使用
   risk_per_trade: 1.00,  // 固定风险模式时使用
   kelly_fraction: 0.25,  // 凯利公式模式时使用
 
@@ -3007,7 +3328,16 @@ const selectedSignalBot = computed(() => {
 
 // 选中的信号机器人完整数据（包括 token 信息）
 const selectedSignalBotData = computed(() => {
-  return selectedSignalBot.value
+  const data = selectedSignalBot.value
+  if (data) {
+    console.log('🔍 selectedSignalBotData:', {
+      name: data.name,
+      token: data.token,
+      token_id: data.token?.id,
+      exchange_name: data.exchange_name
+    })
+  }
+  return data
 })
 
 // 选中的信号机器人标签（用于 Listbox 显示）
@@ -3154,26 +3484,104 @@ const checkBalance = async () => {
 
     // 计算所需余额
     const currentPrice = token.current_price || 0
-    const requiredForBuy = positionSize  // 买入需要的 USDT
-    const requiredForSell = currentPrice > 0 ? positionSize / currentPrice : 0  // 卖出需要的代币数量
+    let requiredForBuy = 0
+    let requiredForSell = 0
+
+    if (marketType === 'spot') {
+      // 现货：以 USDT 计算
+      requiredForBuy = positionSize  // 买入需要的 USDT
+      requiredForSell = currentPrice > 0 ? positionSize / currentPrice : 0  // 卖出需要的代币数量
+    } else {
+      // 合约：根据单位选择计算
+      const leverage = formData.value.leverage || 1
+      const contractSize = contractSpecInfo.value?.contract_size || 1  // 从合约规格获取，默认1
+      const positionUnit = formData.value.position_size_unit || 'contracts'
+
+      console.log('💰 计算合约保证金:', {
+        positionSize,
+        positionUnit,
+        contractSize,
+        currentPrice,
+        leverage,
+        contractSpecInfo: contractSpecInfo.value
+      })
+
+      if (currentPrice > 0 && contractSize > 0) {
+        if (positionUnit === 'usdt') {
+          // 用户输入的是 USDT 金额，直接作为保证金
+          requiredForBuy = positionSize / leverage
+          requiredForSell = requiredForBuy
+        } else {
+          // 用户输入的是张数，计算保证金
+          requiredForBuy = (positionSize * contractSize * currentPrice) / leverage
+          requiredForSell = requiredForBuy
+        }
+
+        console.log('💰 计算结果:', {
+          formula: positionUnit === 'usdt'
+            ? `${positionSize} USDT / ${leverage}`
+            : `(${positionSize} 张 × ${contractSize} × ${currentPrice}) / ${leverage}`,
+          requiredForBuy,
+          requiredForSell
+        })
+      } else {
+        // 如果价格或合约规格未加载，显示为0
+        requiredForBuy = 0
+        requiredForSell = 0
+        console.log('⚠️ 价格或合约规格未加载')
+      }
+    }
 
     // 生成警告和建议
     const warnings = []
     const suggestions = []
 
     if (positionSize > 0) {
-      // 检查买入余额
-      if (quoteBalance < requiredForBuy) {
-        const shortage = requiredForBuy - quoteBalance
-        warnings.push(`${tradingPair} 余额不足，买入信号可能失败（缺少 ${shortage.toFixed(2)} ${tradingPair}）`)
-        suggestions.push(`充值至少 ${shortage.toFixed(2)} ${tradingPair} 或降低仓位大小至 ${quoteBalance.toFixed(2)} ${tradingPair}`)
-      }
+      if (marketType === 'spot') {
+        // 现货：检查买入和卖出余额
+        if (quoteBalance < requiredForBuy) {
+          const shortage = requiredForBuy - quoteBalance
+          warnings.push(`${tradingPair} 余额不足，买入信号可能失败（缺少 ${shortage.toFixed(2)} ${tradingPair}）`)
+          suggestions.push(`充值至少 ${shortage.toFixed(2)} ${tradingPair} 或降低仓位大小至 ${quoteBalance.toFixed(2)} ${tradingPair}`)
+        }
 
-      // 检查卖出余额（仅现货）
-      if (marketType === 'spot' && baseBalance < requiredForSell) {
-        const shortage = requiredForSell - baseBalance
-        warnings.push(`${token.symbol} 余额不足，卖出信号可能失败（缺少 ${shortage.toFixed(4)} ${token.symbol}）`)
-        suggestions.push(`持有至少 ${requiredForSell.toFixed(4)} ${token.symbol} 或等待买入信号先执行`)
+        if (baseBalance < requiredForSell) {
+          const shortage = requiredForSell - baseBalance
+          warnings.push(`${token.symbol} 余额不足，卖出信号可能失败（缺少 ${shortage.toFixed(4)} ${token.symbol}）`)
+          suggestions.push(`持有至少 ${requiredForSell.toFixed(4)} ${token.symbol} 或等待买入信号先执行`)
+        }
+      } else {
+        // 合约：检查最小订单金额
+        const minOrderValue = contractSpecInfo.value?.min_order_value ? parseFloat(contractSpecInfo.value.min_order_value) : 5
+        const leverage = formData.value.leverage || 1
+        const contractSize = contractSpecInfo.value?.contract_size || 1
+        const positionUnit = formData.value.position_size_unit || 'contracts'
+
+        let positionValue = 0
+        if (positionUnit === 'usdt') {
+          // 用户输入的是 USDT，直接作为订单金额
+          positionValue = positionSize
+        } else {
+          // 用户输入的是张数，计算订单金额
+          positionValue = positionSize * contractSize * currentPrice
+        }
+
+        if (positionValue < minOrderValue) {
+          warnings.push(`订单金额过小，最小订单金额为 ${minOrderValue.toFixed(2)} ${tradingPair}（当前: ${positionValue.toFixed(2)} ${tradingPair}）`)
+          if (positionUnit === 'usdt') {
+            suggestions.push(`至少需要 ${minOrderValue.toFixed(2)} USDT 才能满足最小订单金额要求`)
+          } else {
+            const minQty = Math.ceil(minOrderValue / (contractSize * currentPrice))
+            suggestions.push(`至少需要 ${minQty} 张才能满足最小订单金额要求`)
+          }
+        }
+
+        // 合约：检查保证金余额
+        if (quoteBalance < requiredForBuy) {
+          const shortage = requiredForBuy - quoteBalance
+          warnings.push(`${tradingPair} 保证金不足，开仓可能失败（缺少 ${shortage.toFixed(2)} ${tradingPair}）`)
+          suggestions.push(`充值至少 ${shortage.toFixed(2)} ${tradingPair} 或降低仓位${positionUnit === 'usdt' ? '金额' : '张数'}`)
+        }
       }
     }
 
@@ -3455,11 +3863,11 @@ const autoGeneratedDescription = computed(() => {
   // 仓位管理（优化后）
   if (formData.value.position_size_value) {
     const methodLabels = {
-      'fixed_amount': 'USDT',
+      'fixed_amount': formData.value.market_type === 'spot' ? 'USDT' : '张',
       'fixed_percent': '%',
       'fixed_risk': '% 风险',
       'kelly': '凯利公式',
-      'atr_based': 'ATR'
+      'atr_based': formData.value.market_type === 'spot' ? 'USDT' : '张'
     }
     const methodLabel = methodLabels[formData.value.position_sizing_method] || ''
     parts.push(`仓位 ${formData.value.position_size_value} ${methodLabel}`)
@@ -3752,6 +4160,23 @@ watch(() => formData.value.position_size_value, () => {
 watch(selectedToken, () => {
   loadQuoteAssets()
 })
+
+// 监听市场类型、代币、交易所变化，重新加载合约规格
+watch([
+  () => formData.value.market_type,
+  () => formData.value.token?.id || selectedSignalBotData.value?.token?.id,  // 优先使用 formData.token
+  () => selectedExchangeType.value
+], (newValues, oldValues) => {
+  console.log('🔔 合约规格监听器触发:', {
+    market_type: newValues[0],
+    token_id: newValues[1],
+    exchange: newValues[2],
+    formData_token: formData.value.token,
+    selectedSignalBotData_token: selectedSignalBotData.value?.token,
+    oldValues: oldValues
+  })
+  loadContractSpec()
+}, { immediate: false })
 
 // 获取交易所统计信息
 const loadExchangeStats = async (exchange) => {
@@ -4048,7 +4473,12 @@ const isFieldExceedingLimit = (fieldName) => {
 
   switch (fieldName) {
     case 'position_size_value':
-      // 检查是否低于最小值或超过最大值
+      // 🔧 合约模式下不检查张数限制（因为系统限制是USDT金额，不是张数）
+      if (formData.value.market_type !== 'spot') {
+        return false
+      }
+
+      // 现货模式下检查USDT金额限制
       const positionTooLow = formData.value.position_size_value < userRiskConfig.value.min_position_size
       const positionTooHigh = formData.value.position_size_value > userRiskConfig.value.max_position_per_bot
       if (positionTooLow) {
@@ -4089,6 +4519,12 @@ const getExceedingLimitText = (fieldName) => {
 
   switch (fieldName) {
     case 'position_size_value':
+      // 🔧 合约模式下不显示USDT限制提示
+      if (formData.value.market_type !== 'spot') {
+        return ''
+      }
+
+      // 现货模式下显示USDT限制提示
       if (formData.value.position_size_value < userRiskConfig.value.min_position_size) {
         return `低于最小建仓金额 ${userRiskConfig.value.min_position_size} USDT`
       } else if (formData.value.position_size_value > userRiskConfig.value.max_position_per_bot) {
@@ -4159,10 +4595,21 @@ const handleSubmit = async () => {
     }
   }
 
+  // 验证仓位大小必须大于0
+  if (!formData.value.position_size_value || formData.value.position_size_value <= 0) {
+    if (formData.value.market_type === 'spot') {
+      showError('交易金额必须大于 0')
+    } else {
+      const unit = formData.value.position_size_unit === 'contracts' ? '张' : 'USDT'
+      showError(`交易数量必须大于 0 ${unit}`)
+    }
+    return
+  }
+
   // 验证系统风控限制
   if (userRiskConfig.value) {
-    // 验证仓位大小
-    if (formData.value.position_size_value > userRiskConfig.value.max_position_per_bot) {
+    // 验证仓位大小（仅现货模式检查USDT金额）
+    if (formData.value.market_type === 'spot' && formData.value.position_size_value > userRiskConfig.value.max_position_per_bot) {
       showError(`仓位大小不能超过系统限制 ${userRiskConfig.value.max_position_per_bot} USDT`)
       return
     }
@@ -4216,7 +4663,7 @@ const handleSubmit = async () => {
       kelly_fraction: formData.value.kelly_fraction,
 
       // ============ 交易方向 ============
-      trading_direction: formData.value.market_type === 'spot' ? 'long_only' : formData.value.trading_direction,  // 现货固定为只做多
+      trading_direction: formData.value.trading_direction,  // 保留用户选择，不强制修改
 
       // ============ 信号执行策略（扁平字段）============
       signal_execution_mode: formData.value.signal_execution_mode,
@@ -4364,17 +4811,20 @@ watch(() => selectedExchangeAPI.value, () => {
     // 只在非编辑模式下重置选择（编辑模式下应该保留原有选择）
     // 并且不在加载机器人数据期间重置
     if (!isEditMode.value && !isLoadingBotData.value) {
-      formData.value.trading_pair = null
-
-      // 🔧 修复：如果是信号触发模式且已选择信号机器人，不清空代币（因为代币从信号机器人继承）
-      if (formData.value.trading_mode !== 'signal_trigger' || !formData.value.signal_bot) {
-        // 清空代币选择
-        formData.value.token = null
-        tokenSearchQuery.value = ''
-        tokenSearchResults.value = []
-        selectedToken.value = null
-        showTokenResults.value = false
+      // 🔧 修复：如果是信号触发模式且已选择信号机器人，不清空任何数据（因为都从信号机器人继承）
+      if (formData.value.trading_mode === 'signal_trigger' && formData.value.signal_bot) {
+        console.log('📊 [信号触发模式] 交易所API变化，保留代币、交易对和计价币种选择')
+        // 不清空任何数据
+        return
       }
+
+      // 其他模式下，清空计价币种和代币选择
+      formData.value.trading_pair = null
+      formData.value.token = null
+      tokenSearchQuery.value = ''
+      tokenSearchResults.value = []
+      selectedToken.value = null
+      showTokenResults.value = false
     }
   }
 })
@@ -4698,6 +5148,9 @@ onMounted(async () => {
             formData.value.signal_bot = trendBot.signal_bot
             console.log('✅ [编辑模式] 关联的信号机器人存在 (SignalBot ID):', trendBot.signal_bot)
             console.log('✅ [编辑模式] 对应的 TradingBot:', signalBotExists)
+
+            // 触发信号机器人变化处理，继承交易所、代币等信息
+            handleSignalBotChange(trendBot.signal_bot)
           } else {
             formData.value.signal_bot = null
             console.warn('⚠️ [编辑模式] 关联的信号机器人不存在，已清空 (SignalBot ID):', trendBot.signal_bot)
@@ -5172,6 +5625,13 @@ onMounted(async () => {
       // 验证 Select 组件能否找到匹配的选项
       const matchedOption = availableQuoteAssets.value.find(opt => opt.value === formData.value.trading_pair)
       console.log('  - Select 组件匹配的选项:', matchedOption)
+
+      // 第六步：加载合约规格（如果是合约模式）
+      if (formData.value.market_type !== 'spot') {
+        console.log('📥 开始加载合约规格...')
+        await loadContractSpec()
+        console.log('✅ 合约规格加载完成')
+      }
     } catch (error) {
       console.error('加载机器人数据失败:', error)
       showError('加载机器人数据失败')

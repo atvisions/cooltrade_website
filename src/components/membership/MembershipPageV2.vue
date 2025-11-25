@@ -27,81 +27,52 @@
               <p class="text-gray-600 mt-2">管理您的会员权益和订阅</p>
             </div>
 
-            <!-- 当前会员状态卡片 - 简约商务风格 -->
+            <!-- 当前订阅 - 与 BillingTab 相同样式 -->
             <div class="mb-8">
-              <!-- 付费会员卡片 -->
-              <div v-if="membershipStatus.is_premium" class="bg-white rounded-xl border-2 border-blue-500 shadow-sm">
-                <div class="p-6">
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-4">
-                      <!-- 会员图标 -->
-                      <div class="w-16 h-16 bg-blue-50 rounded-lg flex items-center justify-center">
-                        <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                        </svg>
-                      </div>
-
-                      <div>
-                        <div class="flex items-center space-x-2 mb-1">
-                          <h3 class="text-xl font-bold text-gray-900">{{ currentTierName }}</h3>
-                          <span class="px-2 py-0.5 bg-blue-50 text-blue-600 text-xs font-medium rounded">
-                            当前版本
-                          </span>
-                        </div>
-                        <p class="text-gray-600 text-sm">升级会员，解锁更多高级功能</p>
-                      </div>
+              <div class="bg-white rounded-lg border border-gray-200 p-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">当前订阅</h3>
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center space-x-4">
+                    <!-- 会员图标 -->
+                    <div :class="[
+                      'w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-xl',
+                      membershipStatus.membership_tier === 'professional' ? 'bg-gradient-to-br from-yellow-400 to-yellow-600' :
+                      membershipStatus.membership_tier === 'standard' ? 'bg-blue-600' : 'bg-gray-400'
+                    ]">
+                      {{ membershipStatus.is_premium ? '★' : '○' }}
                     </div>
-
-                    <!-- 到期时间和剩余天数 -->
-                    <div class="text-right">
-                      <p class="text-sm text-gray-500 mb-1">到期时间</p>
-                      <p class="text-base font-semibold text-gray-900">{{ formatDate(membershipStatus.premium_expires_at) }}</p>
-                      <p class="text-xs text-gray-500 mt-1">剩余 {{ remainingDays }} 天</p>
+                    <div>
+                      <h4 class="text-lg font-semibold text-gray-900">{{ currentTierName }}</h4>
+                      <p class="text-gray-600">{{ membershipStatus.is_premium ? '享受高级功能和优先支持' : '基础功能，免费使用' }}</p>
+                      <p v-if="membershipStatus.is_premium" class="text-sm text-gray-500">
+                        月付 · 下次续费: {{ formatDate(membershipStatus.premium_expires_at) }}
+                      </p>
                     </div>
                   </div>
-
-                  <!-- 续费提示 -->
-                  <div v-if="remainingDays < 30" class="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                    <div class="flex items-center space-x-2">
-                      <svg class="w-4 h-4 text-yellow-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                      </svg>
-                      <p class="text-yellow-800 text-sm">您的会员即将到期，建议提前续费以免影响使用</p>
+                  <div class="text-right">
+                    <div class="text-2xl font-bold text-gray-900">
+                      {{ currentPlanPrice }}
                     </div>
+                    <div class="text-sm text-gray-500">{{ membershipStatus.is_premium ? '每月' : '免费' }}</div>
                   </div>
                 </div>
-              </div>
 
-              <!-- 免费会员卡片 -->
-              <div v-else class="bg-white rounded-xl border-2 border-gray-200 shadow-sm">
-                <div class="p-6">
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-4">
-                      <!-- 免费会员图标 -->
-                      <div class="w-16 h-16 bg-gray-50 rounded-lg flex items-center justify-center">
-                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                        </svg>
-                      </div>
+                <div class="mt-6">
+                  <button
+                    @click="scrollToPlans"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+                  >
+                    {{ membershipStatus.is_premium ? '更改计划' : '升级计划' }}
+                  </button>
+                </div>
 
-                      <div>
-                        <div class="flex items-center space-x-2 mb-1">
-                          <h3 class="text-xl font-bold text-gray-900">免费版</h3>
-                          <span class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded">
-                            当前版本
-                          </span>
-                        </div>
-                        <p class="text-gray-600 text-sm">升级会员，解锁更多高级功能</p>
-                      </div>
-                    </div>
-
-                    <!-- 升级按钮 -->
-                    <button
-                      @click="scrollToPlans"
-                      class="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-                    >
-                      立即升级
-                    </button>
+                <!-- 续费提示 -->
+                <div v-if="membershipStatus.is_premium && remainingDays < 30" class="mt-4 bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                  <div class="flex items-center space-x-2">
+                    <svg class="w-4 h-4 text-yellow-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <p class="text-yellow-800 text-sm">您的会员即将到期（剩余 {{ remainingDays }} 天），建议提前续费以免影响使用</p>
                   </div>
                 </div>
               </div>
@@ -195,68 +166,101 @@
               </div>
             </div>
 
-            <!-- 我的订单 -->
+            <!-- 付费记录 - 与 BillingTab 相同样式 -->
             <div class="mb-8">
-              <h2 class="text-2xl font-bold text-gray-900 mb-4">我的订单</h2>
+              <div class="bg-white rounded-lg border border-gray-200 p-6">
+                <div class="mb-6">
+                  <h3 class="text-lg font-medium text-gray-900">付费记录</h3>
+                </div>
 
-              <div v-if="orders.length === 0" class="bg-white rounded-xl border border-gray-200 p-8 text-center">
-                <p class="text-gray-600">暂无订单记录</p>
-              </div>
+                <div v-if="orders.length === 0" class="text-center py-8">
+                  <p class="text-gray-600">暂无付费记录</p>
+                </div>
 
-              <div v-else class="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                <div class="overflow-x-auto">
-                  <table class="min-w-full">
+                <div v-else class="overflow-hidden">
+                  <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                       <tr>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-900">订单号</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-900">套餐</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-900">金额</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-900">状态</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-900">创建时间</th>
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-gray-900">操作</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          描述
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          日期
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          金额
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          状态
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          操作
+                        </th>
                       </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-200">
-                      <tr v-for="order in orders" :key="order.id" class="hover:bg-gray-50">
-                        <td class="px-4 py-3 text-xs font-mono text-gray-900">{{ order.order_id }}</td>
-                        <td class="px-4 py-3 text-xs text-gray-900">{{ order.plan_name }}</td>
-                        <td class="px-4 py-3 text-xs text-gray-900">${{ order.amount }}</td>
-                        <td class="px-4 py-3 text-xs">
-                          <span :class="getStatusClass(order.status)">{{ getStatusText(order.status) }}</span>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                      <tr v-for="order in orders" :key="order.id">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {{ order.plan_name }}
                         </td>
-                        <td class="px-4 py-3 text-xs text-gray-600">{{ formatDate(order.created_at) }}</td>
-                        <td class="px-4 py-3 text-xs">
-                          <div class="flex items-center space-x-2">
-                            <template v-if="order.status === 'pending'">
-                              <button
-                                @click="continuePayment(order)"
-                                class="px-2 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-xs"
-                              >
-                                继续支付
-                              </button>
-                              <button
-                                @click="cancelOrder(order)"
-                                class="px-2 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors text-xs"
-                              >
-                                取消
-                              </button>
-                            </template>
-                            <template v-else-if="order.status === 'paid'">
-                              <button
-                                @click="viewOrderDetail(order)"
-                                class="px-2 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors text-xs"
-                              >
-                                查看详情
-                              </button>
-                            </template>
-                            <template v-else>
-                              <span class="text-gray-400 text-xs">-</span>
-                            </template>
-                          </div>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {{ formatDate(order.created_at) }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          ${{ order.amount }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <span :class="[
+                            'inline-flex px-2 py-1 text-xs font-semibold rounded-full',
+                            order.status === 'paid' ? 'bg-green-100 text-green-800' :
+                            order.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                          ]">
+                            {{ getStatusText(order.status) }}
+                          </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <template v-if="order.status === 'pending'">
+                            <button
+                              @click="continuePayment(order)"
+                              class="text-blue-600 hover:text-blue-700 mr-3"
+                            >
+                              继续支付
+                            </button>
+                            <button
+                              @click="cancelOrder(order)"
+                              class="text-red-600 hover:text-red-700"
+                            >
+                              取消
+                            </button>
+                          </template>
+                          <template v-else>
+                            <button
+                              @click="viewOrderDetail(order)"
+                              class="text-blue-600 hover:text-blue-700"
+                            >
+                              查看详情
+                            </button>
+                          </template>
                         </td>
                       </tr>
                     </tbody>
                   </table>
+                </div>
+
+                <!-- 分页 -->
+                <div v-if="orders.length > 0" class="mt-6 flex items-center justify-between">
+                  <div class="text-sm text-gray-500">
+                    显示 1-{{ orders.length }} 条，共 {{ orders.length }} 条记录
+                  </div>
+                  <div class="flex space-x-2">
+                    <button class="px-3 py-1 border border-gray-300 rounded text-sm text-gray-500 hover:bg-gray-50">
+                      上一页
+                    </button>
+                    <button class="px-3 py-1 border border-gray-300 rounded text-sm text-gray-500 hover:bg-gray-50">
+                      下一页
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -353,10 +357,36 @@ const remainingDays = computed(() => {
   return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)))
 })
 
+// 计算当前套餐价格
+const currentPlanPrice = computed(() => {
+  if (!membershipStatus.value.is_premium) return '$0'
+
+  // 从最近的已支付订单中获取价格信息
+  const paidOrder = orders.value.find(order =>
+    order.status === 'paid' || order.status === 'completed'
+  )
+
+  if (paidOrder) {
+    // 根据订单的 plan_type 显示价格
+    const isMonthly = paidOrder.plan_type === 'monthly'
+    return `$${paidOrder.amount}/${isMonthly ? '月' : '年'}`
+  }
+
+  // 如果没有订单，从 plans 中查找月付价格
+  const currentPlan = plans.value.find(plan =>
+    plan.tier === membershipStatus.value.membership_tier &&
+    plan.plan_type === 'monthly'
+  )
+
+  if (currentPlan) {
+    return `$${currentPlan.price}/月`
+  }
+
+  // 最后的降级方案：返回 $0
+  return '$0'
+})
+
 // 方法
-const toggleBillingCycle = () => {
-  billingCycle.value = billingCycle.value === 'monthly' ? 'yearly' : 'monthly'
-}
 
 const selectPlan = (tier) => {
   if (tier === 'free') return
@@ -503,16 +533,6 @@ const handlePaymentSuccess = async () => {
   showSuccess('支付成功！会员已激活 🎉')
   await loadMembershipStatus()
   await loadOrders()
-}
-
-const getStatusClass = (status) => {
-  const classes = {
-    'pending': 'px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-medium',
-    'paid': 'px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium',
-    'expired': 'px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium',
-    'cancelled': 'px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium'
-  }
-  return classes[status] || classes['pending']
 }
 
 const getStatusText = (status) => {

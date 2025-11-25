@@ -48,36 +48,85 @@
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- 机器人选择 -->
-        <div>
-          <label class="block text-sm font-medium text-slate-700 mb-2">选择机器人 *</label>
-          <select
-            v-model="config.bot_id"
-            class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          >
-            <option value="">请选择机器人</option>
-            <option v-for="bot in bots" :key="bot.id" :value="bot.id">
-              {{ bot.name }} ({{ bot.token_symbol }})
-            </option>
-          </select>
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-slate-700">选择机器人 *</label>
+          <Listbox v-model="config.bot_id">
+            <div class="relative">
+              <ListboxButton class="relative w-full cursor-default rounded-xl bg-slate-50 py-3 pl-4 pr-10 text-left border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <span class="block truncate text-slate-700">
+                  {{ bots.find(bot => bot.id === config.bot_id)?.name || '请选择机器人' }}
+                </span>
+                <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                  <ChevronUpDownIcon class="h-5 w-5 text-slate-400" aria-hidden="true" />
+                </span>
+              </ListboxButton>
+              <transition leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
+                <ListboxOptions class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                  <ListboxOption
+                    :value="''"
+                    v-slot="{ active, selected }"
+                    as="template"
+                  >
+                    <li :class="[active ? 'bg-blue-50 text-blue-900' : 'text-slate-900', 'relative cursor-default select-none py-2 pl-10 pr-4']">
+                      <span :class="[selected ? 'font-semibold' : 'font-normal', 'block truncate']">请选择机器人</span>
+                      <span v-if="selected" class="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-600">
+                        <CheckIcon class="h-5 w-5" aria-hidden="true" />
+                      </span>
+                    </li>
+                  </ListboxOption>
+                  <ListboxOption
+                    v-for="bot in bots"
+                    :key="bot.id"
+                    :value="bot.id"
+                    v-slot="{ active, selected }"
+                    as="template"
+                  >
+                    <li :class="[active ? 'bg-blue-50 text-blue-900' : 'text-slate-900', 'relative cursor-default select-none py-2 pl-10 pr-4']">
+                      <span :class="[selected ? 'font-semibold' : 'font-normal', 'block truncate']">{{ bot.name }} ({{ bot.token_symbol }})</span>
+                      <span v-if="selected" class="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-600">
+                        <CheckIcon class="h-5 w-5" aria-hidden="true" />
+                      </span>
+                    </li>
+                  </ListboxOption>
+                </ListboxOptions>
+              </transition>
+            </div>
+          </Listbox>
         </div>
 
         <!-- 时间范围 -->
-        <div>
-          <label class="block text-sm font-medium text-slate-700 mb-2">回测时间范围 *</label>
-          <select
-            v-model="config.time_range"
-            @change="updateDateRange"
-            class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          >
-            <option value="7d">最近7天</option>
-            <option value="30d">最近30天</option>
-            <option value="90d">最近90天</option>
-            <option value="180d">最近180天</option>
-            <option value="1y">最近1年</option>
-            <option value="custom">自定义</option>
-          </select>
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-slate-700">回测时间范围 *</label>
+          <Listbox v-model="config.time_range" @update:modelValue="updateDateRange">
+            <div class="relative">
+              <ListboxButton class="relative w-full cursor-default rounded-xl bg-slate-50 py-3 pl-4 pr-10 text-left border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <span class="block truncate text-slate-700">
+                  {{ timeRangeOptions.find(option => option.value === config.time_range)?.label || '选择时间范围' }}
+                </span>
+                <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                  <ChevronUpDownIcon class="h-5 w-5 text-slate-400" aria-hidden="true" />
+                </span>
+              </ListboxButton>
+              <transition leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
+                <ListboxOptions class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                  <ListboxOption
+                    v-for="option in timeRangeOptions"
+                    :key="option.value"
+                    :value="option.value"
+                    v-slot="{ active, selected }"
+                    as="template"
+                  >
+                    <li :class="[active ? 'bg-blue-50 text-blue-900' : 'text-slate-900', 'relative cursor-default select-none py-2 pl-10 pr-4']">
+                      <span :class="[selected ? 'font-semibold' : 'font-normal', 'block truncate']">{{ option.label }}</span>
+                      <span v-if="selected" class="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-600">
+                        <CheckIcon class="h-5 w-5" aria-hidden="true" />
+                      </span>
+                    </li>
+                  </ListboxOption>
+                </ListboxOptions>
+              </transition>
+            </div>
+          </Listbox>
         </div>
 
         <!-- 自定义开始日期 -->
@@ -117,34 +166,73 @@
         </div>
 
         <!-- 时间周期 -->
-        <div>
-          <label class="block text-sm font-medium text-slate-700 mb-2">时间周期 *</label>
-          <select
-            v-model="config.timeframe"
-            class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          >
-            <option value="1m">1分钟</option>
-            <option value="5m">5分钟</option>
-            <option value="15m">15分钟</option>
-            <option value="1h">1小时</option>
-            <option value="4h">4小时</option>
-            <option value="1d">1天</option>
-          </select>
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-slate-700">时间周期 *</label>
+          <Listbox v-model="config.timeframe">
+            <div class="relative">
+              <ListboxButton class="relative w-full cursor-default rounded-xl bg-slate-50 py-3 pl-4 pr-10 text-left border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <span class="block truncate text-slate-700">
+                  {{ timeframeOptions.find(option => option.value === config.timeframe)?.label || '选择时间周期' }}
+                </span>
+                <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                  <ChevronUpDownIcon class="h-5 w-5 text-slate-400" aria-hidden="true" />
+                </span>
+              </ListboxButton>
+              <transition leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
+                <ListboxOptions class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                  <ListboxOption
+                    v-for="option in timeframeOptions"
+                    :key="option.value"
+                    :value="option.value"
+                    v-slot="{ active, selected }"
+                    as="template"
+                  >
+                    <li :class="[active ? 'bg-blue-50 text-blue-900' : 'text-slate-900', 'relative cursor-default select-none py-2 pl-10 pr-4']">
+                      <span :class="[selected ? 'font-semibold' : 'font-normal', 'block truncate']">{{ option.label }}</span>
+                      <span v-if="selected" class="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-600">
+                        <CheckIcon class="h-5 w-5" aria-hidden="true" />
+                      </span>
+                    </li>
+                  </ListboxOption>
+                </ListboxOptions>
+              </transition>
+            </div>
+          </Listbox>
         </div>
 
         <!-- 退出策略 -->
-        <div>
-          <label class="block text-sm font-medium text-slate-700 mb-2">退出策略 *</label>
-          <select
-            v-model="config.exit_strategy"
-            class="w-full rounded-lg border border-slate-300 px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          >
-            <option value="fixed">固定止盈止损</option>
-            <option value="time">时间限制</option>
-            <option value="signal">反向信号</option>
-          </select>
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-slate-700">退出策略 *</label>
+          <Listbox v-model="config.exit_strategy">
+            <div class="relative">
+              <ListboxButton class="relative w-full cursor-default rounded-xl bg-slate-50 py-3 pl-4 pr-10 text-left border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                <span class="block truncate text-slate-700">
+                  {{ exitStrategyOptions.find(option => option.value === config.exit_strategy)?.label || '选择退出策略' }}
+                </span>
+                <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                  <ChevronUpDownIcon class="h-5 w-5 text-slate-400" aria-hidden="true" />
+                </span>
+              </ListboxButton>
+              <transition leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
+                <ListboxOptions class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none sm:text-sm">
+                  <ListboxOption
+                    v-for="option in exitStrategyOptions"
+                    :key="option.value"
+                    :value="option.value"
+                    v-slot="{ active, selected }"
+                    as="template"
+                  >
+                    <li :class="[active ? 'bg-blue-50 text-blue-900' : 'text-slate-900', 'relative cursor-default select-none py-2 pl-10 pr-4']">
+                      <span :class="[selected ? 'font-semibold' : 'font-normal', 'block truncate']">{{ option.label }}</span>
+                      <span v-if="selected" class="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-600">
+                        <CheckIcon class="h-5 w-5" aria-hidden="true" />
+                      </span>
+                    </li>
+                  </ListboxOption>
+                </ListboxOptions>
+              </transition>
+            </div>
+          </Listbox>
         </div>
 
         <!-- 止盈百分比 -->
@@ -652,6 +740,8 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue'
+import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid'
 import { botAPI } from '../../../utils/api'
 import { showSuccess, showError } from '../../../utils/notification'
 import { formatDate, formatDateTime } from '../../../utils/timeUtils'
@@ -660,6 +750,33 @@ const activeTab = ref('new') // 'new' or 'history'
 const running = ref(false)
 const progress = ref(0)
 const bots = ref([])
+
+// 时间范围选项
+const timeRangeOptions = [
+  { label: '最近7天', value: '7d' },
+  { label: '最近30天', value: '30d' },
+  { label: '最近90天', value: '90d' },
+  { label: '最近180天', value: '180d' },
+  { label: '最近1年', value: '1y' },
+  { label: '自定义', value: 'custom' }
+]
+
+// 时间周期选项
+const timeframeOptions = [
+  { label: '1分钟', value: '1m' },
+  { label: '5分钟', value: '5m' },
+  { label: '15分钟', value: '15m' },
+  { label: '1小时', value: '1h' },
+  { label: '4小时', value: '4h' },
+  { label: '1天', value: '1d' }
+]
+
+// 退出策略选项
+const exitStrategyOptions = [
+  { label: '固定止盈止损', value: 'fixed' },
+  { label: '时间限制', value: 'time' },
+  { label: '反向信号', value: 'signal' }
+]
 const result = ref(null)
 const backtestId = ref(null)
 const metricType = ref('quality') // 'quality' or 'trading'

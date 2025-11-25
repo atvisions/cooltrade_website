@@ -493,6 +493,7 @@
                         <th class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">方向</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">价格</th>
                         <th class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">时间</th>
+                        <th class="px-6 py-4 text-center text-xs font-semibold text-slate-700 uppercase tracking-wider">操作</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -530,10 +531,20 @@
                           </span>
                         </td>
                         <td class="px-6 py-4">
-                          <p class="font-mono text-slate-900">${{ parseFloat(signal.price || 0).toFixed(2) }}</p>
+                          <p class="font-mono text-slate-900">${{ formatPrice(signal.price) }}</p>
                         </td>
                         <td class="px-6 py-4">
                           <p class="text-sm text-slate-600">{{ formatDate(signal.created_at) }}</p>
+                        </td>
+                        <td class="px-6 py-4">
+                          <div class="flex items-center justify-center">
+                            <button
+                              @click="viewBotDetail(signal.bot)"
+                              class="px-3 py-1.5 text-xs font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+                            >
+                              查看详情
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     </tbody>
@@ -782,7 +793,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue'
 import { CheckIcon, ChevronUpDownIcon, MagnifyingGlassIcon } from '@heroicons/vue/20/solid'
@@ -809,14 +820,24 @@ const membershipStatus = ref({
   membership_tier: 'free'
 })
 
-// TAB 配置
-const activeTab = ref(0)
+// TAB 配置 - 从 localStorage 恢复上次选择的 TAB
+const getInitialTab = () => {
+  const savedTab = localStorage.getItem('signalBotListActiveTab')
+  return savedTab ? parseInt(savedTab) : 0
+}
+
+const activeTab = ref(getInitialTab())  // 从 localStorage 恢复
 const tabs = ref([
   { label: '机器人列表', icon: 'list' },
   { label: '信号监控', icon: 'bell' },
   { label: '数据统计', icon: 'chart-bar' },
   { label: '集群回测', icon: 'chart-line' }
 ])
+
+// 监听 activeTab 变化，保存到 localStorage
+watch(activeTab, (newTab) => {
+  localStorage.setItem('signalBotListActiveTab', newTab.toString())
+})
 
 const loading = ref(false)
 const loadingBotId = ref(null)
@@ -861,23 +882,10 @@ const statusOptionsWithAll = [
 ]
 
 const signalTypeOptions = [
-  { label: '指标信号提醒', value: 'indicator_alert', isGroup: true },
-  // 策略模板
-  { label: '  超短线抢帽子', value: 'strategy:scalping', parent: 'indicator_alert' },
-  { label: '  日内交易', value: 'strategy:day_trading', parent: 'indicator_alert' },
-  { label: '  波段交易', value: 'strategy:swing_trading', parent: 'indicator_alert' },
-  { label: '  趋势跟踪', value: 'strategy:trend_following', parent: 'indicator_alert' },
-  { label: '  反转捕捉', value: 'strategy:reversal', parent: 'indicator_alert' },
-  { label: '  突破策略', value: 'strategy:breakout', parent: 'indicator_alert' },
-  // 单指标类型
-  { label: '  RSI', value: 'indicator:rsi', parent: 'indicator_alert' },
-  { label: '  MACD', value: 'indicator:macd', parent: 'indicator_alert' },
-  { label: '  MA交叉', value: 'indicator:ma_crossover', parent: 'indicator_alert' },
-  { label: '  ATR', value: 'indicator:atr', parent: 'indicator_alert' },
-  { label: '  成交量', value: 'indicator:volume', parent: 'indicator_alert' },
-  { label: '波动性提醒', value: 'volatility' },
+  { label: '指标信号提醒', value: 'indicator_alert' },
+  { label: '价格提醒', value: 'price_alert' },
   { label: '成交量/持仓提醒', value: 'volume' },
-  { label: '价格提醒', value: 'price_alert' }
+  { label: '波动性提醒', value: 'volatility' }
 ]
 
 const signalTypeOptionsWithAll = [
@@ -1114,6 +1122,13 @@ const handleViewBot = (botId) => {
   router.push(`/signal-bots/${botId}`)
 }
 
+// 从信号列表查看机器人详情
+const viewBotDetail = (botId) => {
+  if (botId) {
+    router.push(`/signal-bots/${botId}`)
+  }
+}
+
 const handleDeleteBot = (botId) => {
   pendingDeleteBotId.value = botId
   showDeleteConfirm.value = true
@@ -1312,6 +1327,7 @@ const getSignalTypeDisplayLabel = (signalType) => {
   const labels = {
     'buy': '买入',
     'sell': '卖出',
+    'close': '平仓',
     'neutral': '中性',
     'alert': '提醒',
     'custom': '自定义'
@@ -1327,6 +1343,30 @@ const getDirectionLabel = (direction) => {
     'neutral': '中性'
   }
   return labels[direction] || direction || '未知'
+}
+
+// 智能格式化价格
+const formatPrice = (price) => {
+  const num = parseFloat(price || 0)
+  if (num === 0) return '0.00'
+
+  // 对于大于等于1的价格，显示2位小数
+  if (num >= 1) {
+    return num.toFixed(2)
+  }
+
+  // 对于小于1的价格，找到第一个非零数字，保留有效数字
+  const absNum = Math.abs(num)
+  if (absNum >= 0.01) {
+    // 0.01 到 1 之间，显示4位小数
+    return num.toFixed(4)
+  } else if (absNum >= 0.0001) {
+    // 0.0001 到 0.01 之间，显示6位小数
+    return num.toFixed(6)
+  } else {
+    // 小于 0.0001，显示8位小数
+    return num.toFixed(8)
+  }
 }
 
 // 获取交易所 Logo URL（使用本地文件）

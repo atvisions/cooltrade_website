@@ -86,13 +86,11 @@ import ProfileTab from './tabs/ProfileTab.vue'
 import PrivacyTab from './tabs/PrivacyTab.vue'
 import RiskTab from './tabs/RiskTab.vue'
 import SecurityTab from './tabs/SecurityTab.vue'
-import BillingTab from './tabs/BillingTab.vue'
 
 // 导入图标
 import {
   UserIcon,
   ShieldCheckIcon,
-  CreditCardIcon,
   ScaleIcon,
   EyeSlashIcon
 } from '@heroicons/vue/24/outline'
@@ -143,13 +141,6 @@ const settingsTabs = [
     description: '管理密码、邮箱和账户安全',
     icon: ShieldCheckIcon,
     component: markRaw(SecurityTab)
-  },
-  {
-    id: 'billing',
-    name: '账单管理',
-    description: '查看订阅和付费记录',
-    icon: CreditCardIcon,
-    component: markRaw(BillingTab)
   }
 ]
 
@@ -398,30 +389,7 @@ const emailChangeLoading = ref(false)
 const emailVerificationSent = ref(false)
 const resendCountdown = ref(0)
 
-// 账单管理相关数据
-const currentPlan = ref({
-  name: '专业版',
-  description: '适合专业交易者的完整功能',
-  price: '¥299',
-  billingCycle: 'monthly',
-  nextBilling: '2024-02-15',
-  color: 'bg-blue-600',
-  icon: '💼'
-})
 
-const usageStats = ref({
-  apiCalls: '12,450',
-  apiLimit: '50,000',
-  strategies: '8',
-  strategyLimit: '20',
-  storage: '2.3',
-  storageLimit: '10'
-})
-
-const billingHistory = ref([
-  { id: 1, description: '专业版订阅 - 2024年1月', date: '2024-01-01', amount: '¥299', status: 'paid' },
-  { id: 2, description: '专业版订阅 - 2023年12月', date: '2023-12-01', amount: '¥299', status: 'paid' }
-])
 
 // 提供数据给子组件
 provide('userInfo', userInfo)
@@ -447,9 +415,6 @@ provide('emailChangeForm', emailChangeForm)
 provide('emailChangeLoading', emailChangeLoading)
 provide('emailVerificationSent', emailVerificationSent)
 provide('resendCountdown', resendCountdown)
-provide('currentPlan', currentPlan)
-provide('usageStats', usageStats)
-provide('billingHistory', billingHistory)
 
 // 获取用户信息
 const fetchUserProfile = async () => {

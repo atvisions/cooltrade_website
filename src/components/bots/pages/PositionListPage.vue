@@ -245,8 +245,9 @@
                     <Tag severity="info">
                       {{ position.market_type_display }}
                     </Tag>
-                    <Tag v-if="position.leverage > 1" severity="warning">
-                      {{ position.leverage }}x
+                    <!-- 合约显示杠杆倍率 -->
+                    <Tag v-if="position.market_type !== 'spot'" severity="warning">
+                      {{ position.leverage || 1 }}x
                     </Tag>
                   </div>
                 </div>
@@ -281,7 +282,11 @@
                   <div class="text-xs text-slate-500 mb-1">持仓价值</div>
                   <div class="text-sm font-semibold text-slate-900">${{ Number(position.position_value || 0).toFixed(2) }}</div>
                 </div>
-                <div>
+                <div v-if="position.market_type !== 'spot'">
+                  <div class="text-xs text-slate-500 mb-1">合约倍率</div>
+                  <div class="text-sm font-semibold text-orange-600">{{ position.leverage || 1 }}x</div>
+                </div>
+                <div v-else>
                   <div class="text-xs text-slate-500 mb-1">已实现盈亏</div>
                   <div class="text-sm font-semibold" :class="parseFloat(position.realized_profit || 0) >= 0 ? 'text-green-600' : 'text-red-600'">
                     {{ parseFloat(position.realized_profit || 0) >= 0 ? '+' : '' }}${{ Number(position.realized_profit || 0).toFixed(2) }}
@@ -340,28 +345,23 @@
         </main>
       </div>
     </div>
-
-    <!-- 确认对话框 -->
-    <ConfirmDialog />
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useConfirm } from 'primevue/useconfirm'
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue'
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid'
 import Header from '../../common/Header.vue'
 import UserSidebar from '../../common/UserSidebar.vue'
 import Button from '../../common/ui/Button.vue'
 import Tag from 'primevue/tag'
-import ConfirmDialog from 'primevue/confirmdialog'
 import { botAPI } from '../../../utils/api'
 import { showSuccess, showError } from '../../../utils/notification'
+import { showConfirm } from '../../../utils/confirm'
 
 const router = useRouter()
-const confirm = useConfirm()
 
 // 状态
 const loading = ref(false)
@@ -426,27 +426,29 @@ const loadBots = async () => {
 }
 
 // 手动平仓
-const handleClose = (position) => {
-  confirm.require({
+const handleClose = async (position) => {
+  // 使用通用确认对话框
+  const confirmed = await showConfirm({
+    type: 'warning',
+    title: '确认平仓',
     message: `确定要平仓 ${position.bot_name} 的持仓吗？`,
-    header: '确认平仓',
-    icon: 'pi pi-exclamation-triangle',
-    acceptLabel: '确认',
-    rejectLabel: '取消',
-    accept: async () => {
-      try {
-        actionLoading.value = position.id
-        await botAPI.closePosition(position.id)
-        showSuccess('平仓成功')
-        await loadPositions()
-      } catch (error) {
-        console.error('平仓失败:', error)
-        showError(error.message || '平仓失败')
-      } finally {
-        actionLoading.value = null
-      }
-    }
+    confirmText: '确认',
+    cancelText: '取消'
   })
+
+  if (!confirmed) return
+
+  try {
+    actionLoading.value = position.id
+    await botAPI.closePosition(position.id)
+    showSuccess('平仓成功')
+    await loadPositions()
+  } catch (error) {
+    console.error('平仓失败:', error)
+    showError(error.message || '平仓失败')
+  } finally {
+    actionLoading.value = null
+  }
 }
 
 // 辅助函数

@@ -1,7 +1,25 @@
 // API 配置和工具函数
 
-// API 基础URL
-export const API_BASE_URL = 'http://localhost:8000/api'
+// API 基础URL - 根据环境自动配置
+const getApiBaseUrl = () => {
+  // 优先使用环境变量
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL
+  }
+
+  // 根据当前域名判断环境
+  const hostname = window.location.hostname
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return 'http://localhost:8000'
+  } else if (hostname.includes('cooltrade.xyz')) {
+    return 'https://api.cooltrade.xyz'
+  }
+
+  // 默认使用本地开发环境
+  return 'http://localhost:8000'
+}
+
+export const API_BASE_URL = `${getApiBaseUrl()}/api`
 
 // API 端点
 export const API_ENDPOINTS = {

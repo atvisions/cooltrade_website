@@ -3,6 +3,7 @@
  * 使用 reactive 对象，更简单直接
  */
 import { reactive, computed } from 'vue'
+import { apiRequest, API_ENDPOINTS } from './api.js'
 
 // 用户信息响应式状态（使用 reactive）
 const state = reactive({
@@ -56,6 +57,14 @@ const userInitial = computed(() => {
   return username.value.charAt(0).toUpperCase()
 })
 
+const membershipTier = computed(() => {
+  return state.currentUser?.membership_tier || 'free'
+})
+
+const isPremium = computed(() => {
+  return state.currentUser?.is_premium || false
+})
+
 // 更新用户信息
 const updateUser = (userData) => {
   if (userData) {
@@ -93,6 +102,28 @@ const refreshUser = () => {
   loadUserFromStorage()
 }
 
+// 从后端刷新用户信息
+const refreshUserFromAPI = async () => {
+  try {
+    const token = localStorage.getItem('auth_token')
+    if (!token) {
+      return
+    }
+
+    const response = await apiRequest(API_ENDPOINTS.USER_PROFILE, {
+      method: 'GET'
+    })
+
+    if (response.status === 'success' && response.data) {
+      state.currentUser = response.data
+      localStorage.setItem('user_info', JSON.stringify(response.data))
+      console.log('用户信息已从后端刷新:', response.data)
+    }
+  } catch (error) {
+    console.error('从后端刷新用户信息失败:', error)
+  }
+}
+
 // 创建单例 store 对象（只创建一次）
 const store = {
   // 状态
@@ -102,6 +133,8 @@ const store = {
   userEmail,
   userAvatar,
   userInitial,
+  membershipTier,
+  isPremium,
 
   // 方法
   updateUser,
@@ -109,6 +142,7 @@ const store = {
   setUser,
   clearUser,
   refreshUser,
+  refreshUserFromAPI,
   loadUserFromStorage
 }
 

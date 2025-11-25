@@ -1,45 +1,77 @@
 <template>
   <div class="space-y-6">
-    <!-- 统计卡片 -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-      <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white">
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-sm opacity-90">总交易数</span>
-          <svg class="h-8 w-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-          </svg>
+    <!-- 统计卡片 - 现代商务风格 -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <!-- 总交易数 -->
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200">
+        <div class="flex items-start justify-between">
+          <div class="flex-1">
+            <div class="flex items-center gap-2 mb-3">
+              <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
+                <svg class="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                </svg>
+              </div>
+              <span class="text-sm font-medium text-slate-600">总交易数</span>
+            </div>
+            <p class="text-3xl font-bold text-slate-900 mb-1">{{ statistics.total_trades }}</p>
+            <p class="text-xs text-slate-500">Total Trades</p>
+          </div>
         </div>
-        <p class="text-3xl font-bold">{{ statistics.total_trades }}</p>
       </div>
 
-      <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white">
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-sm opacity-90">已成交</span>
-          <svg class="h-8 w-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
+      <!-- 已成交 -->
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200">
+        <div class="flex items-start justify-between">
+          <div class="flex-1">
+            <div class="flex items-center gap-2 mb-3">
+              <div class="w-10 h-10 rounded-xl bg-green-50 flex items-center justify-center">
+                <svg class="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <span class="text-sm font-medium text-slate-600">已成交</span>
+            </div>
+            <p class="text-3xl font-bold text-green-600 mb-1">{{ statistics.filled_trades }}</p>
+            <p class="text-xs text-slate-500">Filled Orders</p>
+          </div>
         </div>
-        <p class="text-3xl font-bold">{{ statistics.filled_trades }}</p>
       </div>
 
-      <div class="bg-gradient-to-br from-yellow-500 to-yellow-600 rounded-xl p-6 text-white">
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-sm opacity-90">待执行</span>
-          <svg class="h-8 w-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
+      <!-- 待执行 -->
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200">
+        <div class="flex items-start justify-between">
+          <div class="flex-1">
+            <div class="flex items-center gap-2 mb-3">
+              <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
+                <svg class="h-5 w-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <span class="text-sm font-medium text-slate-600">待执行</span>
+            </div>
+            <p class="text-3xl font-bold text-amber-600 mb-1">{{ statistics.pending_trades }}</p>
+            <p class="text-xs text-slate-500">Pending Orders</p>
+          </div>
         </div>
-        <p class="text-3xl font-bold">{{ statistics.pending_trades }}</p>
       </div>
 
-      <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-6 text-white">
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-sm opacity-90">失败/取消</span>
-          <svg class="h-8 w-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
+      <!-- 失败/取消 -->
+      <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200">
+        <div class="flex items-start justify-between">
+          <div class="flex-1">
+            <div class="flex items-center gap-2 mb-3">
+              <div class="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center">
+                <svg class="h-5 w-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <span class="text-sm font-medium text-slate-600">失败/取消</span>
+            </div>
+            <p class="text-3xl font-bold text-red-600 mb-1">{{ statistics.failed_trades }}</p>
+            <p class="text-xs text-slate-500">Failed/Cancelled</p>
+          </div>
         </div>
-        <p class="text-3xl font-bold">{{ statistics.failed_trades }}</p>
       </div>
     </div>
 
@@ -228,18 +260,29 @@
     <!-- 交易列表 -->
     <div v-else class="bg-white rounded-xl border border-slate-200 overflow-hidden">
       <div class="overflow-x-auto">
-        <table class="w-full">
+        <table class="w-full table-fixed">
+          <colgroup>
+            <col style="width: 6%;">   <!-- 交易ID -->
+            <col style="width: 16%;">  <!-- 机器人 -->
+            <col style="width: 6%;">   <!-- 交易对 (只显示logo) -->
+            <col style="width: 15%;">  <!-- 方向/类型 -->
+            <col style="width: 11%;">  <!-- 价格 -->
+            <col style="width: 12%;">  <!-- 数量 -->
+            <col style="width: 11%;">  <!-- 总额 -->
+            <col style="width: 9%;">   <!-- 状态 -->
+            <col style="width: 14%;">  <!-- 时间 -->
+          </colgroup>
           <thead class="bg-slate-50 border-b border-slate-200">
             <tr>
-              <th class="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">交易ID</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">机器人</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">交易对</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">方向/类型</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">价格</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">数量</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">总额</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">状态</th>
-              <th class="px-6 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">时间</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">交易ID</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">机器人</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">交易对</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">方向/类型</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">价格</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">数量</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">总额</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">状态</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-slate-700 uppercase tracking-wider">时间</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-200">
@@ -248,91 +291,107 @@
               :key="trade.id"
               class="hover:bg-slate-50 transition-colors"
             >
-              <td class="px-6 py-4 whitespace-nowrap">
+              <td class="px-4 py-4 whitespace-nowrap">
                 <span class="text-sm font-mono text-slate-900">#{{ trade.id }}</span>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-slate-900">{{ trade.bot_name }}</div>
-                <div class="text-xs text-slate-500">{{ trade.exchange }}</div>
+              <td class="px-4 py-4">
+                <div class="text-sm font-medium text-slate-900 truncate" :title="trade.bot_name">{{ trade.bot_name }}</div>
+                <div class="text-xs text-slate-500 truncate">{{ trade.exchange }}</div>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex items-center gap-2">
-                  <!-- Token Logo -->
-                  <div class="flex items-center -space-x-1">
-                    <img
-                      v-if="trade.token_logo"
-                      :src="trade.token_logo"
-                      :alt="trade.token_symbol"
-                      class="w-6 h-6 rounded-full border border-white shadow-sm"
-                      @error="handleImageError"
-                    />
-                    <div
-                      v-else
-                      class="w-6 h-6 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold border border-white shadow-sm"
-                    >
-                      {{ trade.token_symbol?.charAt(0) || '?' }}
-                    </div>
-                    <img
-                      src="https://s2.coinmarketcap.com/static/img/coins/64x64/825.png"
-                      alt="USDT"
-                      class="w-6 h-6 rounded-full border border-white shadow-sm"
-                      @error="handleImageError"
-                    />
+              <td class="px-4 py-4 whitespace-nowrap">
+                <!-- 只显示Token Logo -->
+                <div class="flex items-center -space-x-1" :title="`${trade.token_symbol}/${trade.trading_pair || 'USDT'}`">
+                  <img
+                    v-if="trade.token_logo"
+                    :src="trade.token_logo"
+                    :alt="trade.token_symbol"
+                    class="w-7 h-7 rounded-full border-2 border-white shadow-sm"
+                    @error="handleImageError"
+                  />
+                  <div
+                    v-else
+                    class="w-7 h-7 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white text-xs font-bold border-2 border-white shadow-sm"
+                  >
+                    {{ trade.token_symbol?.charAt(0) || '?' }}
                   </div>
-                  <span class="text-sm font-medium text-slate-900">
-                    {{ trade.token_symbol }}/{{ trade.trading_pair || 'USDT' }}
-                  </span>
+                  <img
+                    src="https://s2.coinmarketcap.com/static/img/coins/64x64/825.png"
+                    alt="USDT"
+                    class="w-7 h-7 rounded-full border-2 border-white shadow-sm"
+                    @error="handleImageError"
+                  />
                 </div>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex flex-col gap-1">
-                  <span 
+              <td class="px-4 py-4 whitespace-nowrap">
+                <div class="flex items-center gap-2">
+                  <!-- 买入/卖出标签 -->
+                  <span
                     :class="[
-                      'inline-flex items-center px-2 py-1 rounded text-xs font-medium w-fit',
+                      'inline-flex items-center justify-center px-2.5 py-1 rounded-md text-xs font-semibold min-w-[50px]',
                       trade.side === 'buy' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                     ]"
                   >
                     {{ trade.side === 'buy' ? '买入' : '卖出' }}
                   </span>
-                  <span class="text-xs text-slate-600">
+                  <!-- 交易类型标签 - 只在有值时显示 -->
+                  <span
+                    v-if="trade.trade_type"
+                    :class="[
+                      'inline-flex items-center justify-center px-2 py-1 rounded text-xs font-medium',
+                      getTradeTypeBadgeClass(trade.trade_type)
+                    ]"
+                  >
                     {{ getTradeTypeLabel(trade.trade_type) }}
                   </span>
                 </div>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span class="text-sm font-medium text-slate-900">${{ Number(trade.price).toFixed(2) }}</span>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <div class="text-sm font-semibold text-slate-900">${{ formatNumber(trade.price) }}</div>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-slate-900">
-                  {{ Number(trade.quantity).toFixed(8) }}
-                  <span class="text-xs text-slate-500 ml-1">
-                    {{ trade.market_type === 'linear' ? '张' : trade.token_symbol }}
-                  </span>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <!-- 如果已完全成交，只显示一行 -->
+                <div v-if="isFullyFilled(trade)" class="flex items-baseline gap-1">
+                  <span class="text-sm font-semibold text-slate-900">{{ formatQuantity(trade.quantity) }}</span>
+                  <span class="text-xs text-slate-500">{{ trade.market_type === 'linear' ? '张' : trade.token_symbol }}</span>
                 </div>
-                <div v-if="trade.filled_quantity && Number(trade.filled_quantity) > 0" class="text-xs text-slate-500">
-                  已成交: {{ Number(trade.filled_quantity).toFixed(8) }}
-                  {{ trade.market_type === 'linear' ? '张' : trade.token_symbol }}
+                <!-- 如果部分成交，显示两行 -->
+                <div v-else class="space-y-1">
+                  <div class="flex items-baseline gap-1">
+                    <span class="text-sm font-semibold text-slate-900">{{ formatQuantity(trade.quantity) }}</span>
+                    <span class="text-xs text-slate-500">{{ trade.market_type === 'linear' ? '张' : trade.token_symbol }}</span>
+                  </div>
+                  <div v-if="trade.filled_quantity && Number(trade.filled_quantity) > 0" class="flex items-baseline gap-1">
+                    <span class="text-xs text-slate-500">已成交</span>
+                    <span class="text-xs font-medium text-green-600">{{ formatQuantity(trade.filled_quantity) }}</span>
+                  </div>
                 </div>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span class="text-sm font-medium text-slate-900">
-                  ${{ Number(trade.total_value).toFixed(2) }}
-                </span>
+              <td class="px-4 py-4 whitespace-nowrap">
+                <div class="text-sm font-semibold text-slate-900">
+                  ${{ formatNumber(trade.total_value) }}
+                </div>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <span 
+              <td class="px-4 py-4 whitespace-nowrap">
+                <span
                   :class="[
-                    'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium',
+                    'inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold',
                     getStatusClass(trade.status)
                   ]"
                 >
                   {{ getStatusLabel(trade.status) }}
                 </span>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm text-slate-900">{{ formatDate(trade.created_at) }}</div>
-                <div v-if="trade.executed_at" class="text-xs text-slate-500">
-                  执行: {{ formatDate(trade.executed_at) }}
+              <td class="px-4 py-4 whitespace-nowrap">
+                <!-- 如果创建时间和执行时间相同，只显示一次 -->
+                <div v-if="isSameTime(trade.created_at, trade.executed_at)" class="text-sm font-medium text-slate-900">
+                  {{ formatDate(trade.created_at) }}
+                </div>
+                <!-- 如果时间不同，显示两行 -->
+                <div v-else class="space-y-1">
+                  <div class="text-sm font-medium text-slate-900">{{ formatDate(trade.created_at) }}</div>
+                  <div v-if="trade.executed_at" class="text-xs text-green-600 font-medium">
+                    执行: {{ formatDate(trade.executed_at) }}
+                  </div>
                 </div>
               </td>
             </tr>
@@ -469,6 +528,17 @@ const getTradeTypeLabel = (type) => {
   return map[type] || type
 }
 
+// 获取交易类型徽章样式
+const getTradeTypeBadgeClass = (type) => {
+  const map = {
+    open: 'bg-blue-50 text-blue-700 border border-blue-200',
+    close: 'bg-purple-50 text-purple-700 border border-purple-200',
+    add: 'bg-cyan-50 text-cyan-700 border border-cyan-200',
+    reduce: 'bg-orange-50 text-orange-700 border border-orange-200'
+  }
+  return map[type] || 'bg-slate-50 text-slate-700 border border-slate-200'
+}
+
 // 获取状态标签
 const getStatusLabel = (status) => {
   const map = {
@@ -493,6 +563,22 @@ const getStatusClass = (status) => {
     failed: 'bg-red-100 text-red-700'
   }
   return map[status] || 'bg-gray-100 text-gray-700'
+}
+
+// 判断是否完全成交
+const isFullyFilled = (trade) => {
+  if (!trade.filled_quantity) return false
+  const quantity = Number(trade.quantity)
+  const filled = Number(trade.filled_quantity)
+  return filled >= quantity || trade.status === 'filled'
+}
+
+// 判断两个时间是否相同（精确到分钟）
+const isSameTime = (time1, time2) => {
+  if (!time1 || !time2) return false
+  const date1 = new Date(time1)
+  const date2 = new Date(time2)
+  return formatDate(time1) === formatDate(time2)
 }
 
 // 格式化日期
@@ -527,6 +613,48 @@ const getTokenLogo = (symbol) => {
 // 图片加载失败处理
 const handleImageError = (event) => {
   event.target.src = 'https://via.placeholder.com/24?text=' + (event.target.alt || '?')
+}
+
+// 格式化数字 - 移除多余的小数点和0
+const formatNumber = (value) => {
+  if (!value) return '0'
+  const num = Number(value)
+  if (isNaN(num)) return '0'
+
+  // 如果是整数，直接返回
+  if (Number.isInteger(num)) return num.toLocaleString()
+
+  // 如果小数部分全是0，返回整数部分
+  const str = num.toFixed(8)
+  const trimmed = str.replace(/\.?0+$/, '')
+
+  // 格式化千分位
+  const parts = trimmed.split('.')
+  parts[0] = Number(parts[0]).toLocaleString()
+  return parts.join('.')
+}
+
+// 格式化数量 - 智能显示小数位
+const formatQuantity = (value) => {
+  if (!value) return '0'
+  const num = Number(value)
+  if (isNaN(num)) return '0'
+
+  // 如果是整数，直接返回
+  if (Number.isInteger(num)) return num.toLocaleString()
+
+  // 如果数值很小（< 0.01），保留更多小数位
+  if (num < 0.01) {
+    return num.toFixed(8).replace(/\.?0+$/, '')
+  }
+
+  // 如果数值较小（< 1），保留4位小数
+  if (num < 1) {
+    return num.toFixed(4).replace(/\.?0+$/, '')
+  }
+
+  // 如果数值较大（>= 1），保留2位小数
+  return num.toFixed(2).replace(/\.?0+$/, '')
 }
 
 // 监听分页变化

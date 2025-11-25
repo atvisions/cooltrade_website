@@ -203,11 +203,11 @@ const tierConfigs = {
   professional: {
     name: 'Professional',
     icon: ProfessionalIcon,
-    iconBg: 'bg-purple-100',
-    iconColor: 'text-purple-600',
+    iconBg: 'bg-yellow-100',
+    iconColor: 'text-yellow-600',
     description: '适合专业交易团队',
-    textColor: 'text-purple-600',
-    priceColor: 'text-purple-600',
+    textColor: 'text-yellow-600',
+    priceColor: 'text-yellow-600',
     monthlyPrice: 299,
     yearlyPrice: 2990,
     features: [
@@ -268,7 +268,7 @@ const cardClasses = computed(() => {
   if (props.isPopular) {
     classes.push('border-blue-500', 'shadow-md', 'transform', 'hover:-translate-y-0.5')
   } else if (props.tier === 'professional') {
-    classes.push('border-purple-200', 'hover:border-purple-400')
+    classes.push('border-yellow-400', 'hover:border-yellow-500')
   } else {
     classes.push('border-gray-200', 'hover:border-gray-300')
   }

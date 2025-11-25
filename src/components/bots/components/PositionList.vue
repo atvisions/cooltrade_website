@@ -254,8 +254,9 @@
             <span class="px-2 py-1 text-xs font-medium rounded bg-purple-100 text-purple-700">
               {{ position.market_type_display || '现货' }}
             </span>
-            <span v-if="position.leverage > 1" class="px-2 py-1 text-xs font-medium rounded bg-orange-100 text-orange-700">
-              {{ position.leverage }}x
+            <!-- 合约显示杠杆倍率 -->
+            <span v-if="position.market_type !== 'spot'" class="px-2 py-1 text-xs font-medium rounded bg-orange-100 text-orange-700">
+              {{ position.leverage || 1 }}x
             </span>
           </div>
 
@@ -283,6 +284,26 @@
             <div v-else>
               <div class="text-xs text-slate-500 mb-1">持仓价值</div>
               <div class="text-sm font-medium text-slate-900">${{ Number(position.position_value || 0).toFixed(2) }}</div>
+            </div>
+          </div>
+
+          <!-- 第二行：合约信息（仅合约显示） -->
+          <div v-if="position.market_type !== 'spot'" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+            <div>
+              <div class="text-xs text-slate-500 mb-1">合约倍率</div>
+              <div class="text-sm font-medium text-orange-600">{{ position.leverage || 1 }}x</div>
+            </div>
+            <div v-if="position.contract_size">
+              <div class="text-xs text-slate-500 mb-1">合约大小</div>
+              <div class="text-sm font-medium text-slate-900">{{ position.contract_size }} {{ position.token_symbol }}</div>
+            </div>
+            <div>
+              <div class="text-xs text-slate-500 mb-1">持仓价值</div>
+              <div class="text-sm font-medium text-slate-900">${{ Number(position.position_value || 0).toFixed(2) }}</div>
+            </div>
+            <div v-if="position.initial_quantity">
+              <div class="text-xs text-slate-500 mb-1">初始数量</div>
+              <div class="text-sm font-medium text-slate-900">{{ Number(position.initial_quantity).toFixed(0) }} 张</div>
             </div>
           </div>
 
@@ -397,6 +418,7 @@ import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headless
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid'
 import { botAPI } from '../../../utils/api'
 import { showSuccess, showError } from '../../../utils/notification'
+import { showConfirm } from '../../../utils/confirm'
 
 const loading = ref(false)
 const actionLoading = ref(null)
@@ -464,7 +486,16 @@ const loadBots = async () => {
 
 // 平仓
 const closePosition = async (positionId) => {
-  if (!confirm('确定要平仓吗？')) return
+  // 使用通用确认对话框
+  const confirmed = await showConfirm({
+    type: 'warning',
+    title: '确认平仓',
+    message: '确定要平仓吗？',
+    confirmText: '确认',
+    cancelText: '取消'
+  })
+
+  if (!confirmed) return
 
   try {
     actionLoading.value = positionId

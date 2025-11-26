@@ -1019,11 +1019,13 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import Header from '../common/Header.vue'
-import { apiRequest } from '../../utils/api.js'
+import { apiRequest, API_ENDPOINTS } from '../../utils/api.js'
 import { getChainConfig, getExchangeConfig } from '../../utils/chainConfig.js'
 import { showFavoriteSuccess, showUnfavoriteSuccess, showLoginRequired, showError } from '../../utils/notification.js'
+import { useUserStore } from '../../utils/userStore.js'
 
 const router = useRouter()
+const userStore = useUserStore()
 
 // 响应式数据
 const searchQuery = ref('')
@@ -1033,11 +1035,19 @@ const getInitialTab = () => {
   const urlParams = new URLSearchParams(window.location.search)
   const tabFromUrl = urlParams.get('tab')
   if (tabFromUrl && ['top100', 'recommended', 'hot', 'favorites', 'ai'].includes(tabFromUrl)) {
+    // 如果未登录且选择的是需要登录的 tab，重定向到 top100
+    if (!userStore.isAuthenticated.value && ['recommended', 'favorites'].includes(tabFromUrl)) {
+      return 'top100'
+    }
     return tabFromUrl
   }
   // 其次从 localStorage 读取
   const savedTab = localStorage.getItem('market_selected_tab')
   if (savedTab && ['top100', 'recommended', 'hot', 'favorites', 'ai'].includes(savedTab)) {
+    // 如果未登录且选择的是需要登录的 tab，重定向到 top100
+    if (!userStore.isAuthenticated.value && ['recommended', 'favorites'].includes(savedTab)) {
+      return 'top100'
+    }
     return savedTab
   }
   return 'top100'
@@ -1086,13 +1096,22 @@ const filterVolumeMin = ref('')
 const filterVolumeMax = ref('')
 const filterMarketSentiment = ref('')  // 市场情绪：bullish(看多), bearish(看空), neutral(中性)
 
-// 标签页配置
-const tabs = [
-  { label: 'Top', value: 'top100' },
-  { label: '推荐', value: 'recommended' },
-  { label: '热门', value: 'hot' },
-  { label: '收藏', value: 'favorites' }
-]
+// 标签页配置（根据登录状态动态显示）
+const tabs = computed(() => {
+  const allTabs = [
+    { label: 'Top', value: 'top100' },
+    { label: '推荐', value: 'recommended' },
+    { label: '热门', value: 'hot' },
+    { label: '收藏', value: 'favorites' }
+  ]
+
+  // 如果未登录，过滤掉推荐和收藏
+  if (!userStore.isAuthenticated.value) {
+    return allTabs.filter(tab => !['recommended', 'favorites'].includes(tab.value))
+  }
+
+  return allTabs
+})
 
 // 网络筛选器配置（基于实际数据）
 const chainFilters = ref([
@@ -1112,7 +1131,7 @@ const allExchanges = ref([])
 const loadChainFilters = async () => {
   try {
     // 根据当前tab加载对应的网络统计
-    const url = `http://localhost:8000/api/market/tokens/chains/?tab=${selectedTab.value}`
+    const url = `${API_ENDPOINTS.MARKET_TOKENS_CHAINS}?tab=${selectedTab.value}`
     const response = await apiRequest(url)
 
     // 保存所有网络
@@ -1142,7 +1161,7 @@ const loadChainFilters = async () => {
 // 加载交易所列表
 const loadExchangeFilters = async () => {
   try {
-    const response = await apiRequest('http://localhost:8000/api/market/tokens/exchanges/')
+    const response = await apiRequest(API_ENDPOINTS.MARKET_TOKENS_EXCHANGES)
 
     // 保存所有交易所（添加"All Exchanges"选项）
     allExchanges.value = [
@@ -1462,7 +1481,7 @@ const toggleFavorite = async (token) => {
     favoriteProcessing.value.add(token.symbol)
 
     const response = await apiRequest(
-      `http://localhost:8000/api/market/tokens/${token.symbol}/toggle_favorite/`,
+      API_ENDPOINTS.MARKET_TOKEN_TOGGLE_FAVORITE(token.symbol),
       {
         method: 'POST',
         headers: {
@@ -1508,7 +1527,7 @@ const toggleFavorite = async (token) => {
 const loadMarketStats = async () => {
   statsLoading.value = true
   try {
-    const response = await apiRequest('http://localhost:8000/api/market/stats/')
+    const response = await apiRequest(API_ENDPOINTS.MARKET_STATS)
 
     if (response.status === 'success') {
       marketStats.value = {
@@ -1540,27 +1559,27 @@ const loadTokensList = async (append = false) => {
   error.value = null
 
   try {
-    let endpoint = 'http://localhost:8000/api/market/tokens/'
+    let endpoint = API_ENDPOINTS.MARKET_TOKENS
     let method = 'GET'
     let requestData = null
 
     // 根据标签页选择不同的端点
     switch (selectedTab.value) {
       case 'favorites':
-        endpoint = 'http://localhost:8000/api/market/tokens/favorites/'
+        endpoint = API_ENDPOINTS.MARKET_TOKENS_FAVORITES
         break
       case 'top100':
-        endpoint = 'http://localhost:8000/api/market/tokens/top100/'
+        endpoint = API_ENDPOINTS.MARKET_TOKENS_TOP100
         break
       case 'recommended':
         // 使用个性化推荐接口（基于用户画像）
-        endpoint = 'http://localhost:8000/api/market/tokens/personalized_recommendations/'
+        endpoint = API_ENDPOINTS.MARKET_TOKENS_PERSONALIZED
         break
       case 'hot':
-        endpoint = 'http://localhost:8000/api/market/tokens/hot/'
+        endpoint = API_ENDPOINTS.MARKET_TOKENS_HOT
         break
       case 'ai':
-        endpoint = 'http://localhost:8000/api/market/tokens/ai_recommend/'
+        endpoint = API_ENDPOINTS.MARKET_TOKENS_AI_RECOMMEND
         method = 'POST'
         requestData = {
           user_profile: {
@@ -1572,10 +1591,10 @@ const loadTokensList = async (append = false) => {
         }
         break
       case 'newest':
-        endpoint = 'http://localhost:8000/api/market/tokens/newest/'
+        endpoint = API_ENDPOINTS.MARKET_TOKENS_NEWEST
         break
       default:
-        endpoint = 'http://localhost:8000/api/market/tokens/'
+        endpoint = API_ENDPOINTS.MARKET_TOKENS
     }
 
     // 对于"加载更多"模式，使用25条每页；推荐Tab固定10条
@@ -1662,7 +1681,7 @@ const loadTokensList = async (append = false) => {
         // 如果个性化推荐失败（未登录或未完成风险评估），降级到简单推荐
         if (selectedTab.value === 'recommended' && (err.message?.includes('401') || err.message?.includes('400'))) {
           console.log('降级到简单推荐接口')
-          const fallbackUrl = 'http://localhost:8000/api/market/tokens/recommended/?limit=10'
+          const fallbackUrl = `${API_ENDPOINTS.MARKET_TOKENS_RECOMMENDED}?limit=10`
           response = await apiRequest(fallbackUrl)
           // 清空用户画像
           userProfile.value = null

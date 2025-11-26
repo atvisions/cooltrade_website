@@ -307,13 +307,14 @@ import {
   EnvelopeIcon,
   ShieldCheckIcon
 } from '@heroicons/vue/24/outline'
-import { authAPI, handleApiError } from '../../utils/api.js'
+import { authAPI, handleApiError, API_ENDPOINTS, getAPIBaseURL } from '../../utils/api.js'
 import notification from '../../utils/notification.js'
 import { useUserStore } from '../../utils/userStore.js'
 import Header from '../common/Header.vue'
 
 const router = useRouter()
 const userStore = useUserStore()
+const API_BASE_URL = getAPIBaseURL()
 
 // 响应式数据
 const activeTab = ref('login')
@@ -417,7 +418,7 @@ const validateUsername = async () => {
   // 检查用户名是否已存在
   validationLoading.username = true
   try {
-    const response = await fetch('http://localhost:8000/api/auth/check-username/', {
+    const response = await fetch(`${API_BASE_URL}/auth/check-username/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -463,7 +464,7 @@ const validateEmail = async () => {
   // 检查邮箱是否已存在
   validationLoading.email = true
   try {
-    const response = await fetch('http://localhost:8000/api/auth/check-email/', {
+    const response = await fetch(`${API_BASE_URL}/auth/check-email/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

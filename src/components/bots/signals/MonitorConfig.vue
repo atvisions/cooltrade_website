@@ -68,7 +68,7 @@
             <button
               v-if="formData.exchange_name && filteredExchangeAPIs.length === 0"
               type="button"
-              @click="$router.push('/settings/exchanges')"
+              @click="$router.push('/exchanges')"
               class="text-xs text-blue-600 hover:text-blue-700 hover:underline flex items-center gap-1"
             >
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

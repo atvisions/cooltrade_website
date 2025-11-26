@@ -205,7 +205,7 @@
 import { ref, onMounted, watch } from 'vue'
 import Header from '../common/Header.vue'
 import UserSidebar from '../common/UserSidebar.vue'
-import { apiRequest } from '../../utils/api.js'
+import { apiRequest, API_ENDPOINTS } from '../../utils/api.js'
 import { showUnfavoriteSuccess, showError } from '../../utils/notification.js'
 
 const activeTab = ref('tokens')
@@ -268,7 +268,7 @@ const loadFavoriteTokens = async () => {
   error.value = null
 
   try {
-    const response = await apiRequest('http://localhost:8000/api/market/tokens/favorites/')
+    const response = await apiRequest(API_ENDPOINTS.MARKET_TOKENS_FAVORITES)
 
     if (response.status === 'success') {
       tokens.value = response.data || []
@@ -300,7 +300,7 @@ const removeFavorite = async (token) => {
     favoriteProcessing.value.add(token.symbol)
 
     const response = await apiRequest(
-      `http://localhost:8000/api/market/tokens/${token.symbol}/toggle_favorite/`,
+      API_ENDPOINTS.MARKET_TOKEN_TOGGLE_FAVORITE(token.symbol),
       {
         method: 'POST',
         headers: {

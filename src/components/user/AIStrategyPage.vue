@@ -458,7 +458,7 @@
               </div>
 
               <!-- 网格交易配置（仅网格交易显示） -->
-              <div v-if="generatedStrategy.additional_parameters?.grid_config">
+              <!-- <div v-if="generatedStrategy.additional_parameters?.grid_config">
                 <GridConfig
                   :config="{
                     ...generatedStrategy.additional_parameters.grid_config,
@@ -466,12 +466,12 @@
                     position_size_percentage: generatedStrategy.position_size_percentage
                   }"
                 />
-              </div>
+              </div> -->
 
               <!-- 定投策略配置（仅定投策略显示） -->
-              <div v-if="generatedStrategy.additional_parameters?.dca_config" class="p-6 border-b border-gray-200">
+              <!-- <div v-if="generatedStrategy.additional_parameters?.dca_config" class="p-6 border-b border-gray-200">
                 <DCAConfig :config="generatedStrategy.additional_parameters.dca_config" />
-              </div>
+              </div> -->
 
               <!-- 突破策略配置（仅突破策略显示） -->
               <div v-if="generatedStrategy.additional_parameters?.breakout_config" class="p-6 border-b border-gray-200">
@@ -713,8 +713,8 @@ import { useRouter } from 'vue-router'
 import { SparklesIcon, XMarkIcon } from '@heroicons/vue/24/outline'
 import Header from '../common/Header.vue'
 import UserSidebar from '../common/UserSidebar.vue'
-import GridConfig from './strategies/GridConfig.vue'
-import DCAConfig from './strategies/DCAConfig.vue'
+// import GridConfig from './strategies/GridConfig.vue'
+// import DCAConfig from './strategies/DCAConfig.vue'
 import StrategyCardNew from './StrategyCardNew.vue'
 import { apiRequest, API_ENDPOINTS } from '../../utils/api'
 import { showSuccess, showError } from '../../utils/notification'

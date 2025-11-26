@@ -131,7 +131,7 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
-import { apiRequest, API_BASE_URL } from '../../utils/api.js'
+import { apiRequest, API_ENDPOINTS } from '../../utils/api.js'
 import { showFavoriteSuccess, showUnfavoriteSuccess, showError, showSuccess, showInfo } from '../../utils/notification.js'
 
 // Import common components
@@ -167,7 +167,7 @@ const loadData = async () => {
   try {
     const symbol = route.params.symbol
     console.log('🔍 加载代币详情:', symbol)
-    const response = await apiRequest(`${API_BASE_URL}/market/tokens/${symbol}/detail/`)
+    const response = await apiRequest(API_ENDPOINTS.MARKET_TOKEN_DETAIL(symbol))
 
     if (response.status === 'success') {
       tokenData.value = response.data

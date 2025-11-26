@@ -147,22 +147,49 @@
               </div>
 
               <!-- 连接指南 - 仅新建模式显示 -->
-              <div v-if="!isEditMode" class="mb-6">
-                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+              <div v-if="!isEditMode" class="mb-6 space-y-3">
+                <!-- IP 白名单提示 -->
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <div class="flex items-start space-x-3">
-                    <div class="text-green-500 mt-0.5">
+                    <div class="text-blue-500 mt-0.5">
                       <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
                       </svg>
                     </div>
-                    <div>
-                      <p class="text-sm font-medium text-green-900 mb-1">如何获取 API 密钥</p>
-                      <ol class="text-xs text-green-800 space-y-1 list-decimal list-inside">
-                        <li>登录您的交易所账户，进入 API 管理</li>
-                        <li>创建新的 API 密钥（建议开启 IP 白名单）</li>
-                        <li>只需开启"读取"权限，不要开启"提现"权限</li>
-                        <li>将生成的 API Key 和 Secret Key 粘贴到下方</li>
-                      </ol>
+                    <div class="flex-1">
+                      <p class="text-sm font-medium text-blue-900 mb-2">
+                        连接密钥安全指南
+                        <a href="#" @click.prevent="showIPGuide = !showIPGuide" class="text-blue-600 hover:text-blue-700 ml-2 text-xs">
+                          {{ showIPGuide ? '收起' : '查看详情' }}
+                        </a>
+                      </p>
+                      <div v-if="showIPGuide" class="space-y-2">
+                        <ol class="text-xs text-blue-800 space-y-1.5 list-decimal list-inside">
+                          <li>登录您的交易所账户，进入 API 管理页面</li>
+                          <li>
+                            <span class="font-medium">⚠️ 必须开启 IP 白名单</span>，并添加以下 IP 地址：
+                            <div class="mt-1.5 flex items-center space-x-2">
+                              <code class="flex-1 bg-blue-100 text-blue-900 px-3 py-1.5 rounded font-mono text-xs">
+                                34.239.179.194
+                              </code>
+                              <button
+                                @click="copyServerIP"
+                                class="px-2 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition-colors flex items-center space-x-1"
+                              >
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                </svg>
+                                <span>复制</span>
+                              </button>
+                            </div>
+                            <div class="mt-1 text-xs text-blue-700 bg-blue-100 px-2 py-1 rounded">
+                              💡 添加 IP 白名单后，可避免地区限制问题
+                            </div>
+                          </li>
+                          <li>只开启<span class="font-medium">"读取"和"交易"</span>权限，<span class="font-medium text-red-600">不要开启"提现"权限</span></li>
+                          <li>将生成的 API Key 和 Secret Key 粘贴到下方表单</li>
+                        </ol>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -340,6 +367,31 @@ const supportedExchanges = ref([
 
 // 检测到的权限
 const detectedPermissions = ref(null)
+
+// 显示 IP 白名单指南
+const showIPGuide = ref(false)
+
+// 服务器 IP 地址
+const SERVER_IP = '34.239.179.194'
+
+// 复制服务器 IP
+const copyServerIP = async () => {
+  try {
+    await navigator.clipboard.writeText(SERVER_IP)
+    showNotification({
+      type: 'success',
+      title: '复制成功',
+      message: 'IP 地址已复制到剪贴板'
+    })
+  } catch (error) {
+    console.error('复制失败:', error)
+    showNotification({
+      type: 'error',
+      title: '复制失败',
+      message: '请手动复制 IP 地址'
+    })
+  }
+}
 
 // 获取交易所名称
 const getExchangeName = (exchange) => {

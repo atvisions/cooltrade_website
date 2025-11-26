@@ -40,14 +40,9 @@ export default defineConfig({
         }
       }
     },
-    // 压缩配置
-    minify: 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: true, // 移除 console
-        drop_debugger: true
-      }
-    }
+    // 使用 esbuild 压缩（更快）
+    minify: 'esbuild',
+    target: 'es2020'
   },
   // CloudFront 使用根路径
   base: '/',

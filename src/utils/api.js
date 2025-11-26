@@ -1,150 +1,173 @@
 // API 配置和工具函数
 
-// API 基础URL - 根据环境自动配置
-const getApiBaseUrl = () => {
-  // 优先使用环境变量
-  if (import.meta.env.VITE_API_BASE_URL) {
-    return import.meta.env.VITE_API_BASE_URL
-  }
+// API 基础URL - 直接使用环境变量（构建时确定）
+// 开发环境使用 .env.development，生产环境使用 .env.production
+const _API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
 
-  // 根据当前域名判断环境
-  const hostname = window.location.hostname
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return 'http://localhost:8000'
-  } else if (hostname.includes('cooltrade.xyz')) {
-    return 'https://api.cooltrade.xyz'
-  }
+// 导出 API 基础 URL（不带 /api 路径，向后兼容）
+export const API_BASE_URL = _API_BASE_URL
 
-  // 默认使用本地开发环境
-  return 'http://localhost:8000'
+// 导出 API 基础 URL（带 /api 路径）
+export const getAPIBaseURL = () => `${_API_BASE_URL}/api`
+
+// 创建一个函数来生成 API 端点，确保每次都使用最新的 API_BASE_URL
+const createAPIEndpoints = () => {
+  const API_BASE_URL = getAPIBaseURL()
+
+  return {
+    // 认证相关
+    LOGIN: `${API_BASE_URL}/auth/login/`,
+    REGISTER: `${API_BASE_URL}/auth/register/`,
+    SEND_CODE: `${API_BASE_URL}/auth/send-code/`, // 如果后端有这个端点
+
+    // 用户相关
+    USER_PROFILE: `${API_BASE_URL}/auth/profile/`,
+    UPLOAD_AVATAR: `${API_BASE_URL}/auth/upload-avatar/`,
+    CHANGE_PASSWORD: `${API_BASE_URL}/auth/change-password/`,
+    USERNAME_CHANGE_STATUS: `${API_BASE_URL}/auth/username-change-status/`,
+    CHANGE_USERNAME: `${API_BASE_URL}/auth/change-username/`,
+    SEND_EMAIL_CHANGE_CODE: `${API_BASE_URL}/auth/send-email-change-code/`,
+    CONFIRM_EMAIL_CHANGE: `${API_BASE_URL}/auth/confirm-email-change/`,
+    USER_PROFILE_PUBLIC: `${API_BASE_URL}/auth/profile/`,
+    TOGGLE_FOLLOW: `${API_BASE_URL}/auth/follow/`,
+    PRIVACY_SETTINGS: `${API_BASE_URL}/auth/privacy-settings/`,
+    GET_FOLLOWERS: `${API_BASE_URL}/auth/followers/`,
+    GET_FOLLOWING: `${API_BASE_URL}/auth/following/`,
+
+    // 积分相关
+    POINTS_CONFIG: `${API_BASE_URL}/auth/points/config/`,
+    POINTS_TRANSACTIONS: `${API_BASE_URL}/auth/points/transactions/`,
+    SPEND_POINTS: `${API_BASE_URL}/auth/points/spend/`,
+    CHECK_PREMIUM_ACCESS: `${API_BASE_URL}/auth/points/check-access/`,
+
+    // 邀请相关
+    GENERATE_INVITATION_CODE: `${API_BASE_URL}/auth/generate-invitation-code/`,
+    INVITATION_INFO: `${API_BASE_URL}/auth/invitation-info/`,
+    USER_RANKING: `${API_BASE_URL}/auth/invitation-info/ranking/`,
+
+    // 代币搜索
+    TOKEN_SEARCH: `${API_BASE_URL}/market/tokens/search/`,
+    TOKEN_LIST: `${API_BASE_URL}/market/tokens/`,
+
+    // AI 策略相关
+    AI_STRATEGY_SEARCH_TOKEN: `${API_BASE_URL}/market/tokens/search/`,  // 兼容旧代码
+    AI_STRATEGY_GENERATE: `${API_BASE_URL}/market/ai-strategy/generate/`,
+    AI_STRATEGY_LIST: `${API_BASE_URL}/market/ai-strategy/list/`,
+    AI_STRATEGY_DETAIL: `${API_BASE_URL}/market/ai-strategy/`,
+    AI_STRATEGY_APPLY: `${API_BASE_URL}/market/ai-strategy/apply/`,
+    AI_STRATEGY_SHARE: `${API_BASE_URL}/market/ai-strategy/share/`,
+    AI_STRATEGY_LIKE: `${API_BASE_URL}/market/ai-strategy/like/`,
+
+    // 交易所 API 相关
+    EXCHANGE_API_LIST: `${API_BASE_URL}/auth/exchange-apis/`,
+    EXCHANGE_API_CREATE: `${API_BASE_URL}/auth/exchange-apis/create/`,
+    EXCHANGE_API_DETAIL: (id) => `${API_BASE_URL}/auth/exchange-apis/${id}/`,
+    SUPPORTED_EXCHANGES: `${API_BASE_URL}/auth/exchanges/supported/`,
+
+    // 交易机器人相关
+    BOT_LIST: `${API_BASE_URL}/trading/bots/`,
+    BOT_CREATE: `${API_BASE_URL}/trading/bots/`,
+    BOT_DETAIL: (id) => `${API_BASE_URL}/trading/bots/${id}/`,
+    BOT_UPDATE: (id) => `${API_BASE_URL}/trading/bots/${id}/`,
+    BOT_DELETE: (id) => `${API_BASE_URL}/trading/bots/${id}/`,
+    BOT_START: (id) => `${API_BASE_URL}/trading/bots/${id}/start/`,
+    BOT_STOP: (id) => `${API_BASE_URL}/trading/bots/${id}/stop/`,
+    BOT_PAUSE: (id) => `${API_BASE_URL}/trading/bots/${id}/pause/`,
+    BOT_TRADES: (id) => `${API_BASE_URL}/trading/bots/${id}/trades/`,
+    BOT_SIGNALS: (id) => `${API_BASE_URL}/trading/bots/${id}/signals/`,
+    BOT_STATISTICS: `${API_BASE_URL}/trading/bots/statistics/`,
+    BOT_PERFORMANCE_ANALYSIS: `${API_BASE_URL}/trading/bots/performance_analysis/`,
+    BOT_MY_SHARES: `${API_BASE_URL}/trading/bots/my_shares/`,
+    TRADING_PAIRS: `${API_BASE_URL}/trading/trading-pairs/`,
+    TRADING_PAIR_INFO: `${API_BASE_URL}/market/trading-pair-info/`,
+    EXCHANGE_API_SYNC: (id) => `${API_BASE_URL}/auth/exchange-apis/${id}/sync/`,
+    EXCHANGE_API_TEST: `${API_BASE_URL}/auth/exchange-apis/test/`,
+
+    // 信号相关
+    SIGNAL_LIST: `${API_BASE_URL}/trading/signals/`,
+    SIGNAL_DETAIL: (id) => `${API_BASE_URL}/trading/signals/${id}/`,
+    SIGNAL_ACTIVE: `${API_BASE_URL}/trading/signals/active/`,
+    SIGNAL_STATISTICS: `${API_BASE_URL}/trading/signals/statistics/`,
+    SIGNAL_MARK_EXECUTED: (id) => `${API_BASE_URL}/trading/signals/${id}/mark_executed/`,
+    SIGNAL_CANCEL: (id) => `${API_BASE_URL}/trading/signals/${id}/cancel/`,
+
+    // 信号触发器相关
+    SIGNAL_TRIGGER_LIST: `${API_BASE_URL}/trading/signal-triggers/`,
+    SIGNAL_TRIGGER_CREATE: `${API_BASE_URL}/trading/signal-triggers/`,
+    SIGNAL_TRIGGER_DETAIL: (id) => `${API_BASE_URL}/trading/signal-triggers/${id}/`,
+    SIGNAL_TRIGGER_TOGGLE: (id) => `${API_BASE_URL}/trading/signal-triggers/${id}/toggle/`,
+    SIGNAL_TRIGGER_AVAILABLE_BOTS: `${API_BASE_URL}/trading/signal-triggers/available_bots/`,
+
+    // 交易建议相关
+    RECOMMENDATION_LIST: `${API_BASE_URL}/trading/recommendations/`,
+    RECOMMENDATION_DETAIL: (id) => `${API_BASE_URL}/trading/recommendations/${id}/`,
+    RECOMMENDATION_PENDING: `${API_BASE_URL}/trading/recommendations/pending/`,
+    RECOMMENDATION_APPROVE: (id) => `${API_BASE_URL}/trading/recommendations/${id}/approve/`,
+    RECOMMENDATION_REJECT: (id) => `${API_BASE_URL}/trading/recommendations/${id}/reject/`,
+
+    // 风控配置相关
+    RISK_CONFIG: `${API_BASE_URL}/trading/risk-config/`,
+    RISK_CONFIG_DETAIL: (id) => `${API_BASE_URL}/trading/risk-config/${id}/`,
+    RISK_CONFIG_RESET_BREAKER: (id) => `${API_BASE_URL}/trading/risk-config/${id}/reset_breaker/`,
+    RISK_CONFIG_UPDATE_METRICS: `${API_BASE_URL}/trading/risk-config/update_metrics/`,
+
+    // 交易记录相关
+    TRADE_LIST: `${API_BASE_URL}/trading/trades/`,
+    TRADE_DETAIL: (id) => `${API_BASE_URL}/trading/trades/${id}/`,
+
+    // 持仓相关
+    POSITION_LIST: `${API_BASE_URL}/trading/positions/`,
+    POSITION_DETAIL: (id) => `${API_BASE_URL}/trading/positions/${id}/`,
+    POSITION_OPEN: `${API_BASE_URL}/trading/positions/open/`,
+    POSITION_CLOSE: (id) => `${API_BASE_URL}/trading/positions/${id}/close/`,
+
+    // 会员相关
+    MEMBERSHIP_PLANS: `${API_BASE_URL}/auth/membership/plans/`,
+    MEMBERSHIP_STATUS: `${API_BASE_URL}/auth/membership/status/`,
+    MEMBERSHIP_ORDERS: `${API_BASE_URL}/auth/membership/orders/`,
+    CREATE_MEMBERSHIP_ORDER: `${API_BASE_URL}/auth/membership/orders/create/`,
+
+    // 加密货币支付相关
+    CRYPTO_SUPPORTED_TOKENS: `${API_BASE_URL}/auth/crypto/supported-tokens/`,
+    CRYPTO_CREATE_ORDER: `${API_BASE_URL}/auth/crypto/create-order/`,
+    CRYPTO_VERIFY_PAYMENT: `${API_BASE_URL}/auth/crypto/verify-payment/`,
+    CRYPTO_PAYMENT_STATUS: (orderId) => `${API_BASE_URL}/auth/crypto/payment-status/${orderId}/`,
+    CRYPTO_TOKEN_PRICE: `${API_BASE_URL}/auth/crypto/token-price/`,
+    USER_ORDERS: `${API_BASE_URL}/auth/orders/`,
+    CANCEL_ORDER: `${API_BASE_URL}/auth/orders/cancel/`,
+
+    // Market 相关 API
+    MARKET_STATS: `${API_BASE_URL}/market/stats/`,
+    MARKET_TOKENS: `${API_BASE_URL}/market/tokens/`,
+    MARKET_TOKEN_DETAIL: (symbol) => `${API_BASE_URL}/market/tokens/${symbol}/detail/`,
+    MARKET_TOKEN_TOGGLE_FAVORITE: (symbol) => `${API_BASE_URL}/market/tokens/${symbol}/toggle_favorite/`,
+    MARKET_TOKENS_CHAINS: `${API_BASE_URL}/market/tokens/chains/`,
+    MARKET_TOKENS_EXCHANGES: `${API_BASE_URL}/market/tokens/exchanges/`,
+    MARKET_TOKENS_CATEGORIES: `${API_BASE_URL}/market/tokens/categories/`,
+    MARKET_TOKENS_FAVORITES: `${API_BASE_URL}/market/tokens/favorites/`,
+    MARKET_TOKENS_TOP100: `${API_BASE_URL}/market/tokens/top100/`,
+    MARKET_TOKENS_HOT: `${API_BASE_URL}/market/tokens/hot/`,
+    MARKET_TOKENS_NEWEST: `${API_BASE_URL}/market/tokens/newest/`,
+    MARKET_TOKENS_RECOMMENDED: `${API_BASE_URL}/market/tokens/recommended/`,
+    MARKET_TOKENS_PERSONALIZED: `${API_BASE_URL}/market/tokens/personalized_recommendations/`,
+    MARKET_TOKENS_AI_RECOMMEND: `${API_BASE_URL}/market/tokens/ai_recommend/`,
+    MARKET_TOKENS_TRENDING: `${API_BASE_URL}/market/tokens/trending/`,
+    MARKET_TOKENS_TOP_GAINERS: `${API_BASE_URL}/market/tokens/top_gainers/`,
+    MARKET_TOKENS_TOP_LOSERS: `${API_BASE_URL}/market/tokens/top_losers/`,
+    MARKET_TOKENS_TOP_VOLUME: `${API_BASE_URL}/market/tokens/top_volume/`,
+    MARKET_KLINES: (symbol) => `${API_BASE_URL}/market/klines/${symbol}/`,
+
+    // 其他端点可以在这里添加
+  }
 }
 
-export const API_BASE_URL = `${getApiBaseUrl()}/api`
-
-// API 端点
-export const API_ENDPOINTS = {
-  // 认证相关
-  LOGIN: `${API_BASE_URL}/auth/login/`,
-  REGISTER: `${API_BASE_URL}/auth/register/`,
-  SEND_CODE: `${API_BASE_URL}/auth/send-code/`, // 如果后端有这个端点
-  
-  // 用户相关
-  USER_PROFILE: `${API_BASE_URL}/auth/profile/`,
-  UPLOAD_AVATAR: `${API_BASE_URL}/auth/upload-avatar/`,
-  CHANGE_PASSWORD: `${API_BASE_URL}/auth/change-password/`,
-  USERNAME_CHANGE_STATUS: `${API_BASE_URL}/auth/username-change-status/`,
-  CHANGE_USERNAME: `${API_BASE_URL}/auth/change-username/`,
-  SEND_EMAIL_CHANGE_CODE: `${API_BASE_URL}/auth/send-email-change-code/`,
-  CONFIRM_EMAIL_CHANGE: `${API_BASE_URL}/auth/confirm-email-change/`,
-  USER_PROFILE_PUBLIC: `${API_BASE_URL}/auth/profile/`,
-  TOGGLE_FOLLOW: `${API_BASE_URL}/auth/follow/`,
-  PRIVACY_SETTINGS: `${API_BASE_URL}/auth/privacy-settings/`,
-  GET_FOLLOWERS: `${API_BASE_URL}/auth/followers/`,
-  GET_FOLLOWING: `${API_BASE_URL}/auth/following/`,
-
-  // 积分相关
-  POINTS_CONFIG: `${API_BASE_URL}/auth/points/config/`,
-  POINTS_TRANSACTIONS: `${API_BASE_URL}/auth/points/transactions/`,
-  SPEND_POINTS: `${API_BASE_URL}/auth/points/spend/`,
-  CHECK_PREMIUM_ACCESS: `${API_BASE_URL}/auth/points/check-access/`,
-
-  // 邀请相关
-  GENERATE_INVITATION_CODE: `${API_BASE_URL}/auth/generate-invitation-code/`,
-  INVITATION_INFO: `${API_BASE_URL}/auth/invitation-info/`,
-  USER_RANKING: `${API_BASE_URL}/auth/invitation-info/ranking/`,
-
-  // 代币搜索
-  TOKEN_SEARCH: `${API_BASE_URL}/market/tokens/search/`,
-  TOKEN_LIST: `${API_BASE_URL}/market/tokens/`,
-
-  // AI 策略相关
-  AI_STRATEGY_SEARCH_TOKEN: `${API_BASE_URL}/market/tokens/search/`,  // 兼容旧代码
-  AI_STRATEGY_GENERATE: `${API_BASE_URL}/market/ai-strategy/generate/`,
-  AI_STRATEGY_LIST: `${API_BASE_URL}/market/ai-strategy/list/`,
-  AI_STRATEGY_DETAIL: `${API_BASE_URL}/market/ai-strategy/`,
-  AI_STRATEGY_APPLY: `${API_BASE_URL}/market/ai-strategy/apply/`,
-  AI_STRATEGY_SHARE: `${API_BASE_URL}/market/ai-strategy/share/`,
-  AI_STRATEGY_LIKE: `${API_BASE_URL}/market/ai-strategy/like/`,
-
-  // 交易所 API 相关
-  EXCHANGE_API_LIST: `${API_BASE_URL}/auth/exchange-apis/`,
-  EXCHANGE_API_CREATE: `${API_BASE_URL}/auth/exchange-apis/create/`,
-  EXCHANGE_API_DETAIL: (id) => `${API_BASE_URL}/auth/exchange-apis/${id}/`,
-  SUPPORTED_EXCHANGES: `${API_BASE_URL}/auth/exchanges/supported/`,
-
-  // 交易机器人相关
-  BOT_LIST: `${API_BASE_URL}/trading/bots/`,
-  BOT_CREATE: `${API_BASE_URL}/trading/bots/`,
-  BOT_DETAIL: (id) => `${API_BASE_URL}/trading/bots/${id}/`,
-  BOT_UPDATE: (id) => `${API_BASE_URL}/trading/bots/${id}/`,
-  BOT_DELETE: (id) => `${API_BASE_URL}/trading/bots/${id}/`,
-  BOT_START: (id) => `${API_BASE_URL}/trading/bots/${id}/start/`,
-  BOT_STOP: (id) => `${API_BASE_URL}/trading/bots/${id}/stop/`,
-  BOT_PAUSE: (id) => `${API_BASE_URL}/trading/bots/${id}/pause/`,
-  BOT_TRADES: (id) => `${API_BASE_URL}/trading/bots/${id}/trades/`,
-  BOT_SIGNALS: (id) => `${API_BASE_URL}/trading/bots/${id}/signals/`,
-  BOT_STATISTICS: `${API_BASE_URL}/trading/bots/statistics/`,
-  BOT_PERFORMANCE_ANALYSIS: `${API_BASE_URL}/trading/bots/performance_analysis/`,
-  TRADING_PAIRS: `${API_BASE_URL}/trading/trading-pairs/`,
-  TRADING_PAIR_INFO: `${API_BASE_URL}/market/trading-pair-info/`,
-  EXCHANGE_API_SYNC: (id) => `${API_BASE_URL}/auth/exchange-apis/${id}/sync/`,
-  EXCHANGE_API_TEST: `${API_BASE_URL}/auth/exchange-apis/test/`,
-
-  // 信号相关
-  SIGNAL_LIST: `${API_BASE_URL}/trading/signals/`,
-  SIGNAL_DETAIL: (id) => `${API_BASE_URL}/trading/signals/${id}/`,
-  SIGNAL_ACTIVE: `${API_BASE_URL}/trading/signals/active/`,
-  SIGNAL_STATISTICS: `${API_BASE_URL}/trading/signals/statistics/`,
-  SIGNAL_MARK_EXECUTED: (id) => `${API_BASE_URL}/trading/signals/${id}/mark_executed/`,
-  SIGNAL_CANCEL: (id) => `${API_BASE_URL}/trading/signals/${id}/cancel/`,
-
-  // 信号触发器相关
-  SIGNAL_TRIGGER_LIST: `${API_BASE_URL}/trading/signal-triggers/`,
-  SIGNAL_TRIGGER_CREATE: `${API_BASE_URL}/trading/signal-triggers/`,
-  SIGNAL_TRIGGER_DETAIL: (id) => `${API_BASE_URL}/trading/signal-triggers/${id}/`,
-  SIGNAL_TRIGGER_TOGGLE: (id) => `${API_BASE_URL}/trading/signal-triggers/${id}/toggle/`,
-  SIGNAL_TRIGGER_AVAILABLE_BOTS: `${API_BASE_URL}/trading/signal-triggers/available_bots/`,
-
-  // 交易建议相关
-  RECOMMENDATION_LIST: `${API_BASE_URL}/trading/recommendations/`,
-  RECOMMENDATION_DETAIL: (id) => `${API_BASE_URL}/trading/recommendations/${id}/`,
-  RECOMMENDATION_PENDING: `${API_BASE_URL}/trading/recommendations/pending/`,
-  RECOMMENDATION_APPROVE: (id) => `${API_BASE_URL}/trading/recommendations/${id}/approve/`,
-  RECOMMENDATION_REJECT: (id) => `${API_BASE_URL}/trading/recommendations/${id}/reject/`,
-
-  // 风控配置相关
-  RISK_CONFIG: `${API_BASE_URL}/trading/risk-config/`,
-  RISK_CONFIG_DETAIL: (id) => `${API_BASE_URL}/trading/risk-config/${id}/`,
-  RISK_CONFIG_RESET_BREAKER: (id) => `${API_BASE_URL}/trading/risk-config/${id}/reset_breaker/`,
-  RISK_CONFIG_UPDATE_METRICS: `${API_BASE_URL}/trading/risk-config/update_metrics/`,
-
-  // 交易记录相关
-  TRADE_LIST: `${API_BASE_URL}/trading/trades/`,
-  TRADE_DETAIL: (id) => `${API_BASE_URL}/trading/trades/${id}/`,
-
-  // 持仓相关
-  POSITION_LIST: `${API_BASE_URL}/trading/positions/`,
-  POSITION_DETAIL: (id) => `${API_BASE_URL}/trading/positions/${id}/`,
-  POSITION_OPEN: `${API_BASE_URL}/trading/positions/open/`,
-  POSITION_CLOSE: (id) => `${API_BASE_URL}/trading/positions/${id}/close/`,
-
-  // 会员相关
-  MEMBERSHIP_PLANS: `${API_BASE_URL}/auth/membership/plans/`,
-  MEMBERSHIP_STATUS: `${API_BASE_URL}/auth/membership/status/`,
-  MEMBERSHIP_ORDERS: `${API_BASE_URL}/auth/membership/orders/`,
-  CREATE_MEMBERSHIP_ORDER: `${API_BASE_URL}/auth/membership/orders/create/`,
-
-  // 加密货币支付相关
-  CRYPTO_SUPPORTED_TOKENS: `${API_BASE_URL}/auth/crypto/supported-tokens/`,
-  CRYPTO_CREATE_ORDER: `${API_BASE_URL}/auth/crypto/create-order/`,
-  CRYPTO_VERIFY_PAYMENT: `${API_BASE_URL}/auth/crypto/verify-payment/`,
-  CRYPTO_PAYMENT_STATUS: (orderId) => `${API_BASE_URL}/auth/crypto/payment-status/${orderId}/`,
-  CRYPTO_TOKEN_PRICE: `${API_BASE_URL}/auth/crypto/token-price/`,
-  USER_ORDERS: `${API_BASE_URL}/auth/orders/`,
-  CANCEL_ORDER: `${API_BASE_URL}/auth/orders/cancel/`,
-
-  // 其他端点可以在这里添加
-}
+// 使用 Proxy 让 API_ENDPOINTS 动态返回正确的 URL
+export const API_ENDPOINTS = new Proxy({}, {
+  get(_target, prop) {
+    const endpoints = createAPIEndpoints()
+    return endpoints[prop]
+  }
+})
 
 // 通用的 fetch 包装函数
 export async function apiRequest(url, options = {}) {
@@ -547,7 +570,7 @@ export const botAPI = {
 
   // 获取我的分享列表
   async getMyShares() {
-    return apiRequest(`${API_BASE_URL}/trading/bots/my_shares/`)
+    return apiRequest(API_ENDPOINTS.BOT_MY_SHARES)
   },
 
   // 获取机器人统计数据

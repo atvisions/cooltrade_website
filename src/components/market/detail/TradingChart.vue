@@ -93,7 +93,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { createChart, CrosshairMode, CandlestickSeries, LineSeries } from 'lightweight-charts'
-import { apiRequest, API_BASE_URL } from '../../../utils/api.js'
+import { apiRequest, API_ENDPOINTS } from '../../../utils/api.js'
 
 const props = defineProps({
   symbol: {
@@ -217,7 +217,7 @@ const loadKlineData = async (timeframe) => {
 
     // 不指定exchange参数，让后端自动选择代币所在的交易所
     const response = await apiRequest(
-      `${API_BASE_URL}/market/klines/${cleanSymbol}/`,
+      API_ENDPOINTS.MARKET_KLINES(cleanSymbol),
       {
         method: 'GET',
         params: {

@@ -5,7 +5,7 @@ import ForgotPasswordPage from '../components/auth/ForgotPasswordPage.vue'
 import RiskAssessment from '../components/auth/RiskAssessment.vue'
 import UserProfile from '../components/profile/UserProfile.vue'
 import SettingsPage from '../components/settings/SettingsPage.vue'
-import HomePage from '../components/home/HomePage.vue'
+// import HomePage from '../components/home/HomePage.vue'  // 已删除，未登录用户直接访问 Market
 import MarketPage from '../components/market/MarketPage.vue'
 import TokenDetailPage from '../components/market/TokenDetailPage.vue'
 import RecommendPage from '../components/recommend/RecommendPage.vue'
@@ -25,7 +25,7 @@ const routes = [
   {
     path: '/',
     name: 'Home',
-    component: HomePage,
+    component: MarketPage,  // 未登录用户直接访问 Market 页面
     meta: { requiresAuth: false }
   },
   {

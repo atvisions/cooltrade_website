@@ -170,7 +170,7 @@
                             <span class="font-medium">⚠️ 必须开启 IP 白名单</span>，并添加以下 IP 地址：
                             <div class="mt-1.5 flex items-center space-x-2">
                               <code class="flex-1 bg-blue-100 text-blue-900 px-3 py-1.5 rounded font-mono text-xs">
-                                34.239.179.194
+                                52.220.101.58
                               </code>
                               <button
                                 @click="copyServerIP"

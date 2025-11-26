@@ -372,7 +372,7 @@ const detectedPermissions = ref(null)
 const showIPGuide = ref(false)
 
 // 服务器 IP 地址
-const SERVER_IP = '34.239.179.194'
+const SERVER_IP = '52.220.101.58'
 
 // 复制服务器 IP
 const copyServerIP = async () => {

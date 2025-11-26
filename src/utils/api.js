@@ -270,7 +270,7 @@ export const authAPI = {
 
   // 请求密码重置验证码
   async requestPasswordReset(email) {
-    return apiRequest(`${API_BASE_URL}/auth/request-password-reset/`, {
+    return apiRequest(`${getAPIBaseURL()}/auth/request-password-reset/`, {
       method: 'POST',
       body: JSON.stringify({ email }),
     })
@@ -278,7 +278,7 @@ export const authAPI = {
 
   // 使用验证码重置密码
   async resetPasswordWithCode(email, code, newPassword, confirmPassword) {
-    return apiRequest(`${API_BASE_URL}/auth/reset-password-with-code/`, {
+    return apiRequest(`${getAPIBaseURL()}/auth/reset-password-with-code/`, {
       method: 'POST',
       body: JSON.stringify({
         email,
@@ -463,19 +463,19 @@ export const exchangeAPI = {
 export const marketAPI = {
   // 获取市场概览数据
   async getMarketOverview() {
-    return apiRequest(`${API_BASE_URL}/market/overview/`)
+    return apiRequest(`${getAPIBaseURL()}/market/overview/`)
   },
 
   // 获取代币列表
   async getTokenList(params = {}) {
     const queryParams = new URLSearchParams(params).toString()
-    const url = queryParams ? `${API_BASE_URL}/market/tokens/?${queryParams}` : `${API_BASE_URL}/market/tokens/`
+    const url = queryParams ? `${getAPIBaseURL()}/market/tokens/?${queryParams}` : `${getAPIBaseURL()}/market/tokens/`
     return apiRequest(url)
   },
 
   // 获取代币详情
   async getTokenDetail(tokenId) {
-    return apiRequest(`${API_BASE_URL}/market/tokens/${tokenId}/`)
+    return apiRequest(`${getAPIBaseURL()}/market/tokens/${tokenId}/`)
   }
 }
 
@@ -553,17 +553,17 @@ export const botAPI = {
 
   // 获取最新信号及AI价格建议
   async getLatestSignal(id) {
-    return apiRequest(`${API_BASE_URL}/trading/bots/${id}/latest-signal/`)
+    return apiRequest(`${getAPIBaseURL()}/trading/bots/${id}/latest-signal/`)
   },
 
   // 获取分享统计
   async getShareStats(id) {
-    return apiRequest(`${API_BASE_URL}/trading/bots/${id}/share_stats/`)
+    return apiRequest(`${getAPIBaseURL()}/trading/bots/${id}/share_stats/`)
   },
 
   // 取消分享
   async unshareBot(id) {
-    return apiRequest(`${API_BASE_URL}/trading/bots/${id}/unshare/`, {
+    return apiRequest(`${getAPIBaseURL()}/trading/bots/${id}/unshare/`, {
       method: 'POST'
     })
   },
@@ -653,7 +653,7 @@ export const botAPI = {
   // ===== 回测相关 =====
   // 创建回测
   async createBacktest(data) {
-    return apiRequest(`${API_BASE_URL}/trading/backtests/`, {
+    return apiRequest(`${getAPIBaseURL()}/trading/backtests/`, {
       method: 'POST',
       body: JSON.stringify(data)
     })
@@ -661,36 +661,36 @@ export const botAPI = {
 
   // 获取回测详情
   async getBacktestDetail(id) {
-    return apiRequest(`${API_BASE_URL}/trading/backtests/${id}/`)
+    return apiRequest(`${getAPIBaseURL()}/trading/backtests/${id}/`)
   },
 
   // 获取回测列表
   async getBacktestList(params = {}) {
     const queryParams = new URLSearchParams(params).toString()
-    const url = queryParams ? `${API_BASE_URL}/trading/backtests/?${queryParams}` : `${API_BASE_URL}/trading/backtests/`
+    const url = queryParams ? `${getAPIBaseURL()}/trading/backtests/?${queryParams}` : `${getAPIBaseURL()}/trading/backtests/`
     return apiRequest(url)
   },
 
   // 获取回测资金曲线
   async getBacktestEquityCurve(id) {
-    return apiRequest(`${API_BASE_URL}/trading/backtests/${id}/equity_curve/`)
+    return apiRequest(`${getAPIBaseURL()}/trading/backtests/${id}/equity_curve/`)
   },
 
   // 获取回测交易明细
   async getBacktestTrades(id, params = {}) {
     const queryParams = new URLSearchParams(params).toString()
-    const url = queryParams ? `${API_BASE_URL}/trading/backtests/${id}/trades/?${queryParams}` : `${API_BASE_URL}/trading/backtests/${id}/trades/`
+    const url = queryParams ? `${getAPIBaseURL()}/trading/backtests/${id}/trades/?${queryParams}` : `${getAPIBaseURL()}/trading/backtests/${id}/trades/`
     return apiRequest(url)
   },
 
   // 获取回测统计信息
   async getBacktestStatistics(id) {
-    return apiRequest(`${API_BASE_URL}/trading/backtests/${id}/statistics/`)
+    return apiRequest(`${getAPIBaseURL()}/trading/backtests/${id}/statistics/`)
   },
 
   // 删除回测
   async deleteBacktest(id) {
-    return apiRequest(`${API_BASE_URL}/trading/backtests/${id}/`, {
+    return apiRequest(`${getAPIBaseURL()}/trading/backtests/${id}/`, {
       method: 'DELETE'
     })
   },

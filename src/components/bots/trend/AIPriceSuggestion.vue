@@ -1,9 +1,22 @@
 <template>
-  <div v-if="signalBot && (loading || priceSuggestions)" class="space-y-4">
+  <div v-if="signalBot" class="space-y-4">
     <!-- 加载状态 -->
     <div v-if="loading" class="flex items-center justify-center py-8">
       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       <span class="ml-3 text-sm text-slate-600">正在获取AI价格建议...</span>
+    </div>
+
+    <!-- 无信号提示 -->
+    <div v-else-if="!loading && !priceSuggestions && noSignalMessage" class="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+      <div class="flex items-start gap-2">
+        <svg class="w-5 h-5 text-amber-500 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <div class="flex-1">
+          <p class="text-sm font-medium text-amber-800 mb-1">暂无活跃信号</p>
+          <p class="text-xs text-amber-700">{{ noSignalMessage }}</p>
+        </div>
+      </div>
     </div>
 
     <!-- AI价格建议卡片 -->
@@ -157,6 +170,7 @@ const loading = ref(false)
 const priceSuggestions = ref(null)
 const aiPowered = ref(false)
 const confidence = ref(null)
+const noSignalMessage = ref('')
 
 // 格式化价格
 const formatPrice = (price) => {
@@ -173,20 +187,30 @@ const fetchLatestSignal = async () => {
   if (!props.signalBot) return
 
   loading.value = true
+  noSignalMessage.value = ''
   try {
     const response = await botAPI.getLatestSignal(props.signalBot)
     if (response.success && response.data) {
-      priceSuggestions.value = response.data.price_suggestions
-      aiPowered.value = response.data.ai_powered
-      confidence.value = response.data.confidence
-      
-      // 通知父组件
-      emit('update:priceSuggestions', response.data.price_suggestions)
+      // 检查是否有信号数据
+      if (response.data.signal) {
+        priceSuggestions.value = response.data.price_suggestions
+        aiPowered.value = response.data.ai_powered
+        confidence.value = response.data.confidence
+
+        // 通知父组件
+        emit('update:priceSuggestions', response.data.price_suggestions)
+      } else {
+        // 没有信号时，显示提示信息
+        priceSuggestions.value = null
+        aiPowered.value = false
+        noSignalMessage.value = response.data.message || '该信号机器人暂无活跃信号，请等待信号触发后再创建趋势跟踪机器人'
+      }
     }
   } catch (error) {
     console.error('获取AI价格建议失败:', error)
     priceSuggestions.value = null
     aiPowered.value = false
+    noSignalMessage.value = '获取信号失败，请稍后重试'
   } finally {
     loading.value = false
   }

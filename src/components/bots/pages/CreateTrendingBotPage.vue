@@ -4238,6 +4238,14 @@ const isFormValid = computed(() => {
       time_stop_hours: formData.value.time_stop_hours,
       valid: hasStopLoss
     }
+  } else if (formData.value.stop_loss_type === 'ai_suggested') {
+    // AI建议模式：不需要额外验证，直接通过
+    hasStopLoss = true
+    validationLog.checks.stop_loss.details = {
+      mode: 'ai_suggested',
+      valid: true,
+      note: 'AI建议模式，止损价格由信号触发时自动计算'
+    }
   } else if (formData.value.stop_loss_type === 'technical') {
     hasStopLoss = !!formData.value.technical_stop_indicator
     validationLog.checks.stop_loss.details = {
@@ -5151,11 +5159,10 @@ const selectAIPricingMode = async () => {
     await fetchAIPriceSuggestions()
   }
 
-  // 🔧 不自动填充价格，让用户选择是否使用AI建议或留空
-  // 用户可以：
-  // 1. 点击"AI建议价"按钮手动填充
-  // 2. 留空，等待信号触发时自动使用AI价格
-  // 3. 手动输入自定义价格
+  // ✅ 自动填充AI建议的入场价格（如果有）
+  if (aiPriceSuggestions.value && aiPriceSuggestions.value.entry_price) {
+    formData.value.manual_entry_price = parseFloat(aiPriceSuggestions.value.entry_price)
+  }
 }
 
 // 应用AI建议的入场价格

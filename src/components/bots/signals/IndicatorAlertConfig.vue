@@ -199,12 +199,15 @@
       <pre v-else class="text-xs text-slate-700 bg-white rounded border border-slate-200 p-3 overflow-x-auto max-h-96 overflow-y-auto font-mono">{{ formattedJsonConfig }}</pre>
 
       <!-- JSON 错误提示 -->
-      <div v-if="jsonError" class="mt-2 p-2 bg-red-50 border border-red-200 rounded text-xs text-red-600">
+      <div v-if="jsonError" class="mt-2 p-3 bg-red-50 border border-red-200 rounded">
         <div class="flex items-start gap-2">
-          <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg class="w-5 h-5 flex-shrink-0 mt-0.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
           </svg>
-          <span>{{ jsonError }}</span>
+          <div class="flex-1">
+            <p class="text-sm font-semibold text-red-700 mb-1">配置验证失败</p>
+            <pre class="text-xs text-red-600 whitespace-pre-wrap font-mono">{{ jsonError }}</pre>
+          </div>
         </div>
       </div>
     </div>
@@ -335,9 +338,42 @@
         <!-- 快捷参数 -->
         <div class="mb-3 flex items-center gap-2">
           <label class="text-xs font-medium text-slate-600">快捷:</label>
-          <button type="button" @click="setRsiPreset('standard')" class="px-2 py-1 text-xs border border-slate-200 rounded hover:border-blue-500 hover:bg-blue-50 transition-all">标准</button>
-          <button type="button" @click="setRsiPreset('aggressive')" class="px-2 py-1 text-xs border border-slate-200 rounded hover:border-orange-500 hover:bg-orange-50 transition-all">激进</button>
-          <button type="button" @click="setRsiPreset('conservative')" class="px-2 py-1 text-xs border border-slate-200 rounded hover:border-green-500 hover:bg-green-50 transition-all">保守</button>
+          <button
+            type="button"
+            @click="setRsiPreset('standard')"
+            :class="[
+              'px-2 py-1 text-xs border rounded transition-all',
+              activePresets.rsi === 'standard'
+                ? 'border-blue-500 bg-blue-500 text-white font-medium'
+                : 'border-slate-200 hover:border-blue-500 hover:bg-blue-50'
+            ]"
+          >
+            标准
+          </button>
+          <button
+            type="button"
+            @click="setRsiPreset('aggressive')"
+            :class="[
+              'px-2 py-1 text-xs border rounded transition-all',
+              activePresets.rsi === 'aggressive'
+                ? 'border-orange-500 bg-orange-500 text-white font-medium'
+                : 'border-slate-200 hover:border-orange-500 hover:bg-orange-50'
+            ]"
+          >
+            激进
+          </button>
+          <button
+            type="button"
+            @click="setRsiPreset('conservative')"
+            :class="[
+              'px-2 py-1 text-xs border rounded transition-all',
+              activePresets.rsi === 'conservative'
+                ? 'border-green-500 bg-green-500 text-white font-medium'
+                : 'border-slate-200 hover:border-green-500 hover:bg-green-50'
+            ]"
+          >
+            保守
+          </button>
         </div>
 
         <!-- 参数输入 -->
@@ -413,13 +449,46 @@
         <!-- 快捷参数 -->
         <div class="mb-3 flex items-center gap-2">
           <label class="text-xs font-medium text-slate-600">快捷:</label>
-          <button type="button" @click="setMacdPreset('standard')" class="px-2 py-1 text-xs border border-slate-200 rounded hover:border-blue-500 hover:bg-blue-50 transition-all">标准</button>
-          <button type="button" @click="setMacdPreset('fast')" class="px-2 py-1 text-xs border border-slate-200 rounded hover:border-orange-500 hover:bg-orange-50 transition-all">快速</button>
-          <button type="button" @click="setMacdPreset('slow')" class="px-2 py-1 text-xs border border-slate-200 rounded hover:border-green-500 hover:bg-green-50 transition-all">慢速</button>
+          <button
+            type="button"
+            @click="setMacdPreset('standard')"
+            :class="[
+              'px-2 py-1 text-xs border rounded transition-all',
+              activePresets.macd === 'standard'
+                ? 'border-blue-500 bg-blue-500 text-white font-medium'
+                : 'border-slate-200 hover:border-blue-500 hover:bg-blue-50'
+            ]"
+          >
+            标准
+          </button>
+          <button
+            type="button"
+            @click="setMacdPreset('fast')"
+            :class="[
+              'px-2 py-1 text-xs border rounded transition-all',
+              activePresets.macd === 'fast'
+                ? 'border-orange-500 bg-orange-500 text-white font-medium'
+                : 'border-slate-200 hover:border-orange-500 hover:bg-orange-50'
+            ]"
+          >
+            快速
+          </button>
+          <button
+            type="button"
+            @click="setMacdPreset('slow')"
+            :class="[
+              'px-2 py-1 text-xs border rounded transition-all',
+              activePresets.macd === 'slow'
+                ? 'border-green-500 bg-green-500 text-white font-medium'
+                : 'border-slate-200 hover:border-green-500 hover:bg-green-50'
+            ]"
+          >
+            慢速
+          </button>
         </div>
 
         <!-- 参数输入 -->
-        <div class="grid grid-cols-3 gap-3">
+        <div class="grid grid-cols-3 gap-3 mb-3">
           <div>
             <label class="block text-xs font-medium text-slate-700 mb-1.5">
               快线周期
@@ -460,6 +529,24 @@
             />
           </div>
         </div>
+
+        <!-- Phase 1: 零轴下方金叉 -->
+        <div class="flex items-center gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <input
+            type="checkbox"
+            :checked="indicatorsConfig.macd?.params?.below_zero_cross || false"
+            @change="updateIndicatorParam('macd', 'below_zero_cross', $event.target.checked)"
+            class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+          />
+          <div class="flex-1">
+            <label class="text-xs font-medium text-slate-700 cursor-pointer">
+              要求零轴下方金叉
+            </label>
+            <p class="text-[10px] text-slate-500 mt-0.5">
+              只在 MACD 值小于 0 时触发金叉信号（更强的反转信号）
+            </p>
+          </div>
+        </div>
       </div>
 
       <!-- MA交叉 参数 -->
@@ -491,13 +578,46 @@
         <!-- 快捷参数 -->
         <div class="mb-3 flex items-center gap-2">
           <label class="text-xs font-medium text-slate-600">快捷:</label>
-          <button type="button" @click="setMaCrossPreset('short')" class="px-2 py-1 text-xs border border-slate-200 rounded hover:border-blue-500 hover:bg-blue-50 transition-all">短线</button>
-          <button type="button" @click="setMaCrossPreset('medium')" class="px-2 py-1 text-xs border border-slate-200 rounded hover:border-orange-500 hover:bg-orange-50 transition-all">中线</button>
-          <button type="button" @click="setMaCrossPreset('long')" class="px-2 py-1 text-xs border border-slate-200 rounded hover:border-green-500 hover:bg-green-50 transition-all">长线</button>
+          <button
+            type="button"
+            @click="setMaCrossPreset('short')"
+            :class="[
+              'px-2 py-1 text-xs border rounded transition-all',
+              activePresets.ma_crossover === 'short'
+                ? 'border-blue-500 bg-blue-500 text-white font-medium'
+                : 'border-slate-200 hover:border-blue-500 hover:bg-blue-50'
+            ]"
+          >
+            短线
+          </button>
+          <button
+            type="button"
+            @click="setMaCrossPreset('medium')"
+            :class="[
+              'px-2 py-1 text-xs border rounded transition-all',
+              activePresets.ma_crossover === 'medium'
+                ? 'border-orange-500 bg-orange-500 text-white font-medium'
+                : 'border-slate-200 hover:border-orange-500 hover:bg-orange-50'
+            ]"
+          >
+            中线
+          </button>
+          <button
+            type="button"
+            @click="setMaCrossPreset('long')"
+            :class="[
+              'px-2 py-1 text-xs border rounded transition-all',
+              activePresets.ma_crossover === 'long'
+                ? 'border-green-500 bg-green-500 text-white font-medium'
+                : 'border-slate-200 hover:border-green-500 hover:bg-green-50'
+            ]"
+          >
+            长线
+          </button>
         </div>
 
         <!-- 参数输入 -->
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-2 gap-3 mb-3">
           <div>
             <label class="block text-xs font-medium text-slate-700 mb-1.5">
               快线周期
@@ -523,6 +643,24 @@
               placeholder="25"
               class="text-sm"
             />
+          </div>
+        </div>
+
+        <!-- Phase 1: 价格突破快速均线 -->
+        <div class="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+          <input
+            type="checkbox"
+            :checked="indicatorsConfig.ma_crossover?.params?.break_fast_ma || false"
+            @change="updateIndicatorParam('ma_crossover', 'break_fast_ma', $event.target.checked)"
+            class="w-4 h-4 text-green-600 rounded focus:ring-green-500"
+          />
+          <div class="flex-1">
+            <label class="text-xs font-medium text-slate-700 cursor-pointer">
+              要求价格突破快速均线
+            </label>
+            <p class="text-[10px] text-slate-500 mt-0.5">
+              只在价格高于快速均线时触发金叉信号（双重确认）
+            </p>
           </div>
         </div>
       </div>
@@ -556,9 +694,42 @@
         <!-- 快捷参数 -->
         <div class="mb-3 flex items-center gap-2">
           <label class="text-xs font-medium text-slate-600">快捷:</label>
-          <button type="button" @click="setAtrPreset('tight')" class="px-2 py-1 text-xs border border-slate-200 rounded hover:border-blue-500 hover:bg-blue-50 transition-all">紧密</button>
-          <button type="button" @click="setAtrPreset('standard')" class="px-2 py-1 text-xs border border-slate-200 rounded hover:border-orange-500 hover:bg-orange-50 transition-all">标准</button>
-          <button type="button" @click="setAtrPreset('loose')" class="px-2 py-1 text-xs border border-slate-200 rounded hover:border-green-500 hover:bg-green-50 transition-all">宽松</button>
+          <button
+            type="button"
+            @click="setAtrPreset('tight')"
+            :class="[
+              'px-2 py-1 text-xs border rounded transition-all',
+              activePresets.atr === 'tight'
+                ? 'border-blue-500 bg-blue-500 text-white font-medium'
+                : 'border-slate-200 hover:border-blue-500 hover:bg-blue-50'
+            ]"
+          >
+            紧密
+          </button>
+          <button
+            type="button"
+            @click="setAtrPreset('standard')"
+            :class="[
+              'px-2 py-1 text-xs border rounded transition-all',
+              activePresets.atr === 'standard'
+                ? 'border-orange-500 bg-orange-500 text-white font-medium'
+                : 'border-slate-200 hover:border-orange-500 hover:bg-orange-50'
+            ]"
+          >
+            标准
+          </button>
+          <button
+            type="button"
+            @click="setAtrPreset('loose')"
+            :class="[
+              'px-2 py-1 text-xs border rounded transition-all',
+              activePresets.atr === 'loose'
+                ? 'border-green-500 bg-green-500 text-white font-medium'
+                : 'border-slate-200 hover:border-green-500 hover:bg-green-50'
+            ]"
+          >
+            宽松
+          </button>
         </div>
 
         <!-- 参数输入 -->
@@ -622,13 +793,46 @@
         <!-- 快捷参数 -->
         <div class="mb-3 flex items-center gap-2">
           <label class="text-xs font-medium text-slate-600">快捷:</label>
-          <button type="button" @click="setVolumePreset('conservative')" class="px-2 py-1 text-xs border border-slate-200 rounded hover:border-blue-500 hover:bg-blue-50 transition-all">保守</button>
-          <button type="button" @click="setVolumePreset('standard')" class="px-2 py-1 text-xs border border-slate-200 rounded hover:border-orange-500 hover:bg-orange-50 transition-all">标准</button>
-          <button type="button" @click="setVolumePreset('aggressive')" class="px-2 py-1 text-xs border border-slate-200 rounded hover:border-green-500 hover:bg-green-50 transition-all">激进</button>
+          <button
+            type="button"
+            @click="setVolumePreset('conservative')"
+            :class="[
+              'px-2 py-1 text-xs border rounded transition-all',
+              activePresets.volume === 'conservative'
+                ? 'border-blue-500 bg-blue-500 text-white font-medium'
+                : 'border-slate-200 hover:border-blue-500 hover:bg-blue-50'
+            ]"
+          >
+            保守
+          </button>
+          <button
+            type="button"
+            @click="setVolumePreset('standard')"
+            :class="[
+              'px-2 py-1 text-xs border rounded transition-all',
+              activePresets.volume === 'standard'
+                ? 'border-orange-500 bg-orange-500 text-white font-medium'
+                : 'border-slate-200 hover:border-orange-500 hover:bg-orange-50'
+            ]"
+          >
+            标准
+          </button>
+          <button
+            type="button"
+            @click="setVolumePreset('aggressive')"
+            :class="[
+              'px-2 py-1 text-xs border rounded transition-all',
+              activePresets.volume === 'aggressive'
+                ? 'border-green-500 bg-green-500 text-white font-medium'
+                : 'border-slate-200 hover:border-green-500 hover:bg-green-50'
+            ]"
+          >
+            激进
+          </button>
         </div>
 
         <!-- 参数输入 -->
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-2 gap-3 mb-3">
           <div>
             <label class="block text-xs font-medium text-slate-700 mb-1.5">
               成交量倍数
@@ -655,6 +859,24 @@
               placeholder="20"
               class="text-sm"
             />
+          </div>
+        </div>
+
+        <!-- Phase 1: 成交量激增 -->
+        <div class="flex items-center gap-2 p-3 bg-cyan-50 border border-cyan-200 rounded-lg">
+          <input
+            type="checkbox"
+            :checked="indicatorsConfig.volume?.params?.volume_surge !== false"
+            @change="updateIndicatorParam('volume', 'volume_surge', $event.target.checked)"
+            class="w-4 h-4 text-cyan-600 rounded focus:ring-cyan-500"
+          />
+          <div class="flex-1">
+            <label class="text-xs font-medium text-slate-700 cursor-pointer">
+              启用成交量激增检测
+            </label>
+            <p class="text-[10px] text-slate-500 mt-0.5">
+              当成交量超过平均值的设定倍数时触发信号
+            </p>
           </div>
         </div>
       </div>
@@ -781,6 +1003,15 @@ const isEditingJson = ref(false)
 const editingJsonText = ref('')
 const jsonError = ref('')
 
+// 追踪当前选中的预设（用于高亮显示）
+const activePresets = ref({
+  rsi: null,
+  macd: null,
+  ma_crossover: null,
+  atr: null,
+  volume: null
+})
+
 // 获取指标标签
 const getIndicatorLabel = (value) => {
   const indicator = availableIndicators.find(ind => ind.value === value)
@@ -837,35 +1068,328 @@ const cancelEditingJson = () => {
   jsonError.value = ''
 }
 
+// 验证指标配置
+const validateIndicatorConfig = (indicator) => {
+  const errors = []
+
+  // 验证指标类型（支持别名）
+  const validTypes = availableIndicators.map(ind => ind.value)
+  const typeAliases = {
+    'ma_crossover': 'ma_cross',  // 别名支持
+    'ma_cross': 'ma_crossover',  // 反向别名支持
+  }
+
+  const normalizedType = typeAliases[indicator.type] || indicator.type
+
+  // 检查原始类型或规范化类型是否有效
+  const isValidType = validTypes.includes(indicator.type) ||
+                      validTypes.includes(normalizedType) ||
+                      Object.keys(typeAliases).includes(indicator.type)
+
+  if (!isValidType) {
+    errors.push(`不支持的指标类型: ${indicator.type}。支持的类型: ${validTypes.join(', ')}, ma_cross`)
+    return errors
+  }
+
+  // 验证权重
+  if (indicator.weight !== undefined) {
+    if (typeof indicator.weight !== 'number' || indicator.weight < 0 || indicator.weight > 100) {
+      errors.push(`${indicator.type}: 权重必须是 0-100 之间的数字`)
+    }
+  }
+
+  // 验证参数（使用规范化后的类型）
+  const params = indicator.params || {}
+
+  switch (normalizedType) {
+    case 'rsi':
+      if (params.period !== undefined && (typeof params.period !== 'number' || params.period < 2 || params.period > 100)) {
+        errors.push(`RSI: period 必须是 2-100 之间的数字`)
+      }
+      // 支持两种字段名：oversold_threshold（新）和 oversold（旧）
+      const oversoldValue = params.oversold_threshold ?? params.oversold
+      if (oversoldValue !== undefined && (typeof oversoldValue !== 'number' || oversoldValue < 0 || oversoldValue > 100)) {
+        errors.push(`RSI: oversold/oversold_threshold 必须是 0-100 之间的数字`)
+      }
+      const overboughtValue = params.overbought_threshold ?? params.overbought
+      if (overboughtValue !== undefined && (typeof overboughtValue !== 'number' || overboughtValue < 0 || overboughtValue > 100)) {
+        errors.push(`RSI: overbought/overbought_threshold 必须是 0-100 之间的数字`)
+      }
+      // Phase 2: 反转强度
+      if (params.reversal_strength !== undefined && (typeof params.reversal_strength !== 'number' || params.reversal_strength < 0 || params.reversal_strength > 50)) {
+        errors.push(`RSI: reversal_strength 必须是 0-50 之间的数字`)
+      }
+      break
+
+    case 'macd':
+      if (params.fast !== undefined && (typeof params.fast !== 'number' || params.fast < 2 || params.fast > 100)) {
+        errors.push(`MACD: fast 必须是 2-100 之间的数字`)
+      }
+      if (params.slow !== undefined && (typeof params.slow !== 'number' || params.slow < 2 || params.slow > 100)) {
+        errors.push(`MACD: slow 必须是 2-100 之间的数字`)
+      }
+      if (params.signal !== undefined && (typeof params.signal !== 'number' || params.signal < 2 || params.signal > 100)) {
+        errors.push(`MACD: signal 必须是 2-100 之间的数字`)
+      }
+      if (params.signal_cross !== undefined && !['bullish', 'bearish'].includes(params.signal_cross)) {
+        errors.push(`MACD: signal_cross 必须是 'bullish' 或 'bearish'`)
+      }
+      // Phase 1: 零轴下方金叉（兼容多种布尔值表示）
+      if (params.below_zero_cross !== undefined && params.below_zero_cross !== null) {
+        const val = params.below_zero_cross
+        const isBooleanLike = typeof val === 'boolean' ||
+                              val === 'true' || val === 'false' ||
+                              val === true || val === false ||
+                              val === 1 || val === 0 ||
+                              val === '1' || val === '0'
+        if (!isBooleanLike) {
+          errors.push(`MACD: below_zero_cross 必须是布尔值（true/false/1/0），当前值: ${val}（类型: ${typeof val}）`)
+        }
+      }
+      // Phase 1: 金叉信号（兼容多种布尔值表示）
+      if (params.golden_cross !== undefined && params.golden_cross !== null) {
+        const val = params.golden_cross
+        const isBooleanLike = typeof val === 'boolean' ||
+                              val === 'true' || val === 'false' ||
+                              val === true || val === false ||
+                              val === 1 || val === 0 ||
+                              val === '1' || val === '0'
+        if (!isBooleanLike) {
+          errors.push(`MACD: golden_cross 必须是布尔值（true/false/1/0），当前值: ${val}`)
+        }
+      }
+      // Phase 2: 绿柱缩短
+      if (params.green_shrink !== undefined && (typeof params.green_shrink !== 'number' || params.green_shrink < 1 || params.green_shrink > 10)) {
+        errors.push(`MACD: green_shrink 必须是 1-10 之间的数字`)
+      }
+      break
+
+    case 'ma_cross':
+    case 'ma_crossover':  // 兼容旧字段名
+      if (params.fast_period !== undefined && (typeof params.fast_period !== 'number' || params.fast_period < 2 || params.fast_period > 500)) {
+        errors.push(`MA交叉: fast_period 必须是 2-500 之间的数字`)
+      }
+      // 支持两种字段名：fast_period（新）和 fast（旧）
+      if (params.fast !== undefined && (typeof params.fast !== 'number' || params.fast < 2 || params.fast > 500)) {
+        errors.push(`MA交叉: fast 必须是 2-500 之间的数字`)
+      }
+      if (params.slow_period !== undefined && (typeof params.slow_period !== 'number' || params.slow_period < 2 || params.slow_period > 500)) {
+        errors.push(`MA交叉: slow_period 必须是 2-500 之间的数字`)
+      }
+      // 支持两种字段名：slow_period（新）和 slow（旧）
+      if (params.slow !== undefined && (typeof params.slow !== 'number' || params.slow < 2 || params.slow > 500)) {
+        errors.push(`MA交叉: slow 必须是 2-500 之间的数字`)
+      }
+      if (params.ma_type !== undefined && !['sma', 'ema'].includes(params.ma_type)) {
+        errors.push(`MA交叉: ma_type 必须是 'sma' 或 'ema'`)
+      }
+      if (params.cross_direction !== undefined && !['golden', 'death'].includes(params.cross_direction)) {
+        errors.push(`MA交叉: cross_direction 必须是 'golden' 或 'death'`)
+      }
+      // Phase 1: 价格突破快速均线（兼容多种布尔值表示）
+      if (params.break_fast_ma !== undefined && params.break_fast_ma !== null) {
+        const val = params.break_fast_ma
+        const isBooleanLike = typeof val === 'boolean' ||
+                              val === 'true' || val === 'false' ||
+                              val === true || val === false ||
+                              val === 1 || val === 0 ||
+                              val === '1' || val === '0'
+        if (!isBooleanLike) {
+          errors.push(`MA交叉: break_fast_ma 必须是布尔值（true/false/1/0），当前值: ${val}（类型: ${typeof val}）`)
+        }
+      }
+      break
+
+    case 'bollinger':
+      if (params.period !== undefined && (typeof params.period !== 'number' || params.period < 2 || params.period > 100)) {
+        errors.push(`布林带: period 必须是 2-100 之间的数字`)
+      }
+      if (params.std_dev !== undefined && (typeof params.std_dev !== 'number' || params.std_dev < 0.5 || params.std_dev > 5)) {
+        errors.push(`布林带: std_dev 必须是 0.5-5 之间的数字`)
+      }
+      if (params.position !== undefined && !['upper', 'lower', 'middle'].includes(params.position)) {
+        errors.push(`布林带: position 必须是 'upper', 'lower' 或 'middle'`)
+      }
+      break
+
+    case 'volume':
+      if (params.volume_threshold !== undefined && (typeof params.volume_threshold !== 'number' || params.volume_threshold < 0)) {
+        errors.push(`成交量: volume_threshold 必须是大于 0 的数字`)
+      }
+      if (params.volume_ma_period !== undefined && (typeof params.volume_ma_period !== 'number' || params.volume_ma_period < 2 || params.volume_ma_period > 100)) {
+        errors.push(`成交量: volume_ma_period 必须是 2-100 之间的数字`)
+      }
+      // Phase 1: 成交量相对倍数
+      if (params.period !== undefined && (typeof params.period !== 'number' || params.period < 2 || params.period > 100)) {
+        errors.push(`成交量: period 必须是 2-100 之间的数字`)
+      }
+      if (params.multiplier !== undefined && (typeof params.multiplier !== 'number' || params.multiplier < 0.1 || params.multiplier > 10)) {
+        errors.push(`成交量: multiplier 必须是 0.1-10 之间的数字`)
+      }
+      // Phase 1: 成交量激增（兼容布尔值和字符串）
+      if (params.volume_surge !== undefined) {
+        const val = params.volume_surge
+        if (typeof val !== 'boolean' && val !== 'true' && val !== 'false' && val !== true && val !== false) {
+          errors.push(`成交量: volume_surge 必须是布尔值（true/false）`)
+        }
+      }
+      break
+
+    case 'atr':
+      if (params.period !== undefined && (typeof params.period !== 'number' || params.period < 2 || params.period > 100)) {
+        errors.push(`ATR: period 必须是 2-100 之间的数字`)
+      }
+      if (params.threshold !== undefined && (typeof params.threshold !== 'number' || params.threshold < 0)) {
+        errors.push(`ATR: threshold 必须是大于 0 的数字`)
+      }
+      // Phase 2: ATR 激增（兼容布尔值和字符串）
+      if (params.atr_surge !== undefined) {
+        const val = params.atr_surge
+        if (typeof val !== 'boolean' && val !== 'true' && val !== 'false' && val !== true && val !== false) {
+          errors.push(`ATR: atr_surge 必须是布尔值（true/false）`)
+        }
+      }
+      break
+  }
+
+  return errors
+}
+
 // 应用 JSON 配置
 const applyJsonConfig = () => {
   try {
     // 解析 JSON
     const config = JSON.parse(editingJsonText.value)
 
-    // 验证 JSON 格式
+    // 1. 验证顶层结构
     if (!config.logic || !Array.isArray(config.indicators)) {
       jsonError.value = 'JSON 格式错误：必须包含 logic 和 indicators 字段'
       return
     }
 
+    // 2. 验证 logic 值（兼容大小写）
+    const normalizedLogic = config.logic.toLowerCase()
+    if (!['and', 'or'].includes(normalizedLogic)) {
+      jsonError.value = `logic 必须是 'and'/'AND' 或 'or'/'OR'，当前值: ${config.logic}`
+      return
+    }
+
+    // 3. 验证 indicators 数组
+    if (config.indicators.length === 0) {
+      jsonError.value = '至少需要配置一个指标'
+      return
+    }
+
+    // 4. 验证每个指标
+    const allErrors = []
+    config.indicators.forEach((indicator, index) => {
+      if (!indicator.type) {
+        allErrors.push(`指标 #${index + 1}: 缺少 type 字段`)
+        return
+      }
+
+      const errors = validateIndicatorConfig(indicator)
+      allErrors.push(...errors)
+    })
+
+    if (allErrors.length > 0) {
+      jsonError.value = '配置验证失败：\n' + allErrors.join('\n')
+      return
+    }
+
+    // 5. 验证时间周期配置（如果存在）
+    if (config.timeframes) {
+      const validTimeframes = ['1m', '5m', '15m', '30m', '1h', '4h', '1d', '1w']
+      if (config.timeframes.primary && !validTimeframes.includes(config.timeframes.primary)) {
+        jsonError.value = `无效的主时间周期: ${config.timeframes.primary}。支持: ${validTimeframes.join(', ')}`
+        return
+      }
+      if (config.timeframes.confirm && !Array.isArray(config.timeframes.confirm)) {
+        jsonError.value = 'timeframes.confirm 必须是数组'
+        return
+      }
+      if (config.timeframes.confirm) {
+        const invalidTimeframes = config.timeframes.confirm.filter(tf => !validTimeframes.includes(tf))
+        if (invalidTimeframes.length > 0) {
+          jsonError.value = `无效的确认时间周期: ${invalidTimeframes.join(', ')}`
+          return
+        }
+      }
+    }
+
+    // 6. 所有验证通过，应用配置
+    // 规范化指标类型（处理别名）
+    // 前端使用 ma_crossover，后端使用 ma_cross，这里统一转换为前端格式
+    const typeAliases = {
+      'ma_cross': 'ma_crossover',  // 后端 -> 前端
+    }
+
+    const normalizedIndicators = config.indicators.map(ind => {
+      const normalizedType = typeAliases[ind.type] || ind.type
+
+      // 规范化参数字段名
+      const normalizedParams = { ...ind.params }
+
+      // RSI: oversold -> oversold_threshold
+      if (normalizedType === 'rsi') {
+        if (normalizedParams.oversold !== undefined && normalizedParams.oversold_threshold === undefined) {
+          normalizedParams.oversold_threshold = normalizedParams.oversold
+          delete normalizedParams.oversold
+        }
+        if (normalizedParams.overbought !== undefined && normalizedParams.overbought_threshold === undefined) {
+          normalizedParams.overbought_threshold = normalizedParams.overbought
+          delete normalizedParams.overbought
+        }
+      }
+
+      // MA交叉: fast/slow -> fast_period/slow_period（兼容两种类型名）
+      if (normalizedType === 'ma_crossover' || ind.type === 'ma_cross') {
+        if (normalizedParams.fast !== undefined && normalizedParams.fast_period === undefined) {
+          normalizedParams.fast_period = normalizedParams.fast
+          delete normalizedParams.fast
+        }
+        if (normalizedParams.slow !== undefined && normalizedParams.slow_period === undefined) {
+          normalizedParams.slow_period = normalizedParams.slow
+          delete normalizedParams.slow
+        }
+      }
+
+      // MACD: golden_cross -> signal_cross
+      if (normalizedType === 'macd' && normalizedParams.golden_cross === true) {
+        normalizedParams.signal_cross = 'bullish'
+      }
+
+      // 规范化布尔值（将字符串 "true"/"false" 转换为布尔值）
+      Object.keys(normalizedParams).forEach(key => {
+        const val = normalizedParams[key]
+        if (val === 'true') normalizedParams[key] = true
+        if (val === 'false') normalizedParams[key] = false
+      })
+
+      return {
+        ...ind,
+        type: normalizedType,
+        params: normalizedParams
+      }
+    })
+
     // 提取指标类型
-    const indicatorTypes = config.indicators.map(ind => ind.type)
+    const indicatorTypes = normalizedIndicators.map(ind => ind.type)
 
     // 构建指标配置对象
     const newIndicatorsConfig = {}
-    config.indicators.forEach(ind => {
+    normalizedIndicators.forEach(ind => {
       newIndicatorsConfig[ind.type] = {
         type: ind.type,
         enabled: ind.enabled !== false,
-        weight: ind.weight || 1,
+        weight: ind.weight || 33,
         params: ind.params || {}
       }
     })
 
-    // 更新配置
+    // 更新配置（统一转换为小写）
     emit('update:selectedIndicators', indicatorTypes)
-    emit('update:logic', config.logic)
+    emit('update:logic', normalizedLogic.toUpperCase())  // 前端使用大写 AND/OR
     emit('update:indicatorsConfig', newIndicatorsConfig)
 
     // 如果有时间周期配置，也更新
@@ -985,6 +1509,9 @@ const setRsiPreset = (preset) => {
   }
   newConfig.rsi.params = presets[preset]
   emit('update:indicatorsConfig', newConfig)
+
+  // 更新高亮状态
+  activePresets.value.rsi = preset
 }
 
 // MACD 预设
@@ -1001,6 +1528,9 @@ const setMacdPreset = (preset) => {
   }
   newConfig.macd.params = presets[preset]
   emit('update:indicatorsConfig', newConfig)
+
+  // 更新高亮状态
+  activePresets.value.macd = preset
 }
 
 // MA交叉 预设
@@ -1017,6 +1547,9 @@ const setMaCrossPreset = (preset) => {
   }
   newConfig.ma_crossover.params = presets[preset]
   emit('update:indicatorsConfig', newConfig)
+
+  // 更新高亮状态
+  activePresets.value.ma_crossover = preset
 }
 
 // ATR 预设
@@ -1033,6 +1566,9 @@ const setAtrPreset = (preset) => {
   }
   newConfig.atr.params = presets[preset]
   emit('update:indicatorsConfig', newConfig)
+
+  // 更新高亮状态
+  activePresets.value.atr = preset
 }
 
 // 成交量 预设
@@ -1049,6 +1585,9 @@ const setVolumePreset = (preset) => {
   }
   newConfig.volume.params = presets[preset]
   emit('update:indicatorsConfig', newConfig)
+
+  // 更新高亮状态
+  activePresets.value.volume = preset
 }
 
 // 应用策略模板

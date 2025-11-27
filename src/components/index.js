@@ -11,11 +11,6 @@ export { default as UserLevel } from './user/UserLevel.vue'
 export { default as Dashboard } from './dashboard/Dashboard.vue'
 export { default as DashboardChart } from './dashboard/DashboardChart.vue'
 
-// 交易相关组件
-export { default as PositionCard } from './trading/PositionCard.vue'
-export { default as StrategyCard } from './trading/StrategyCard.vue'
-export { default as TradingMetrics } from './trading/TradingMetrics.vue'
-
 // 设置相关组件
 export { default as SettingsPage } from './settings/SettingsPage.vue'
 

@@ -497,6 +497,22 @@ const handleSubmit = async () => {
         signal_expiration_hours: Number(signalQualityConfig.value.signal_expiration_hours),
         signal_strength_threshold: Number(signalQualityConfig.value.signal_strength_threshold)
       }),
+      // 多指标配置（价格提醒不需要）
+      ...(formData.value.signal_type !== 'price_alert' && selectedIndicators.value.length > 0 && {
+        indicators_config: {
+          indicators: selectedIndicators.value.map(type => {
+            const indicatorConfig = indicatorsConfig.value[type]
+            return {
+              type: type,
+              enabled: indicatorConfig?.enabled !== false,
+              weight: indicatorConfig?.weight || 33,
+              params: indicatorConfig?.params || {}
+            }
+          }),
+          trigger_threshold: Number(signalQualityConfig.value.signal_strength_threshold) || 70,
+          require_all: indicatorLogic.value === 'and'
+        }
+      }),
       // 多时间周期配置（价格提醒不需要）
       ...(formData.value.signal_type !== 'price_alert' && {
         timeframes_config: {

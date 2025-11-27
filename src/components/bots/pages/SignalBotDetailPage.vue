@@ -143,7 +143,7 @@
             </div>
 
             <!-- 指标配置和实时状态 -->
-            <div v-if="bot.signal_bot?.indicators_config?.indicators?.length > 0" class="bg-white rounded-xl border border-slate-200">
+            <div v-if="bot.signal_bot && bot.bot_type === 'signal'" class="bg-white rounded-xl border border-slate-200">
               <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
                 <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
                   <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -167,28 +167,66 @@
               </div>
 
               <div class="p-6 space-y-4">
-                <!-- 触发进度 -->
-                <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
-                  <div class="flex items-center justify-between mb-2">
-                    <span class="text-sm font-medium text-slate-700">触发进度</span>
-                    <span class="text-sm font-semibold text-slate-900">
-                      {{ satisfiedConditionsCount }}/{{ totalConditionsCount }} 条件满足
-                    </span>
-                  </div>
-                  <div class="w-full bg-slate-200 rounded-full h-2">
-                    <div
-                      class="h-2 rounded-full transition-all duration-300"
-                      :class="satisfiedConditionsCount === totalConditionsCount ? 'bg-green-500' : 'bg-blue-500'"
-                      :style="{ width: `${(satisfiedConditionsCount / totalConditionsCount * 100)}%` }"
-                    ></div>
-                  </div>
-                  <p class="text-xs text-slate-500 mt-2">
-                    {{ bot.signal_bot.indicators_config.require_all ? '需要所有条件都满足' : `需要综合得分 ≥ ${bot.signal_bot.indicators_config.trigger_threshold || 70}` }}
-                  </p>
+                <!-- 如果没有配置指标，显示提示 -->
+                <div v-if="!bot.signal_bot?.indicators_config?.indicators || bot.signal_bot.indicators_config.indicators.length === 0" class="text-center py-8">
+                  <svg class="w-12 h-12 mx-auto text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                  <p class="text-sm text-slate-500 mb-2">此信号机器人使用旧版配置格式</p>
+                  <p class="text-xs text-slate-400">请编辑机器人以使用新的多指标配置功能</p>
                 </div>
 
-                <!-- 指标列表 -->
-                <div class="space-y-3">
+                <!-- 有配置时显示 -->
+                <template v-else>
+                  <!-- 配置概览 -->
+                  <div class="grid grid-cols-3 gap-3 mb-4">
+                    <!-- 触发逻辑 -->
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                      <div class="text-xs text-blue-600 font-medium mb-1">触发逻辑</div>
+                      <div class="text-sm font-semibold text-blue-900">
+                        {{ bot.signal_bot.indicators_config.require_all ? 'AND（全部满足）' : 'OR（任一满足）' }}
+                      </div>
+                    </div>
+
+                    <!-- 主时间周期 -->
+                    <div class="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                      <div class="text-xs text-purple-600 font-medium mb-1">主时间周期</div>
+                      <div class="text-sm font-semibold text-purple-900">
+                        {{ bot.signal_bot.timeframes_config?.primary || '1h' }}
+                      </div>
+                    </div>
+
+                    <!-- 信号冷却期 -->
+                    <div class="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                      <div class="text-xs text-orange-600 font-medium mb-1">信号冷却期</div>
+                      <div class="text-sm font-semibold text-orange-900">
+                        {{ bot.signal_bot.signal_expiration_hours || 24 }} 小时
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 触发进度 -->
+                  <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                    <div class="flex items-center justify-between mb-2">
+                      <span class="text-sm font-medium text-slate-700">触发进度</span>
+                      <span class="text-sm font-semibold text-slate-900">
+                        {{ satisfiedConditionsCount }}/{{ totalConditionsCount }} 条件满足
+                      </span>
+                    </div>
+                    <div class="w-full bg-slate-200 rounded-full h-2">
+                      <div
+                        class="h-2 rounded-full transition-all duration-300"
+                        :class="satisfiedConditionsCount === totalConditionsCount ? 'bg-green-500' : 'bg-blue-500'"
+                        :style="{ width: `${(satisfiedConditionsCount / totalConditionsCount * 100)}%` }"
+                      ></div>
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">
+                      {{ bot.signal_bot.indicators_config.require_all ? '需要所有条件都满足（AND 逻辑）' : `需要任一条件满足（OR 逻辑）` }}
+                    </p>
+                  </div>
+
+                  <!-- 指标列表 -->
+                  <div class="space-y-3">
                   <div
                     v-for="(indicator, index) in bot.signal_bot.indicators_config.indicators"
                     :key="index"
@@ -238,10 +276,11 @@
                   </div>
                 </div>
 
-                <!-- 最后更新时间 -->
-                <div class="text-xs text-slate-500 text-center pt-2 border-t border-slate-200">
-                  最后更新: {{ indicatorValuesUpdatedAt ? formatDate(indicatorValuesUpdatedAt) : '暂无数据' }}
-                </div>
+                  <!-- 最后更新时间 -->
+                  <div class="text-xs text-slate-500 text-center pt-2 border-t border-slate-200">
+                    最后更新: {{ indicatorValuesUpdatedAt ? formatDate(indicatorValuesUpdatedAt) : '暂无数据' }}
+                  </div>
+                </template>
               </div>
             </div>
 
@@ -631,6 +670,11 @@ const loadBot = async () => {
     loading.value = true
     const response = await botAPI.getBotDetail(route.params.id)
     bot.value = response.data || response
+
+    // 调试：输出信号机器人配置
+    console.log('=== 信号机器人配置 ===')
+    console.log('bot.signal_bot:', bot.value.signal_bot)
+    console.log('indicators_config:', bot.value.signal_bot?.indicators_config)
   } catch (error) {
     console.error('加载机器人详情失败:', error)
     showError('加载机器人详情失败')

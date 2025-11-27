@@ -122,7 +122,7 @@
         <h3 class="text-xl font-semibold text-gray-900 mb-2">暂无订阅</h3>
         <p class="text-gray-600 mb-6">订阅优质策略，开启自动化交易</p>
         <router-link
-          to="/strategies"
+          to="/community"
           class="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           浏览策略

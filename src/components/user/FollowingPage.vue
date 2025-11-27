@@ -27,7 +27,7 @@
             <p class="text-3xl font-bold text-gray-900">24</p>
           </div>
           <router-link
-            to="/explore"
+            to="/community"
             class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
           >
             发现更多
@@ -84,7 +84,7 @@
         <h3 class="text-xl font-semibold text-gray-900 mb-2">暂无关注</h3>
         <p class="text-gray-600 mb-6">关注优秀的交易员，获取最新动态</p>
         <router-link
-          to="/explore"
+          to="/community"
           class="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
         >
           发现交易员

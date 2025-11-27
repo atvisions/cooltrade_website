@@ -82,7 +82,7 @@
                 <div class="text-xs text-slate-600 space-y-0.5">
                   <div v-for="(value, key) in getIndicatorParams(indicatorType)" :key="key" class="flex justify-between">
                     <span class="text-slate-500">{{ getParamLabel(key) }}:</span>
-                    <span class="font-medium">{{ value }}</span>
+                    <span class="font-medium">{{ formatParamValue(key, value) }}</span>
                   </div>
                 </div>
               </div>
@@ -350,15 +350,64 @@ const getIndicatorParams = (type) => {
 // 获取参数标签
 const getParamLabel = (key) => {
   const labels = {
+    // 通用参数
     'period': '周期',
-    'overbought': '超买',
-    'oversold': '超卖',
-    'fast': '快线',
-    'slow': '慢线',
-    'signal': '信号线',
     'threshold': '阈值',
-    'multiplier': '倍数'
+    'multiplier': '倍数',
+
+    // RSI 参数
+    'overbought_threshold': '超买阈值',
+    'oversold_threshold': '超卖阈值',
+    'overbought': '超买阈值',
+    'oversold': '超卖阈值',
+    'reversal_strength': '反转强度',
+
+    // MACD 参数
+    'fast': '快线周期',
+    'slow': '慢线周期',
+    'signal': '信号线周期',
+    'below_zero_cross': '零轴下方金叉',
+    'golden_cross': '金叉信号',
+    'green_shrink': '绿柱缩短',
+    'signal_cross': '信号交叉',
+
+    // MA 交叉参数
+    'fast_period': '快线周期',
+    'slow_period': '慢线周期',
+    'ma_type': '均线类型',
+    'cross_direction': '交叉方向',
+    'break_fast_ma': '价格突破快线',
+
+    // 成交量参数
+    'volume_surge': '成交量激增',
+
+    // ATR 参数
+    'atr_surge': 'ATR激增'
   }
   return labels[key] || key
+}
+
+// 格式化参数值
+const formatParamValue = (key, value) => {
+  // 布尔值转换
+  if (typeof value === 'boolean' || value === 1 || value === 0 || value === '1' || value === '0') {
+    const boolValue = value === true || value === 1 || value === '1'
+    return boolValue ? '✓ 已启用' : '○ 未启用'
+  }
+
+  // 特殊字段的值转换
+  if (key === 'signal_cross') {
+    return value === 'bullish' ? '看涨' : value === 'bearish' ? '看跌' : value
+  }
+
+  if (key === 'ma_type') {
+    return value === 'sma' ? 'SMA（简单）' : value === 'ema' ? 'EMA（指数）' : value
+  }
+
+  if (key === 'cross_direction') {
+    return value === 'golden' ? '金叉' : value === 'death' ? '死叉' : value
+  }
+
+  return value
 }
 </script>

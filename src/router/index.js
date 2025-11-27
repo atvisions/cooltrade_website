@@ -8,9 +8,7 @@ import SettingsPage from '../components/settings/SettingsPage.vue'
 // import HomePage from '../components/home/HomePage.vue'  // 已删除，未登录用户直接访问 Market
 import MarketPage from '../components/market/MarketPage.vue'
 import TokenDetailPage from '../components/market/TokenDetailPage.vue'
-import RecommendPage from '../components/recommend/RecommendPage.vue'
-import ExplorePage from '../components/explore/ExplorePage.vue'
-import StrategiesPage from '../components/strategies/StrategiesPage.vue'
+import CommunityPage from '../components/community/CommunityPage.vue'
 import FavoritesPage from '../components/user/FavoritesPage.vue'
 import OrdersPage from '../components/user/OrdersPage.vue'
 import SubscriptionsPage from '../components/user/SubscriptionsPage.vue'
@@ -41,28 +39,10 @@ const routes = [
     meta: { requiresAuth: false }
   },
   {
-    path: '/recommend',
-    name: 'Recommend',
-    component: RecommendPage,
+    path: '/community',
+    name: 'Community',
+    component: CommunityPage,
     meta: { requiresAuth: false }
-  },
-  {
-    path: '/explore',
-    name: 'Explore',
-    component: ExplorePage,
-    meta: { requiresAuth: false }
-  },
-  {
-    path: '/strategies',
-    name: 'Strategies',
-    component: StrategiesPage,
-    meta: { requiresAuth: false }
-  },
-  {
-    path: '/my-strategies',
-    name: 'MyStrategies',
-    component: () => import('../components/strategies/MyStrategiesPage.vue'),
-    meta: { requiresAuth: true }
   },
   {
     path: '/exchanges',

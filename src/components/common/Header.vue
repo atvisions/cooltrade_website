@@ -102,9 +102,9 @@
             </div>
 
             <router-link
-              to="/strategies"
+              to="/community"
               class="px-4 py-2 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors font-medium"
-              :class="{ 'text-blue-600 bg-blue-50': $route.path === '/strategies' }"
+              :class="{ 'text-blue-600 bg-blue-50': $route.path === '/community' }"
             >
               社区
             </router-link>
@@ -403,12 +403,12 @@
             市场
           </router-link>
           <router-link
-            to="/strategies"
+            to="/community"
             class="block px-4 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg transition-colors"
-            :class="{ 'text-blue-600 bg-blue-50 font-semibold': $route.path === '/strategies' }"
+            :class="{ 'text-blue-600 bg-blue-50 font-semibold': $route.path === '/community' }"
             @click="showMobileMenu = false"
           >
-            策略市场
+            社区
           </router-link>
 
           <!-- 未登录状态 - 移动端登录按钮 -->

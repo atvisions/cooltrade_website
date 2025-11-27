@@ -556,6 +556,11 @@ export const botAPI = {
     return apiRequest(`${getAPIBaseURL()}/trading/bots/${id}/latest-signal/`)
   },
 
+  // 获取机器人指标实时值
+  async getBotIndicatorValues(id) {
+    return apiRequest(`${getAPIBaseURL()}/trading/bots/${id}/indicator-values/`)
+  },
+
   // 获取分享统计
   async getShareStats(id) {
     return apiRequest(`${getAPIBaseURL()}/trading/bots/${id}/share_stats/`)

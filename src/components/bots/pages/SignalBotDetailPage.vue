@@ -142,6 +142,109 @@
               </div>
             </div>
 
+            <!-- 指标配置和实时状态 -->
+            <div v-if="bot.signal_bot?.indicators_config?.indicators?.length > 0" class="bg-white rounded-xl border border-slate-200">
+              <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+                <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
+                  <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                  指标条件与实时状态
+                </h2>
+                <button
+                  @click="refreshIndicatorValues"
+                  :disabled="loadingIndicators"
+                  class="px-3 py-1.5 text-xs font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
+                >
+                  <svg v-if="!loadingIndicators" class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  <svg v-else class="w-4 h-4 inline-block mr-1 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  {{ loadingIndicators ? '刷新中...' : '刷新数据' }}
+                </button>
+              </div>
+
+              <div class="p-6 space-y-4">
+                <!-- 触发进度 -->
+                <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-sm font-medium text-slate-700">触发进度</span>
+                    <span class="text-sm font-semibold text-slate-900">
+                      {{ satisfiedConditionsCount }}/{{ totalConditionsCount }} 条件满足
+                    </span>
+                  </div>
+                  <div class="w-full bg-slate-200 rounded-full h-2">
+                    <div
+                      class="h-2 rounded-full transition-all duration-300"
+                      :class="satisfiedConditionsCount === totalConditionsCount ? 'bg-green-500' : 'bg-blue-500'"
+                      :style="{ width: `${(satisfiedConditionsCount / totalConditionsCount * 100)}%` }"
+                    ></div>
+                  </div>
+                  <p class="text-xs text-slate-500 mt-2">
+                    {{ bot.signal_bot.indicators_config.require_all ? '需要所有条件都满足' : `需要综合得分 ≥ ${bot.signal_bot.indicators_config.trigger_threshold || 70}` }}
+                  </p>
+                </div>
+
+                <!-- 指标列表 -->
+                <div class="space-y-3">
+                  <div
+                    v-for="(indicator, index) in bot.signal_bot.indicators_config.indicators"
+                    :key="index"
+                    v-show="indicator.enabled"
+                    class="border border-slate-200 rounded-lg p-4 hover:border-slate-300 transition-colors"
+                  >
+                    <div class="flex items-start justify-between mb-3">
+                      <div class="flex items-center gap-2">
+                        <span :class="[
+                          'w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold',
+                          isConditionSatisfied(indicator) ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'
+                        ]">
+                          {{ isConditionSatisfied(indicator) ? '✓' : '○' }}
+                        </span>
+                        <h3 class="text-sm font-semibold text-slate-900">{{ getIndicatorLabel(indicator.type) }}</h3>
+                        <span class="text-xs text-slate-500">权重: {{ indicator.weight }}%</span>
+                      </div>
+                      <span :class="[
+                        'px-2 py-1 rounded text-xs font-medium',
+                        isConditionSatisfied(indicator) ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'
+                      ]">
+                        {{ isConditionSatisfied(indicator) ? '已满足' : '未满足' }}
+                      </span>
+                    </div>
+
+                    <!-- 指标参数和当前值 -->
+                    <div class="space-y-2">
+                      <div v-for="(condition, condKey) in getIndicatorConditions(indicator)" :key="condKey" class="flex items-center justify-between text-sm">
+                        <span class="text-slate-600">{{ condition.label }}</span>
+                        <div class="flex items-center gap-2">
+                          <span class="font-mono text-slate-900">{{ condition.currentValue }}</span>
+                          <span class="text-slate-400">{{ condition.operator }}</span>
+                          <span class="font-mono font-semibold text-blue-600">{{ condition.threshold }}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- 距离触发还差多少 -->
+                    <div v-if="!isConditionSatisfied(indicator) && getDistanceToTrigger(indicator)" class="mt-3 pt-3 border-t border-slate-200">
+                      <p class="text-xs text-orange-600 flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        {{ getDistanceToTrigger(indicator) }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 最后更新时间 -->
+                <div class="text-xs text-slate-500 text-center pt-2 border-t border-slate-200">
+                  最后更新: {{ indicatorValuesUpdatedAt ? formatDate(indicatorValuesUpdatedAt) : '暂无数据' }}
+                </div>
+              </div>
+            </div>
+
             <!-- 最近信号 -->
             <div class="space-y-3">
               <h2 class="text-base font-semibold text-slate-900">最近信号</h2>
@@ -469,7 +572,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import Header from '../../common/Header.vue'
 import UserSidebar from '../../common/UserSidebar.vue'
@@ -481,17 +584,34 @@ const route = useRoute()
 const loading = ref(false)
 const actionLoading = ref(false)
 const loadingSignals = ref(false)
+const loadingIndicators = ref(false)
 const bot = ref(null)
 const signals = ref([])
 const expandedSignals = ref({})  // 记录哪些信号的分析详情是展开的
+const indicatorValues = ref({})  // 存储实时指标值
+const indicatorValuesUpdatedAt = ref(null)  // 最后更新时间
 
 // 定时刷新
 let refreshInterval = null
+let indicatorRefreshInterval = null
 
 // 切换分析详情展开/折叠
 const toggleAnalysis = (signalId) => {
   expandedSignals.value[signalId] = !expandedSignals.value[signalId]
 }
+
+// 计算满足条件的数量
+const satisfiedConditionsCount = computed(() => {
+  if (!bot.value?.signal_bot?.indicators_config?.indicators) return 0
+  return bot.value.signal_bot.indicators_config.indicators.filter(ind =>
+    ind.enabled && isConditionSatisfied(ind)
+  ).length
+})
+
+const totalConditionsCount = computed(() => {
+  if (!bot.value?.signal_bot?.indicators_config?.indicators) return 0
+  return bot.value.signal_bot.indicators_config.indicators.filter(ind => ind.enabled).length
+})
 
 // 获取分析维度的中文标签
 const getAnalysisLabel = (key) => {
@@ -627,9 +747,195 @@ const formatCheckInterval = (interval) => {
   return `${value} ${unitMap[unit] || unit}`
 }
 
+// 获取指标标签
+const getIndicatorLabel = (type) => {
+  const labels = {
+    'rsi': 'RSI 相对强弱指标',
+    'macd': 'MACD 指标',
+    'ma': '移动平均线',
+    'ema': '指数移动平均线',
+    'bollinger': '布林带',
+    'kdj': 'KDJ 指标',
+    'volume': '成交量',
+    'atr': 'ATR 波动率'
+  }
+  return labels[type] || type.toUpperCase()
+}
+
+// 获取指标条件
+const getIndicatorConditions = (indicator) => {
+  const currentValues = indicatorValues.value[indicator.type] || {}
+  const params = indicator.params || {}
+  const conditions = []
+
+  switch (indicator.type) {
+    case 'rsi':
+      if (params.oversold_threshold) {
+        conditions.push({
+          label: 'RSI 超卖',
+          currentValue: currentValues.rsi?.toFixed(2) || '--',
+          operator: '<',
+          threshold: params.oversold_threshold
+        })
+      }
+      if (params.overbought_threshold) {
+        conditions.push({
+          label: 'RSI 超买',
+          currentValue: currentValues.rsi?.toFixed(2) || '--',
+          operator: '>',
+          threshold: params.overbought_threshold
+        })
+      }
+      break
+
+    case 'macd':
+      if (params.signal_cross) {
+        conditions.push({
+          label: 'MACD 金叉/死叉',
+          currentValue: currentValues.macd_histogram?.toFixed(4) || '--',
+          operator: params.signal_cross === 'bullish' ? '>' : '<',
+          threshold: '0'
+        })
+      }
+      break
+
+    case 'ma':
+    case 'ema':
+      if (params.price_cross) {
+        conditions.push({
+          label: `价格突破 ${indicator.type.toUpperCase()}`,
+          currentValue: currentValues.price?.toFixed(2) || '--',
+          operator: params.price_cross === 'above' ? '>' : '<',
+          threshold: currentValues[`${indicator.type}_${params.period}`]?.toFixed(2) || '--'
+        })
+      }
+      break
+
+    case 'volume':
+      if (params.volume_threshold) {
+        conditions.push({
+          label: '成交量',
+          currentValue: currentValues.volume ? (currentValues.volume / 1000000).toFixed(2) + 'M' : '--',
+          operator: '>',
+          threshold: (params.volume_threshold / 1000000).toFixed(2) + 'M'
+        })
+      }
+      break
+  }
+
+  return conditions
+}
+
+// 判断条件是否满足
+const isConditionSatisfied = (indicator) => {
+  const currentValues = indicatorValues.value[indicator.type] || {}
+  const params = indicator.params || {}
+
+  switch (indicator.type) {
+    case 'rsi':
+      if (params.oversold_threshold && currentValues.rsi) {
+        return currentValues.rsi < params.oversold_threshold
+      }
+      if (params.overbought_threshold && currentValues.rsi) {
+        return currentValues.rsi > params.overbought_threshold
+      }
+      break
+
+    case 'macd':
+      if (params.signal_cross && currentValues.macd_histogram !== undefined) {
+        if (params.signal_cross === 'bullish') {
+          return currentValues.macd_histogram > 0
+        } else {
+          return currentValues.macd_histogram < 0
+        }
+      }
+      break
+
+    case 'ma':
+    case 'ema':
+      if (params.price_cross && currentValues.price && currentValues[`${indicator.type}_${params.period}`]) {
+        if (params.price_cross === 'above') {
+          return currentValues.price > currentValues[`${indicator.type}_${params.period}`]
+        } else {
+          return currentValues.price < currentValues[`${indicator.type}_${params.period}`]
+        }
+      }
+      break
+
+    case 'volume':
+      if (params.volume_threshold && currentValues.volume) {
+        return currentValues.volume > params.volume_threshold
+      }
+      break
+  }
+
+  return false
+}
+
+// 计算距离触发还差多少
+const getDistanceToTrigger = (indicator) => {
+  const currentValues = indicatorValues.value[indicator.type] || {}
+  const params = indicator.params || {}
+
+  switch (indicator.type) {
+    case 'rsi':
+      if (params.oversold_threshold && currentValues.rsi) {
+        const diff = currentValues.rsi - params.oversold_threshold
+        if (diff > 0) {
+          return `还需下降 ${diff.toFixed(2)} 点`
+        }
+      }
+      if (params.overbought_threshold && currentValues.rsi) {
+        const diff = params.overbought_threshold - currentValues.rsi
+        if (diff > 0) {
+          return `还需上升 ${diff.toFixed(2)} 点`
+        }
+      }
+      break
+
+    case 'volume':
+      if (params.volume_threshold && currentValues.volume) {
+        const diff = params.volume_threshold - currentValues.volume
+        if (diff > 0) {
+          return `还需增加 ${(diff / 1000000).toFixed(2)}M 成交量`
+        }
+      }
+      break
+  }
+
+  return null
+}
+
+// 刷新指标实时值
+const refreshIndicatorValues = async () => {
+  if (!bot.value) return
+
+  try {
+    loadingIndicators.value = true
+    const response = await botAPI.getBotIndicatorValues(bot.value.id)
+    indicatorValues.value = response.data || {}
+    indicatorValuesUpdatedAt.value = new Date().toISOString()
+  } catch (error) {
+    console.error('获取指标值失败:', error)
+    showError('获取指标实时值失败')
+  } finally {
+    loadingIndicators.value = false
+  }
+}
+
 onMounted(async () => {
   await loadBot()
   await loadSignals()
+
+  // 如果有指标配置，立即加载指标值
+  if (bot.value?.signal_bot?.indicators_config?.indicators?.length > 0) {
+    await refreshIndicatorValues()
+
+    // 每30秒自动刷新指标值
+    indicatorRefreshInterval = setInterval(async () => {
+      await refreshIndicatorValues()
+    }, 30000)
+  }
 
   // 每30秒自动刷新信号数据
   refreshInterval = setInterval(async () => {
@@ -640,6 +946,9 @@ onMounted(async () => {
 onUnmounted(() => {
   if (refreshInterval) {
     clearInterval(refreshInterval)
+  }
+  if (indicatorRefreshInterval) {
+    clearInterval(indicatorRefreshInterval)
   }
 })
 </script>

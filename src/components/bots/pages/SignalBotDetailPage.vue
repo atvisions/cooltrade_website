@@ -242,7 +242,7 @@
                           {{ isConditionSatisfied(indicator) ? '✓' : '○' }}
                         </span>
                         <h3 class="text-sm font-semibold text-slate-900">{{ getIndicatorLabel(indicator.type) }}</h3>
-                        <span class="text-xs text-slate-500">权重: {{ indicator.weight }}%</span>
+                        <span class="text-xs text-slate-500">权重: {{ getIndicatorWeightPercent(indicator) }}%</span>
                       </div>
                       <span :class="[
                         'px-2 py-1 rounded text-xs font-medium',
@@ -254,12 +254,28 @@
 
                     <!-- 指标参数和当前值 -->
                     <div class="space-y-2">
-                      <div v-for="(condition, condKey) in getIndicatorConditions(indicator)" :key="condKey" class="flex items-center justify-between text-sm">
-                        <span class="text-slate-600">{{ condition.label }}</span>
+                      <div
+                        v-for="(condition, condKey) in getIndicatorConditions(indicator)"
+                        :key="condKey"
+                        :class="[
+                          'flex items-center justify-between text-sm',
+                          condition.isConfig ? 'bg-slate-50 px-2 py-1.5 rounded' : ''
+                        ]"
+                      >
+                        <span :class="condition.isConfig ? 'text-slate-500 text-xs' : 'text-slate-600'">
+                          {{ condition.label }}
+                        </span>
                         <div class="flex items-center gap-2">
-                          <span class="font-mono text-slate-900">{{ condition.currentValue }}</span>
-                          <span class="text-slate-400">{{ condition.operator }}</span>
-                          <span class="font-mono font-semibold text-blue-600">{{ condition.threshold }}</span>
+                          <span :class="condition.isConfig ? 'text-slate-700 text-xs' : 'font-mono text-slate-900'">
+                            {{ condition.currentValue }}
+                          </span>
+                          <span v-if="condition.operator" class="text-slate-400">{{ condition.operator }}</span>
+                          <span v-if="condition.threshold && condition.threshold !== '（配置）'" class="font-mono font-semibold text-blue-600">
+                            {{ condition.threshold }}
+                          </span>
+                          <span v-else-if="condition.threshold === '（配置）'" class="text-xs text-slate-400">
+                            {{ condition.threshold }}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -791,12 +807,29 @@ const formatCheckInterval = (interval) => {
   return `${value} ${unitMap[unit] || unit}`
 }
 
+// 计算指标权重百分比
+const getIndicatorWeightPercent = (indicator) => {
+  const indicators = bot.value?.signal_bot?.indicators_config?.indicators || []
+  const enabledIndicators = indicators.filter(ind => ind.enabled)
+
+  if (enabledIndicators.length === 0) return 0
+
+  // 计算总权重
+  const totalWeight = enabledIndicators.reduce((sum, ind) => sum + (ind.weight || 1), 0)
+
+  // 计算当前指标的权重百分比
+  const weight = indicator.weight || 1
+  return ((weight / totalWeight) * 100).toFixed(1)
+}
+
 // 获取指标标签
 const getIndicatorLabel = (type) => {
   const labels = {
     'rsi': 'RSI 相对强弱指标',
     'macd': 'MACD 指标',
     'ma': '移动平均线',
+    'ma_crossover': 'MA 交叉',
+    'ma_cross': 'MA 交叉',
     'ema': '指数移动平均线',
     'bollinger': '布林带',
     'kdj': 'KDJ 指标',
@@ -814,56 +847,156 @@ const getIndicatorConditions = (indicator) => {
 
   switch (indicator.type) {
     case 'rsi':
-      if (params.oversold_threshold) {
+      // 显示参数配置
+      conditions.push({
+        label: `RSI 周期`,
+        currentValue: params.period || 14,
+        operator: '',
+        threshold: '（配置）',
+        isConfig: true
+      })
+
+      // 显示当前值和阈值
+      if (params.oversold || params.oversold_threshold) {
+        const threshold = params.oversold || params.oversold_threshold
         conditions.push({
           label: 'RSI 超卖',
           currentValue: currentValues.rsi?.toFixed(2) || '--',
           operator: '<',
-          threshold: params.oversold_threshold
+          threshold: threshold
         })
       }
-      if (params.overbought_threshold) {
+      if (params.overbought || params.overbought_threshold) {
+        const threshold = params.overbought || params.overbought_threshold
         conditions.push({
           label: 'RSI 超买',
           currentValue: currentValues.rsi?.toFixed(2) || '--',
           operator: '>',
-          threshold: params.overbought_threshold
+          threshold: threshold
         })
       }
       break
 
     case 'macd':
-      if (params.signal_cross) {
+      // 显示参数配置
+      conditions.push({
+        label: `MACD 参数`,
+        currentValue: `(${params.fast || 12}, ${params.slow || 26}, ${params.signal || 9})`,
+        operator: '',
+        threshold: '（配置）',
+        isConfig: true
+      })
+
+      // 零轴下方金叉过滤
+      if (params.below_zero_cross) {
         conditions.push({
-          label: 'MACD 金叉/死叉',
-          currentValue: currentValues.macd_histogram?.toFixed(4) || '--',
-          operator: params.signal_cross === 'bullish' ? '>' : '<',
-          threshold: '0'
+          label: '零轴下方金叉',
+          currentValue: params.below_zero_cross ? '✓ 已启用' : '○ 未启用',
+          operator: '',
+          threshold: '',
+          isConfig: true
         })
       }
+
+      // MACD 金叉/死叉
+      conditions.push({
+        label: 'MACD 柱状图',
+        currentValue: currentValues.macd_histogram?.toFixed(4) || '--',
+        operator: '穿越',
+        threshold: '0'
+      })
       break
 
-    case 'ma':
-    case 'ema':
-      if (params.price_cross) {
+    case 'ma_crossover':
+    case 'ma_cross':
+      // 显示参数配置
+      conditions.push({
+        label: `MA 周期`,
+        currentValue: `快线 ${params.fast || params.fast_period || 7} / 慢线 ${params.slow || params.slow_period || 25}`,
+        operator: '',
+        threshold: '（配置）',
+        isConfig: true
+      })
+
+      // 价格突破快线过滤
+      if (params.break_fast_ma) {
         conditions.push({
-          label: `价格突破 ${indicator.type.toUpperCase()}`,
-          currentValue: currentValues.price?.toFixed(2) || '--',
-          operator: params.price_cross === 'above' ? '>' : '<',
-          threshold: currentValues[`${indicator.type}_${params.period}`]?.toFixed(2) || '--'
+          label: '价格突破快线',
+          currentValue: params.break_fast_ma ? '✓ 已启用' : '○ 未启用',
+          operator: '',
+          threshold: '',
+          isConfig: true
         })
       }
+
+      // MA 交叉状态
+      const fastPeriod = params.fast || params.fast_period || 7
+      const slowPeriod = params.slow || params.slow_period || 25
+      conditions.push({
+        label: `MA${fastPeriod} vs MA${slowPeriod}`,
+        currentValue: currentValues[`ma_${fastPeriod}`]?.toFixed(2) || '--',
+        operator: '穿越',
+        threshold: currentValues[`ma_${slowPeriod}`]?.toFixed(2) || '--'
+      })
       break
 
     case 'volume':
-      if (params.volume_threshold) {
-        conditions.push({
-          label: '成交量',
-          currentValue: currentValues.volume ? (currentValues.volume / 1000000).toFixed(2) + 'M' : '--',
-          operator: '>',
-          threshold: (params.volume_threshold / 1000000).toFixed(2) + 'M'
-        })
-      }
+      // 显示参数配置
+      conditions.push({
+        label: `成交量周期`,
+        currentValue: params.period || 20,
+        operator: '',
+        threshold: '（配置）',
+        isConfig: true
+      })
+
+      conditions.push({
+        label: `激增倍数`,
+        currentValue: `${params.multiplier || 1.5}x`,
+        operator: '',
+        threshold: '（配置）',
+        isConfig: true
+      })
+
+      // 成交量对比
+      const volumeMa = currentValues.volume_ma || 0
+      const currentVolume = currentValues.volume || 0
+      conditions.push({
+        label: '当前成交量',
+        currentValue: currentVolume ? (currentVolume / 1000000).toFixed(2) + 'M' : '--',
+        operator: '>',
+        threshold: volumeMa ? ((volumeMa * (params.multiplier || 1.5)) / 1000000).toFixed(2) + 'M' : '--'
+      })
+      break
+
+    case 'atr':
+      // 显示参数配置
+      conditions.push({
+        label: `ATR 周期`,
+        currentValue: params.period || 14,
+        operator: '',
+        threshold: '（配置）',
+        isConfig: true
+      })
+
+      conditions.push({
+        label: `波动阈值`,
+        currentValue: `${params.threshold || 2}x`,
+        operator: '',
+        threshold: '（配置）',
+        isConfig: true
+      })
+
+      // ATR 波动检测
+      const atr = currentValues.atr || 0
+      const price = currentValues.price || 0
+      const atrPercent = price > 0 ? ((atr / price) * 100).toFixed(2) : '--'
+      conditions.push({
+        label: 'ATR 波动率',
+        currentValue: atrPercent + '%',
+        operator: '>',
+        threshold: (params.threshold || 2) + '%'
+      })
       break
   }
 

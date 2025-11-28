@@ -137,48 +137,6 @@
           placeholder="30"
         />
       </div>
-
-      <!-- 信号过期时间 -->
-      <div class="mt-6 pt-6 border-t border-slate-200">
-        <div class="flex items-baseline gap-2 mb-3">
-          <label class="block text-sm font-medium text-slate-700">
-            信号有效期
-          </label>
-          <div class="relative">
-            <button
-              @mouseenter="showSignalExpirationTooltip = true"
-              @mouseleave="showSignalExpirationTooltip = false"
-              class="p-1 text-slate-400 hover:text-slate-600 transition-colors"
-            >
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </button>
-            <div
-              v-if="showSignalExpirationTooltip"
-              class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg z-50 pointer-events-none"
-            >
-              <div class="whitespace-nowrap">防止过时信号被执行</div>
-              <div class="whitespace-nowrap">短期：1-4小时 | 中期：12-24小时 | 长期：48-72小时</div>
-              <div class="whitespace-nowrap">每5分钟自动检查一次</div>
-              <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
-            </div>
-          </div>
-        </div>
-        <div class="flex items-end gap-3">
-          <div class="flex-1">
-            <Input
-              :model-value="signalExpirationHours"
-              @update:model-value="$emit('update:signalExpirationHours', $event)"
-              type="number"
-              min="1"
-              max="720"
-              placeholder="24"
-            />
-          </div>
-          <div class="text-sm text-slate-600 font-medium pb-3">小时</div>
-        </div>
-      </div>
     </div>
   </Card>
 </template>
@@ -204,17 +162,12 @@ const props = defineProps({
   cooldownMinutes: {
     type: Number,
     default: 30
-  },
-  signalExpirationHours: {
-    type: Number,
-    default: 24
   }
 })
 
-defineEmits(['update:notifyEmail', 'update:notifyApp', 'update:alertMode', 'update:cooldownMinutes', 'update:signalExpirationHours'])
+defineEmits(['update:notifyEmail', 'update:notifyApp', 'update:alertMode', 'update:cooldownMinutes'])
 
 const showCooldownTooltip = ref(false)
-const showSignalExpirationTooltip = ref(false)
 
 const alertModes = [
   {

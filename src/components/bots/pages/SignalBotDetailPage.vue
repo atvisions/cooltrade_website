@@ -26,19 +26,40 @@
 
           <!-- 机器人详情 -->
           <div v-else-if="bot" class="space-y-6">
-            <!-- 顶部标题栏 - 现代简约设计 -->
+            <!-- 顶部标题栏 - 优化设计 -->
             <div class="bg-white rounded-xl border border-slate-200 overflow-hidden">
               <div class="p-6">
                 <div class="flex items-start justify-between">
-                  <!-- 左侧：图标 + 标题 -->
+                  <!-- 左侧：代币 Logo + 标题 -->
                   <div class="flex items-start gap-4 flex-1">
-                    <div class="w-14 h-14 bg-purple-600 rounded-xl flex items-center justify-center flex-shrink-0">
-                      <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
-                      </svg>
+                    <!-- 代币 Logo -->
+                    <div class="w-16 h-16 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden bg-slate-100">
+                      <img
+                        v-if="bot.token_logo"
+                        :src="bot.token_logo"
+                        :alt="bot.token_symbol"
+                        class="w-full h-full object-cover"
+                        @error="handleImageError"
+                      />
+                      <div v-else class="w-full h-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+                        <span class="text-white text-xl font-bold">{{ bot.token_symbol?.charAt(0) || '?' }}</span>
+                      </div>
                     </div>
                     <div class="flex-1 min-w-0">
-                      <h1 class="text-2xl font-semibold text-slate-900 mb-1">{{ bot.name }}</h1>
+                      <div class="flex items-center gap-2 mb-1">
+                        <h1 class="text-2xl font-bold text-slate-900">{{ bot.token_symbol }}/{{ bot.trading_pair }}</h1>
+                        <span :class="[
+                          'px-2.5 py-0.5 rounded-full text-xs font-semibold',
+                          bot.status === 'running'
+                            ? 'bg-green-100 text-green-700'
+                            : bot.status === 'paused'
+                            ? 'bg-yellow-100 text-yellow-700'
+                            : 'bg-slate-100 text-slate-700'
+                        ]">
+                          {{ getStatusLabel(bot.status) }}
+                        </span>
+                      </div>
+                      <h2 class="text-base font-medium text-slate-700 mb-1">{{ bot.name }}</h2>
                       <p class="text-sm text-slate-500">{{ bot.description }}</p>
                     </div>
                   </div>
@@ -71,79 +92,290 @@
                 </div>
               </div>
 
-              <!-- 基础信息网格 - 紧凑设计 -->
-              <div class="grid grid-cols-4 border-t border-slate-200">
-                <div class="px-6 py-4 border-r border-slate-200">
-                  <p class="text-xs text-slate-500 mb-1">类型</p>
-                  <p class="text-sm font-medium text-slate-900">信号机器人</p>
-                </div>
-                <div class="px-6 py-4 border-r border-slate-200">
-                  <p class="text-xs text-slate-500 mb-1">状态</p>
-                  <span :class="[
-                    'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium',
-                    bot.status === 'running'
-                      ? 'bg-green-100 text-green-700'
-                      : bot.status === 'paused'
-                      ? 'bg-yellow-100 text-yellow-700'
-                      : 'bg-slate-100 text-slate-700'
-                  ]">
-                    {{ getStatusLabel(bot.status) }}
-                  </span>
-                </div>
-                <div class="px-6 py-4 border-r border-slate-200">
-                  <p class="text-xs text-slate-500 mb-1">交易对</p>
-                  <p class="text-sm font-medium text-slate-900">{{ bot.token_symbol }}/{{ bot.trading_pair }}</p>
-                </div>
-                <div class="px-6 py-4">
-                  <p class="text-xs text-slate-500 mb-1">交易所</p>
-                  <p class="text-sm font-medium text-slate-900">{{ bot.exchange_name }}</p>
+              <!-- 核心配置信息 - 重新设计 -->
+              <div class="border-t border-slate-200 bg-slate-50">
+                <div class="grid grid-cols-6 divide-x divide-slate-200">
+                  <!-- 交易所 -->
+                  <div class="px-4 py-3">
+                    <p class="text-xs text-slate-500 mb-1">交易所</p>
+                    <p class="text-sm font-semibold text-slate-900">{{ bot.exchange_display || bot.exchange_name }}</p>
+                  </div>
+
+                  <!-- 信号类型 -->
+                  <div class="px-4 py-3">
+                    <p class="text-xs text-slate-500 mb-1">信号类型</p>
+                    <p class="text-sm font-semibold text-slate-900">{{ getSignalTypeLabel(bot.signal_bot?.signal_type) }}</p>
+                  </div>
+
+                  <!-- 主时间周期 -->
+                  <div class="px-4 py-3">
+                    <p class="text-xs text-slate-500 mb-1">主时间周期</p>
+                    <p class="text-sm font-semibold text-slate-900">{{ bot.signal_bot?.timeframes_config?.primary || bot.timeframe || '1h' }}</p>
+                  </div>
+
+                  <!-- 检查间隔 -->
+                  <div class="px-4 py-3">
+                    <p class="text-xs text-slate-500 mb-1">检查间隔</p>
+                    <p class="text-sm font-semibold text-slate-900">{{ formatCheckInterval(bot.signal_bot?.check_interval) }}</p>
+                  </div>
+
+                  <!-- 信号过期 -->
+                  <div class="px-4 py-3">
+                    <p class="text-xs text-slate-500 mb-1">信号过期</p>
+                    <p class="text-sm font-semibold text-slate-900">{{ bot.signal_bot?.signal_expiration_hours || 24 }}小时</p>
+                  </div>
+
+                  <!-- 通知方式 -->
+                  <div class="px-4 py-3">
+                    <p class="text-xs text-slate-500 mb-1">通知方式</p>
+                    <div class="flex items-center gap-1.5">
+                      <span v-if="bot.signal_bot?.notify_email" class="inline-flex items-center text-xs font-medium text-green-700" title="邮件通知">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
+                          <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
+                        </svg>
+                      </span>
+                      <span v-if="bot.signal_bot?.notify_app" class="inline-flex items-center text-xs font-medium text-blue-700" title="应用内通知">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"></path>
+                        </svg>
+                      </span>
+                      <span v-if="!bot.signal_bot?.notify_email && !bot.signal_bot?.notify_app" class="text-xs text-slate-400">未启用</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <!-- 信号配置 - 简约卡片 -->
-            <div class="bg-white rounded-xl border border-slate-200">
-              <div class="px-6 py-4 border-b border-slate-200">
+            <!-- 价格提醒 - 显示当前价格和目标价格 -->
+            <div v-if="bot.signal_bot && bot.signal_bot.signal_type === 'price_alert'" class="bg-white rounded-xl border border-slate-200">
+              <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
                 <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
                   <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
-                  信号配置
+                  价格监控
                 </h2>
+                <div class="flex items-center gap-3">
+                  <span class="text-xs text-slate-500">
+                    {{ indicatorValuesUpdatedAt ? formatDate(indicatorValuesUpdatedAt) : '暂无数据' }}
+                  </span>
+                  <button
+                    @click="refreshIndicatorValues"
+                    :disabled="loadingIndicators"
+                    class="px-3 py-1.5 text-xs font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    <svg v-if="!loadingIndicators" class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    {{ loadingIndicators ? '刷新中...' : '刷新数据' }}
+                  </button>
+                </div>
               </div>
-              <div class="grid grid-cols-2 md:grid-cols-4 divide-x divide-slate-200">
-                <div class="px-6 py-4">
-                  <p class="text-xs text-slate-500 mb-1">信号类型</p>
-                  <p class="text-sm font-medium text-slate-900">{{ getSignalTypeLabel(bot.signal_bot?.signal_type) }}</p>
+
+              <div class="p-6">
+                <div class="grid grid-cols-2 gap-6">
+                  <!-- 当前价格 -->
+                  <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-6 border border-blue-200">
+                    <div class="flex items-center justify-between mb-2">
+                      <div class="text-sm text-blue-600 font-medium">当前价格</div>
+                      <div v-if="priceUpdateInfo" class="text-xs text-blue-500" :title="priceUpdateInfo.tooltip">
+                        {{ priceUpdateInfo.text }}
+                      </div>
+                    </div>
+                    <div class="text-3xl font-bold text-blue-900">
+                      {{ indicatorValues?.price ? formatPrice(indicatorValues.price) : '--' }}
+                    </div>
+                    <div class="text-xs text-blue-600 mt-2">{{ bot.trading_pair }}</div>
+                  </div>
+
+                  <!-- 目标价格 -->
+                  <div class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-6 border border-purple-200">
+                    <div class="text-sm text-purple-600 font-medium mb-2">目标价格</div>
+                    <div class="text-3xl font-bold text-purple-900">
+                      {{ getPriceAlertTargetPrice || '--' }}
+                    </div>
+                    <div class="text-xs text-purple-600 mt-2">
+                      {{ getPriceAlertConditionText }}
+                    </div>
+                  </div>
                 </div>
-                <div class="px-6 py-4">
-                  <p class="text-xs text-slate-500 mb-1">检查间隔</p>
-                  <p class="text-sm font-medium text-slate-900">{{ formatCheckInterval(bot.signal_bot?.check_interval) }}</p>
-                </div>
-                <div class="px-6 py-4">
-                  <p class="text-xs text-slate-500 mb-1">邮件通知</p>
-                  <span :class="[
-                    'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium',
-                    bot.signal_bot?.notify_email ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'
+
+                <!-- 触发状态 -->
+                <div v-if="indicatorValues?.price && getPriceAlertTargetPrice" class="mt-6 p-4 rounded-lg"
+                  :class="[
+                    isPriceAlertTriggered && !cooldownStatus?.inCooldown ? 'bg-green-50 border border-green-200' :
+                    isPriceAlertTriggered && cooldownStatus?.inCooldown ? 'bg-yellow-50 border border-yellow-200' :
+                    'bg-slate-50 border border-slate-200'
                   ]">
-                    {{ bot.signal_bot?.notify_email ? '已启用' : '未启用' }}
-                  </span>
-                </div>
-                <div class="px-6 py-4">
-                  <p class="text-xs text-slate-500 mb-1">应用内通知</p>
-                  <span :class="[
-                    'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium',
-                    bot.signal_bot?.notify_app ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'
-                  ]">
-                    {{ bot.signal_bot?.notify_app ? '已启用' : '未启用' }}
-                  </span>
+                  <div class="flex items-center justify-between">
+                    <span class="text-sm font-medium"
+                      :class="[
+                        isPriceAlertTriggered && !cooldownStatus?.inCooldown ? 'text-green-700' :
+                        isPriceAlertTriggered && cooldownStatus?.inCooldown ? 'text-yellow-700' :
+                        'text-slate-700'
+                      ]">
+                      触发状态
+                    </span>
+                    <div class="text-right">
+                      <div class="text-lg font-bold"
+                        :class="[
+                          isPriceAlertTriggered && !cooldownStatus?.inCooldown ? 'text-green-700' :
+                          isPriceAlertTriggered && cooldownStatus?.inCooldown ? 'text-yellow-700' :
+                          'text-slate-700'
+                        ]">
+                        <span v-if="!isPriceAlertTriggered">○ 未触发</span>
+                        <span v-else-if="cooldownStatus?.inCooldown">⏳ 冷却中</span>
+                        <span v-else>✓ 已触发</span>
+                      </div>
+                      <!-- 冷却倒计时 -->
+                      <div v-if="isPriceAlertTriggered && cooldownStatus?.inCooldown" class="mt-2 space-y-2">
+                        <div class="text-xs text-yellow-600">
+                          剩余 {{ cooldownStatus.text }}
+                        </div>
+                        <!-- 进度条 -->
+                        <div class="w-full bg-yellow-100 rounded-full h-1.5">
+                          <div
+                            class="bg-yellow-500 h-1.5 rounded-full transition-all duration-1000"
+                            :style="{ width: `${cooldownStatus.percentage}%` }"
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <!-- 指标配置和实时状态 -->
-            <div v-if="bot.signal_bot && bot.bot_type === 'signal'" class="bg-white rounded-xl border border-slate-200">
+            <!-- 成交量提醒 - 显示当前成交量 -->
+            <div v-if="bot.signal_bot && bot.signal_bot.signal_type === 'volume'" class="bg-white rounded-xl border border-slate-200">
+              <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+                <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
+                  <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                  成交量监控
+                </h2>
+                <div class="flex items-center gap-3">
+                  <span class="text-xs text-slate-500">
+                    {{ indicatorValuesUpdatedAt ? formatDate(indicatorValuesUpdatedAt) : '暂无数据' }}
+                  </span>
+                  <button
+                    @click="refreshIndicatorValues"
+                    :disabled="loadingIndicators"
+                    class="px-3 py-1.5 text-xs font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    <svg v-if="!loadingIndicators" class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    {{ loadingIndicators ? '刷新中...' : '刷新数据' }}
+                  </button>
+                </div>
+              </div>
+
+              <div class="p-6">
+                <div class="grid grid-cols-2 gap-6">
+                  <!-- 当前成交量 -->
+                  <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-6 border border-green-200">
+                    <div class="text-sm text-green-600 font-medium mb-2">当前成交量</div>
+                    <div class="text-3xl font-bold text-green-900">
+                      {{ indicatorValues?.volume?.volume ? formatVolume(indicatorValues.volume.volume) : '--' }}
+                    </div>
+                    <div class="text-xs text-green-600 mt-2">24小时成交量</div>
+                  </div>
+
+                  <!-- 平均成交量 -->
+                  <div class="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-6 border border-orange-200">
+                    <div class="text-sm text-orange-600 font-medium mb-2">平均成交量</div>
+                    <div class="text-3xl font-bold text-orange-900">
+                      {{ indicatorValues?.volume?.volume_ma ? formatVolume(indicatorValues.volume.volume_ma) : '--' }}
+                    </div>
+                    <div class="text-xs text-orange-600 mt-2">
+                      {{ bot.signal_bot?.config?.volume_period || 20 }} 周期均值
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 激增倍数 -->
+                <div v-if="indicatorValues?.volume?.volume && indicatorValues?.volume?.volume_ma" class="mt-6 p-4 rounded-lg" :class="isVolumeSurge ? 'bg-green-50 border border-green-200' : 'bg-slate-50 border border-slate-200'">
+                  <div class="flex items-center justify-between">
+                    <span class="text-sm font-medium" :class="isVolumeSurge ? 'text-green-700' : 'text-slate-700'">
+                      成交量激增
+                    </span>
+                    <span class="text-lg font-bold" :class="isVolumeSurge ? 'text-green-700' : 'text-slate-700'">
+                      {{ (indicatorValues.volume.volume / indicatorValues.volume.volume_ma).toFixed(2) }}x
+                      (阈值: {{ bot.signal_bot?.config?.volume_multiplier || 2.0 }}x)
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 波动性提醒 - 显示当前波动率 -->
+            <div v-if="bot.signal_bot && bot.signal_bot.signal_type === 'volatility'" class="bg-white rounded-xl border border-slate-200">
+              <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+                <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
+                  <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
+                  波动率监控
+                </h2>
+                <div class="flex items-center gap-3">
+                  <span class="text-xs text-slate-500">
+                    {{ indicatorValuesUpdatedAt ? formatDate(indicatorValuesUpdatedAt) : '暂无数据' }}
+                  </span>
+                  <button
+                    @click="refreshIndicatorValues"
+                    :disabled="loadingIndicators"
+                    class="px-3 py-1.5 text-xs font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    <svg v-if="!loadingIndicators" class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    {{ loadingIndicators ? '刷新中...' : '刷新数据' }}
+                  </button>
+                </div>
+              </div>
+
+              <div class="p-6">
+                <div class="grid grid-cols-2 gap-6">
+                  <!-- 当前 ATR -->
+                  <div class="bg-gradient-to-br from-red-50 to-red-100 rounded-xl p-6 border border-red-200">
+                    <div class="text-sm text-red-600 font-medium mb-2">当前 ATR</div>
+                    <div class="text-3xl font-bold text-red-900">
+                      {{ indicatorValues?.atr?.atr ? formatPrice(indicatorValues.atr.atr) : '--' }}
+                    </div>
+                    <div class="text-xs text-red-600 mt-2">平均真实波幅</div>
+                  </div>
+
+                  <!-- 波动率百分比 -->
+                  <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl p-6 border border-yellow-200">
+                    <div class="text-sm text-yellow-600 font-medium mb-2">波动率</div>
+                    <div class="text-3xl font-bold text-yellow-900">
+                      {{ getVolatilityPercent }}%
+                    </div>
+                    <div class="text-xs text-yellow-600 mt-2">
+                      阈值: {{ bot.signal_bot?.config?.volatility_threshold || 5.0 }}%
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 触发状态 -->
+                <div v-if="indicatorValues?.atr?.atr" class="mt-6 p-4 rounded-lg" :class="isVolatilityHigh ? 'bg-red-50 border border-red-200' : 'bg-slate-50 border border-slate-200'">
+                  <div class="flex items-center justify-between">
+                    <span class="text-sm font-medium" :class="isVolatilityHigh ? 'text-red-700' : 'text-slate-700'">
+                      高波动警告
+                    </span>
+                    <span class="text-lg font-bold" :class="isVolatilityHigh ? 'text-red-700' : 'text-slate-700'">
+                      {{ isVolatilityHigh ? '⚠ 高波动' : '○ 正常' }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 指标配置和实时状态 - 仅显示给指标信号提醒类型 -->
+            <div v-if="bot.signal_bot && bot.bot_type === 'signal' && bot.signal_bot.signal_type === 'indicator_alert'" class="bg-white rounded-xl border border-slate-200">
               <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
                 <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
                   <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -151,29 +383,34 @@
                   </svg>
                   指标条件与实时状态
                 </h2>
-                <button
-                  @click="refreshIndicatorValues"
-                  :disabled="loadingIndicators"
-                  class="px-3 py-1.5 text-xs font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
-                >
-                  <svg v-if="!loadingIndicators" class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                  <svg v-else class="w-4 h-4 inline-block mr-1 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                  {{ loadingIndicators ? '刷新中...' : '刷新数据' }}
-                </button>
+                <div class="flex items-center gap-3">
+                  <span class="text-xs text-slate-500">
+                    {{ indicatorValuesUpdatedAt ? formatDate(indicatorValuesUpdatedAt) : '暂无数据' }}
+                  </span>
+                  <button
+                    @click="refreshIndicatorValues"
+                    :disabled="loadingIndicators"
+                    class="px-3 py-1.5 text-xs font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    <svg v-if="!loadingIndicators" class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    <svg v-else class="w-4 h-4 inline-block mr-1 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    {{ loadingIndicators ? '刷新中...' : '刷新数据' }}
+                  </button>
+                </div>
               </div>
 
               <div class="p-6 space-y-4">
-                <!-- 如果没有配置指标，显示提示 -->
+                <!-- 如果没有配置指标，显示提示（仅针对指标信号提醒类型） -->
                 <div v-if="!bot.signal_bot?.indicators_config?.indicators || bot.signal_bot.indicators_config.indicators.length === 0" class="text-center py-8">
                   <svg class="w-12 h-12 mx-auto text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                   </svg>
-                  <p class="text-sm text-slate-500 mb-2">此信号机器人使用旧版配置格式</p>
-                  <p class="text-xs text-slate-400">请编辑机器人以使用新的多指标配置功能</p>
+                  <p class="text-sm text-slate-500 mb-2">暂无指标配置</p>
+                  <p class="text-xs text-slate-400">请编辑机器人以添加指标配置</p>
                 </div>
 
                 <!-- 有配置时显示 -->
@@ -226,64 +463,102 @@
                   </div>
 
                   <!-- 指标列表 -->
-                  <div class="space-y-3">
+                  <div class="space-y-4">
                   <div
                     v-for="(indicator, index) in bot.signal_bot.indicators_config.indicators"
                     :key="index"
                     v-show="indicator.enabled"
-                    class="border border-slate-200 rounded-lg p-4 hover:border-slate-300 transition-colors"
+                    :class="[
+                      'border-2 rounded-xl p-5 transition-all',
+                      isConditionSatisfied(indicator)
+                        ? 'border-green-300 bg-green-50'
+                        : 'border-slate-200 bg-white hover:border-slate-300'
+                    ]"
                   >
-                    <div class="flex items-start justify-between mb-3">
-                      <div class="flex items-center gap-2">
+                    <!-- 指标头部 -->
+                    <div class="flex items-center justify-between mb-4">
+                      <div class="flex items-center gap-3">
                         <span :class="[
-                          'w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold',
-                          isConditionSatisfied(indicator) ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'
+                          'w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold',
+                          isConditionSatisfied(indicator) ? 'bg-green-500 text-white' : 'bg-slate-200 text-slate-600'
                         ]">
-                          {{ isConditionSatisfied(indicator) ? '✓' : '○' }}
+                          {{ isConditionSatisfied(indicator) ? '✓' : index + 1 }}
                         </span>
-                        <h3 class="text-sm font-semibold text-slate-900">{{ getIndicatorLabel(indicator.type) }}</h3>
-                        <span class="text-xs text-slate-500">权重: {{ getIndicatorWeightPercent(indicator) }}%</span>
+                        <div>
+                          <h3 class="text-base font-bold text-slate-900">{{ getIndicatorLabel(indicator.type) }}</h3>
+                          <p class="text-xs text-slate-500">权重占比: {{ getIndicatorWeightPercent(indicator) }}%</p>
+                        </div>
                       </div>
                       <span :class="[
-                        'px-2 py-1 rounded text-xs font-medium',
-                        isConditionSatisfied(indicator) ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-600'
+                        'px-3 py-1.5 rounded-lg text-sm font-bold',
+                        isConditionSatisfied(indicator)
+                          ? 'bg-green-500 text-white'
+                          : 'bg-slate-200 text-slate-700'
                       ]">
-                        {{ isConditionSatisfied(indicator) ? '已满足' : '未满足' }}
+                        {{ isConditionSatisfied(indicator) ? '✓ 已满足' : '✗ 未满足' }}
                       </span>
                     </div>
 
-                    <!-- 指标参数和当前值 -->
-                    <div class="space-y-2">
-                      <div
-                        v-for="(condition, condKey) in getIndicatorConditions(indicator)"
-                        :key="condKey"
-                        :class="[
-                          'flex items-center justify-between text-sm',
-                          condition.isConfig ? 'bg-slate-50 px-2 py-1.5 rounded' : ''
-                        ]"
-                      >
-                        <span :class="condition.isConfig ? 'text-slate-500 text-xs' : 'text-slate-600'">
-                          {{ condition.label }}
-                        </span>
-                        <div class="flex items-center gap-2">
-                          <span :class="condition.isConfig ? 'text-slate-700 text-xs' : 'font-mono text-slate-900'">
+                    <!-- 配置参数区域 -->
+                    <div class="bg-slate-100 rounded-lg p-3 mb-3">
+                      <div class="text-xs font-semibold text-slate-600 mb-2 flex items-center gap-1">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        配置参数
+                      </div>
+                      <div class="space-y-1">
+                        <div
+                          v-for="(condition, condKey) in getIndicatorConditions(indicator).filter(c => c.isConfig)"
+                          :key="'config-' + condKey"
+                          class="flex items-center justify-between text-xs"
+                        >
+                          <span class="text-slate-600">{{ condition.label }}</span>
+                          <span
+                            :class="[
+                              'font-semibold',
+                              condition.statusColor || 'text-slate-800'
+                            ]"
+                          >
                             {{ condition.currentValue }}
-                          </span>
-                          <span v-if="condition.operator" class="text-slate-400">{{ condition.operator }}</span>
-                          <span v-if="condition.threshold && condition.threshold !== '（配置）'" class="font-mono font-semibold text-blue-600">
-                            {{ condition.threshold }}
-                          </span>
-                          <span v-else-if="condition.threshold === '（配置）'" class="text-xs text-slate-400">
-                            {{ condition.threshold }}
                           </span>
                         </div>
                       </div>
                     </div>
 
-                    <!-- 距离触发还差多少 -->
-                    <div v-if="!isConditionSatisfied(indicator) && getDistanceToTrigger(indicator)" class="mt-3 pt-3 border-t border-slate-200">
-                      <p class="text-xs text-orange-600 flex items-center gap-1">
+                    <!-- 触发条件区域 -->
+                    <div class="space-y-2">
+                      <div class="text-xs font-semibold text-slate-600 mb-2 flex items-center gap-1">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        触发条件
+                      </div>
+                      <div
+                        v-for="(condition, condKey) in getIndicatorConditions(indicator).filter(c => !c.isConfig)"
+                        :key="'condition-' + condKey"
+                        class="bg-white border border-slate-200 rounded-lg p-3"
+                      >
+                        <div class="flex items-center justify-between">
+                          <span class="text-xs text-slate-600 font-medium">{{ condition.label }}</span>
+                          <div class="flex items-center gap-2 text-sm">
+                            <span class="font-mono font-bold text-slate-900 bg-slate-100 px-2 py-1 rounded">
+                              {{ condition.currentValue }}
+                            </span>
+                            <span v-if="condition.operator" class="text-slate-400 font-semibold">{{ condition.operator }}</span>
+                            <span v-if="condition.threshold" class="font-mono font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded">
+                              {{ condition.threshold }}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- 距离触发提示 -->
+                    <div v-if="!isConditionSatisfied(indicator) && getDistanceToTrigger(indicator)" class="mt-3 bg-orange-50 border border-orange-200 rounded-lg p-3">
+                      <p class="text-sm text-orange-700 font-medium flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         {{ getDistanceToTrigger(indicator) }}
@@ -291,11 +566,6 @@
                     </div>
                   </div>
                 </div>
-
-                  <!-- 最后更新时间 -->
-                  <div class="text-xs text-slate-500 text-center pt-2 border-t border-slate-200">
-                    最后更新: {{ indicatorValuesUpdatedAt ? formatDate(indicatorValuesUpdatedAt) : '暂无数据' }}
-                  </div>
                 </template>
               </div>
             </div>
@@ -623,6 +893,18 @@
         </main>
       </div>
     </div>
+
+    <!-- 停止确认对话框 -->
+    <ConfirmDialog
+      :show="showStopConfirm"
+      type="warning"
+      title="停止机器人"
+      message="机器人正在运行中，编辑前需要先停止。是否停止并继续编辑？"
+      confirm-text="停止并编辑"
+      cancel-text="取消"
+      @confirm="confirmStopAndEdit"
+      @close="showStopConfirm = false"
+    />
   </div>
 </template>
 
@@ -631,6 +913,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import Header from '../../common/Header.vue'
 import UserSidebar from '../../common/UserSidebar.vue'
+import ConfirmDialog from '../../common/ConfirmDialog.vue'
 import { botAPI } from '../../../utils/api'
 import { showSuccess, showError } from '../../../utils/notification'
 
@@ -643,6 +926,9 @@ const loadingIndicators = ref(false)
 const bot = ref(null)
 const signals = ref([])
 const expandedSignals = ref({})  // 记录哪些信号的分析详情是展开的
+
+// 确认对话框状态
+const showStopConfirm = ref(false)
 const indicatorValues = ref({})  // 存储实时指标值
 const indicatorValuesUpdatedAt = ref(null)  // 最后更新时间
 
@@ -745,11 +1031,43 @@ const handleStopBot = async () => {
 }
 
 const handleEditBot = () => {
-  router.push(`/bots/edit-signal/${bot.value.id}`)
+  // 如果机器人正在运行，先提示停止
+  if (bot.value.status === 'running') {
+    showStopConfirm.value = true
+  } else {
+    // 机器人未运行，直接跳转编辑
+    router.push(`/bots/edit-signal/${bot.value.id}`)
+  }
+}
+
+// 确认停止并编辑
+const confirmStopAndEdit = async () => {
+  try {
+    actionLoading.value = true
+    await botAPI.stopBot(bot.value.id)
+    showSuccess('机器人已停止')
+    await loadBot()
+    // 停止成功后跳转到编辑页面
+    router.push(`/bots/edit-signal/${bot.value.id}`)
+  } catch (error) {
+    showError(error.message || '停止失败')
+  } finally {
+    actionLoading.value = false
+  }
 }
 
 const handleBack = () => {
   router.push('/signal-bots')
+}
+
+// 处理图片加载错误
+const handleImageError = (event) => {
+  event.target.style.display = 'none'
+  event.target.parentElement.innerHTML = `
+    <div class="w-full h-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+      <span class="text-white text-xl font-bold">${bot.value.token_symbol?.charAt(0) || '?'}</span>
+    </div>
+  `
 }
 
 const getStatusLabel = (status) => {
@@ -765,16 +1083,14 @@ const getStatusLabel = (status) => {
 const getSignalTypeLabel = (type) => {
   const map = {
     price_alert: '价格提醒',
+    indicator_alert: '指标信号提醒',
     technical_indicator: '技术指标',
+    volatility: '波动性提醒',
+    volume: '成交量/持仓提醒',
     volume_alert: '成交量提醒',
     price_change: '价格变化'
   }
   return map[type] || type || '未知'
-}
-
-const formatPrice = (value) => {
-  if (!value) return '0.00'
-  return parseFloat(value).toFixed(2)
 }
 
 const formatDate = (date) => {
@@ -807,6 +1123,213 @@ const formatCheckInterval = (interval) => {
   return `${value} ${unitMap[unit] || unit}`
 }
 
+// 格式化成交量
+const formatVolume = (volume) => {
+  if (!volume) return '--'
+
+  if (volume >= 1000000000) {
+    return (volume / 1000000000).toFixed(2) + 'B'
+  } else if (volume >= 1000000) {
+    return (volume / 1000000).toFixed(2) + 'M'
+  } else if (volume >= 1000) {
+    return (volume / 1000).toFixed(2) + 'K'
+  }
+  return volume.toFixed(2)
+}
+
+// 获取价格提醒的目标价格
+const getPriceAlertTargetPrice = computed(() => {
+  // 尝试从 config.price_alert.target_price 获取（新格式）
+  if (bot.value?.signal_bot?.config?.price_alert?.target_price) {
+    return bot.value.signal_bot.config.price_alert.target_price
+  }
+  // 尝试从 config.target_price 获取（旧格式）
+  if (bot.value?.signal_bot?.config?.target_price) {
+    return bot.value.signal_bot.config.target_price
+  }
+  // 尝试从 bot.config 获取
+  if (bot.value?.config?.price_alert?.target_price) {
+    return bot.value.config.price_alert.target_price
+  }
+  if (bot.value?.config?.target_price) {
+    return bot.value.config.target_price
+  }
+  return null
+})
+
+// 获取价格提醒的条件
+const getPriceAlertCondition = computed(() => {
+  // 尝试从 config.price_alert.condition 获取（新格式）
+  if (bot.value?.signal_bot?.config?.price_alert?.condition) {
+    return bot.value.signal_bot.config.price_alert.condition
+  }
+  // 尝试从 config.condition 获取（旧格式）
+  if (bot.value?.signal_bot?.config?.condition) {
+    return bot.value.signal_bot.config.condition
+  }
+  // 尝试从 bot.config 获取
+  if (bot.value?.config?.price_alert?.condition) {
+    return bot.value.config.price_alert.condition
+  }
+  if (bot.value?.config?.condition) {
+    return bot.value.config.condition
+  }
+  return 'above'
+})
+
+// 获取价格提醒条件文本
+const getPriceAlertConditionText = computed(() => {
+  const condition = getPriceAlertCondition.value
+  const conditionMap = {
+    'above': '价格高于',
+    'below': '价格低于',
+    'crosses_above': '向上突破',
+    'crosses_below': '向下突破'
+  }
+  return conditionMap[condition] || '价格高于'
+})
+
+// 价格更新信息
+const priceUpdateInfo = computed(() => {
+  const metadata = indicatorValues.value?._metadata
+  if (!metadata?.price_updated_at) {
+    return null
+  }
+
+  const updatedAt = new Date(metadata.price_updated_at)
+  const now = new Date()
+  const diffMinutes = Math.floor((now - updatedAt) / 1000 / 60)
+
+  let text = ''
+  let tooltip = ''
+
+  if (diffMinutes < 1) {
+    text = '刚刚更新'
+    tooltip = '价格数据刚刚更新'
+  } else if (diffMinutes < 60) {
+    text = `${diffMinutes}分钟前`
+    tooltip = `价格数据更新于 ${diffMinutes} 分钟前`
+  } else {
+    const diffHours = Math.floor(diffMinutes / 60)
+    text = `${diffHours}小时前`
+    tooltip = `价格数据更新于 ${diffHours} 小时前`
+  }
+
+  // 添加数据源信息
+  const source = metadata.price_source === 'token' ? '实时价格' : 'K线数据'
+  tooltip += ` (来源: ${source})`
+
+  return { text, tooltip }
+})
+
+// 冷却状态信息
+const cooldownStatus = computed(() => {
+  // 获取冷却时间配置（分钟）
+  const config = bot.value?.signal_bot?.config || {}
+  const cooldownMinutes = config.cooldown_minutes || 30
+  const alertMode = config.alert_mode || 'state_change'
+
+  // 只有在 condition_sustain 模式下才有冷却期
+  if (alertMode !== 'condition_sustain') {
+    return null
+  }
+
+  // 获取最近的信号
+  const latestSignal = signals.value?.[0]
+  if (!latestSignal) {
+    return null
+  }
+
+  // 计算距离上次信号的时间（分钟）
+  const signalTime = new Date(latestSignal.created_at)
+  const now = new Date()
+  const elapsedMinutes = Math.floor((now - signalTime) / 1000 / 60)
+
+  // 如果还在冷却期内
+  if (elapsedMinutes < cooldownMinutes) {
+    const remainingMinutes = cooldownMinutes - elapsedMinutes
+    return {
+      inCooldown: true,
+      remainingMinutes,
+      totalMinutes: cooldownMinutes,
+      percentage: (elapsedMinutes / cooldownMinutes) * 100,
+      text: remainingMinutes > 60
+        ? `${Math.floor(remainingMinutes / 60)}小时${remainingMinutes % 60}分钟`
+        : `${remainingMinutes}分钟`
+    }
+  }
+
+  // 冷却期已过
+  return {
+    inCooldown: false,
+    remainingMinutes: 0,
+    totalMinutes: cooldownMinutes
+  }
+})
+
+// 价格提醒触发状态（与后端逻辑保持一致）
+const isPriceAlertTriggered = computed(() => {
+  if (!indicatorValues.value?.price || !getPriceAlertTargetPrice.value) {
+    return false
+  }
+
+  const currentPrice = parseFloat(indicatorValues.value.price)
+  const targetPrice = parseFloat(getPriceAlertTargetPrice.value)
+  const condition = getPriceAlertCondition.value
+
+  // ⚠️ 注意：这里的逻辑必须与后端 signal_engine.py 的 _check_price_alert() 保持一致
+  // 后端使用严格的大于/小于判断，不是大于等于/小于等于
+  if (condition === 'above') {
+    return currentPrice > targetPrice  // 严格大于
+  } else if (condition === 'below') {
+    return currentPrice < targetPrice  // 严格小于
+  } else if (condition === 'crosses_above') {
+    // crosses_above 需要历史数据判断，前端无法准确判断，显示为未触发
+    return false
+  } else if (condition === 'crosses_below') {
+    // crosses_below 需要历史数据判断，前端无法准确判断，显示为未触发
+    return false
+  }
+
+  return false
+})
+
+// 成交量激增状态
+const isVolumeSurge = computed(() => {
+  if (!indicatorValues.value?.volume?.volume || !indicatorValues.value?.volume?.volume_ma) {
+    return false
+  }
+
+  const currentVolume = parseFloat(indicatorValues.value.volume.volume)
+  const avgVolume = parseFloat(indicatorValues.value.volume.volume_ma)
+  const multiplier = parseFloat(bot.value?.signal_bot?.config?.volume_multiplier || 2.0)
+
+  return currentVolume >= (avgVolume * multiplier)
+})
+
+// 波动率百分比
+const getVolatilityPercent = computed(() => {
+  if (!indicatorValues.value?.atr?.atr || !indicatorValues.value?.atr?.price) {
+    return '--'
+  }
+
+  const atr = parseFloat(indicatorValues.value.atr.atr)
+  const price = parseFloat(indicatorValues.value.atr.price)
+
+  if (price === 0) return '--'
+
+  return ((atr / price) * 100).toFixed(2)
+})
+
+// 高波动状态
+const isVolatilityHigh = computed(() => {
+  const volatilityPercent = getVolatilityPercent.value
+  if (volatilityPercent === '--') return false
+
+  const threshold = parseFloat(bot.value?.signal_bot?.config?.volatility_threshold || 5.0)
+  return parseFloat(volatilityPercent) >= threshold
+})
+
 // 计算指标权重百分比
 const getIndicatorWeightPercent = (indicator) => {
   const indicators = bot.value?.signal_bot?.indicators_config?.indicators || []
@@ -820,6 +1343,30 @@ const getIndicatorWeightPercent = (indicator) => {
   // 计算当前指标的权重百分比
   const weight = indicator.weight || 1
   return ((weight / totalWeight) * 100).toFixed(1)
+}
+
+// 智能格式化价格（支持各种价格范围的代币）
+const formatPrice = (value) => {
+  if (value === null || value === undefined) return '--'
+
+  // 确保 value 是数字类型
+  const numValue = typeof value === 'number' ? value : parseFloat(value)
+
+  if (isNaN(numValue)) return '--'
+  if (numValue === 0) return '0.00'
+
+  const absValue = Math.abs(numValue)
+
+  // 高价代币（>= $1）：保留2位小数
+  if (absValue >= 1) return numValue.toFixed(2)
+  // 中价代币（>= $0.01）：保留4位小数
+  if (absValue >= 0.01) return numValue.toFixed(4)
+  // 低价代币（>= $0.0001）：保留6位小数
+  if (absValue >= 0.0001) return numValue.toFixed(6)
+  // 极低价代币（>= $0.00000001）：保留8位小数
+  if (absValue >= 0.00000001) return numValue.toFixed(8)
+  // 超低价代币（< $0.00000001）：使用科学计数法
+  return numValue.toExponential(2)
 }
 
 // 获取指标标签
@@ -887,33 +1434,54 @@ const getIndicatorConditions = (indicator) => {
         isConfig: true
       })
 
-      // 零轴下方金叉过滤
+      // 零轴下方金叉过滤 - 显示当前状态
       if (params.below_zero_cross) {
+        const macd = currentValues.macd || 0
+        let statusText = '--'
+        let statusColor = ''
+
+        if (macd !== 0) {
+          if (macd < 0) {
+            statusText = '✓ 在零轴下方（满足条件）'
+            statusColor = 'text-green-600'
+          } else {
+            statusText = '✗ 在零轴上方（不满足）'
+            statusColor = 'text-red-600'
+          }
+        }
+
         conditions.push({
-          label: '零轴下方金叉',
-          currentValue: params.below_zero_cross ? '✓ 已启用' : '○ 未启用',
+          label: '零轴下方金叉过滤',
+          currentValue: statusText,
           operator: '',
           threshold: '',
-          isConfig: true
+          isConfig: true,
+          statusColor: statusColor
         })
       }
 
-      // MACD 金叉/死叉
+      // MACD 柱状图状态
       const macdHist = currentValues.macd_histogram
       let macdHistDisplay = '--'
+      let macdStatus = ''
+
       if (macdHist !== undefined && macdHist !== null) {
-        // 如果值很小，使用科学计数法或更多小数位
-        if (Math.abs(macdHist) < 0.0001 && macdHist !== 0) {
-          macdHistDisplay = macdHist.toExponential(2)
+        macdHistDisplay = formatPrice(macdHist)
+
+        if (macdHist > 0) {
+          macdStatus = '（金叉 ✓）'
+        } else if (macdHist < 0) {
+          macdStatus = '（死叉 ✗）'
         } else {
-          macdHistDisplay = macdHist.toFixed(6)
+          macdStatus = '（在零轴）'
         }
       }
+
       conditions.push({
         label: 'MACD 柱状图',
-        currentValue: macdHistDisplay,
-        operator: '穿越',
-        threshold: '0'
+        currentValue: macdHistDisplay + ' ' + macdStatus,
+        operator: '',
+        threshold: ''
       })
       break
 
@@ -928,25 +1496,57 @@ const getIndicatorConditions = (indicator) => {
         isConfig: true
       })
 
-      // 价格突破快线过滤
+      // 价格突破快线过滤 - 显示当前状态
       if (params.break_fast_ma) {
+        const fastPeriod = params.fast || params.fast_period || 7
+        const price = currentValues.price || 0
+        const fastMA = currentValues[`ma_${fastPeriod}`] || 0
+
+        let statusText = '--'
+        let statusColor = ''
+
+        if (price > 0 && fastMA > 0) {
+          if (price > fastMA) {
+            statusText = `✓ 价格 ${formatPrice(price)} > MA${fastPeriod} ${formatPrice(fastMA)}（满足）`
+            statusColor = 'text-green-600'
+          } else {
+            statusText = `✗ 价格 ${formatPrice(price)} < MA${fastPeriod} ${formatPrice(fastMA)}（不满足）`
+            statusColor = 'text-red-600'
+          }
+        }
+
         conditions.push({
-          label: '价格突破快线',
-          currentValue: params.break_fast_ma ? '✓ 已启用' : '○ 未启用',
+          label: '价格突破快线过滤',
+          currentValue: statusText,
           operator: '',
           threshold: '',
-          isConfig: true
+          isConfig: true,
+          statusColor: statusColor
         })
       }
 
       // MA 交叉状态
       const fastPeriod = params.fast || params.fast_period || 7
       const slowPeriod = params.slow || params.slow_period || 25
+      const fastMA = currentValues[`ma_${fastPeriod}`]
+      const slowMA = currentValues[`ma_${slowPeriod}`]
+
+      let crossStatus = ''
+      if (fastMA && slowMA) {
+        if (fastMA > slowMA) {
+          crossStatus = '（金叉 ✓）'
+        } else if (fastMA < slowMA) {
+          crossStatus = '（死叉 ✗）'
+        } else {
+          crossStatus = '（相等）'
+        }
+      }
+
       conditions.push({
         label: `MA${fastPeriod} vs MA${slowPeriod}`,
-        currentValue: currentValues[`ma_${fastPeriod}`]?.toFixed(2) || '--',
-        operator: '穿越',
-        threshold: currentValues[`ma_${slowPeriod}`]?.toFixed(2) || '--'
+        currentValue: formatPrice(fastMA) + ' ' + crossStatus,
+        operator: 'vs',
+        threshold: formatPrice(slowMA)
       })
       break
 
@@ -1104,10 +1704,19 @@ const refreshIndicatorValues = async () => {
     loadingIndicators.value = true
     const response = await botAPI.getBotIndicatorValues(bot.value.id)
     indicatorValues.value = response.data || {}
-    indicatorValuesUpdatedAt.value = new Date().toISOString()
+
+    // 使用后端返回的实际数据时间
+    if (response.data?._metadata?.indicator_calculated_at) {
+      indicatorValuesUpdatedAt.value = response.data._metadata.indicator_calculated_at
+    } else if (response.data?._metadata?.kline_time) {
+      indicatorValuesUpdatedAt.value = response.data._metadata.kline_time
+    } else {
+      indicatorValuesUpdatedAt.value = new Date().toISOString()
+    }
 
     // 调试：打印返回的数据
     console.log('📊 指标实时值:', indicatorValues.value)
+    console.log('⏰ 数据更新时间:', indicatorValuesUpdatedAt.value)
   } catch (error) {
     console.error('获取指标值失败:', error)
     showError('获取指标实时值失败')
@@ -1120,8 +1729,8 @@ onMounted(async () => {
   await loadBot()
   await loadSignals()
 
-  // 如果有指标配置，立即加载指标值
-  if (bot.value?.signal_bot?.indicators_config?.indicators?.length > 0) {
+  // 所有信号机器人都需要加载指标值（价格提醒、成交量、波动性、指标信号）
+  if (bot.value?.bot_type === 'signal') {
     await refreshIndicatorValues()
 
     // 每30秒自动刷新指标值

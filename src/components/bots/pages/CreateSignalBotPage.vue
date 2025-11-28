@@ -157,12 +157,10 @@
             :notify-app="formData.notify_app"
             :alert-mode="alertConfig.mode"
             :cooldown-minutes="alertConfig.cooldown_minutes"
-            :signal-expiration-hours="alertConfig.signal_expiration_hours"
             @update:notify-email="formData.notify_email = $event"
             @update:notify-app="formData.notify_app = $event"
             @update:alert-mode="alertConfig.mode = $event"
             @update:cooldown-minutes="alertConfig.cooldown_minutes = $event"
-            @update:signal-expiration-hours="alertConfig.signal_expiration_hours = $event"
           />
 
           <!-- 基本信息 -->
@@ -335,8 +333,7 @@ const handleSubmit = async () => {
     let config = {
       use_advanced_analysis: formData.value.use_advanced_analysis,
       alert_mode: alertConfig.value.mode,
-      cooldown_minutes: Number(alertConfig.value.cooldown_minutes),  // 确保是数字类型
-      signal_expiration_hours: Number(alertConfig.value.signal_expiration_hours)  // 确保是数字类型
+      cooldown_minutes: Number(alertConfig.value.cooldown_minutes)  // 确保是数字类型
     }
 
     switch (formData.value.signal_type) {
@@ -813,8 +810,7 @@ const quickSelectToken = async (symbol) => {
 // 提醒模式配置
 const alertConfig = ref({
   mode: 'state_change',  // 默认：状态变化提醒
-  cooldown_minutes: 30,   // 默认：30分钟冷却
-  signal_expiration_hours: 24  // 默认：24小时过期
+  cooldown_minutes: 30   // 默认：30分钟冷却
 })
 
 // 价格提醒配置
@@ -1109,10 +1105,9 @@ const loadBotData = async () => {
     // 加载 AI 分析模式配置
     formData.value.use_advanced_analysis = config.use_advanced_analysis || false
 
-    // 加载提醒模式、冷却时间和过期时间
+    // 加载提醒模式和冷却时间
     alertConfig.value.mode = config.alert_mode || 'one_shot'
     alertConfig.value.cooldown_minutes = config.cooldown_minutes || 30
-    alertConfig.value.signal_expiration_hours = config.signal_expiration_hours || 24
 
     // 根据信号类型加载配置
     if (formData.value.signal_type === 'price_alert') {

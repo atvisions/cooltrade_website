@@ -1137,41 +1137,66 @@ const loadBotData = async () => {
         })
         indicatorsConfig.value = newIndicatorsConfig
       } else {
-        // 旧的单指标格式（向后兼容）
+        // 🔄 旧的单指标格式 → 自动转换为新的多指标格式
         const indicatorType = indicatorAlert.indicator_type || 'rsi'
 
-        // 设置指标类型
-        indicatorAlertType.value = indicatorType
+        console.log('⚠️ 检测到旧版配置格式，自动转换为新的多指标格式')
 
-        // 根据指标类型加载配置
+        // 设置为多指标模式
+        indicatorLogic.value = 'OR'  // 单指标使用 OR 逻辑
+        selectedIndicators.value = [indicatorType]
+
+        // 根据指标类型构建新格式的配置
+        let params = {}
         if (indicatorType === 'rsi') {
-          rsiConfig.value = {
+          params = {
             period: indicatorAlert.period || 14,
             overbought: indicatorAlert.overbought || 70,
             oversold: indicatorAlert.oversold || 30
           }
         } else if (indicatorType === 'macd') {
-          macdConfig.value = {
+          params = {
             fast: indicatorAlert.fast || 12,
             slow: indicatorAlert.slow || 26,
             signal: indicatorAlert.signal || 9
           }
         } else if (indicatorType === 'ma_crossover') {
-          maCrossConfig.value = {
+          params = {
             fast: indicatorAlert.fast || 7,
             slow: indicatorAlert.slow || 25
           }
+        } else if (indicatorType === 'ema_cross') {
+          params = {
+            fast: indicatorAlert.fast || 9,
+            slow: indicatorAlert.slow || 21
+          }
         } else if (indicatorType === 'atr') {
-          atrConfig.value = {
+          params = {
             period: indicatorAlert.period || 14,
             multiplier: indicatorAlert.multiplier || 2.0
           }
         } else if (indicatorType === 'volume') {
-          volumeConfig.value = {
+          params = {
             multiplier: indicatorAlert.multiplier || 2.0,
             period: indicatorAlert.period || 20
           }
         }
+
+        // 构建新格式的 indicatorsConfig
+        indicatorsConfig.value = {
+          [indicatorType]: {
+            type: indicatorType,
+            enabled: true,
+            weight: 100,  // 单指标权重100%
+            params: params
+          }
+        }
+
+        console.log('✅ 旧版配置已转换:', {
+          indicatorType,
+          params,
+          newConfig: indicatorsConfig.value
+        })
       }
 
       // 加载时间周期配置

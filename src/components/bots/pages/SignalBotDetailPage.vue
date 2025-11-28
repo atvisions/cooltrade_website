@@ -899,9 +899,19 @@ const getIndicatorConditions = (indicator) => {
       }
 
       // MACD 金叉/死叉
+      const macdHist = currentValues.macd_histogram
+      let macdHistDisplay = '--'
+      if (macdHist !== undefined && macdHist !== null) {
+        // 如果值很小，使用科学计数法或更多小数位
+        if (Math.abs(macdHist) < 0.0001 && macdHist !== 0) {
+          macdHistDisplay = macdHist.toExponential(2)
+        } else {
+          macdHistDisplay = macdHist.toFixed(6)
+        }
+      }
       conditions.push({
         label: 'MACD 柱状图',
-        currentValue: currentValues.macd_histogram?.toFixed(4) || '--',
+        currentValue: macdHistDisplay,
         operator: '穿越',
         threshold: '0'
       })
@@ -990,10 +1000,13 @@ const getIndicatorConditions = (indicator) => {
       // ATR 波动检测
       const atr = currentValues.atr || 0
       const price = currentValues.price || 0
-      const atrPercent = price > 0 ? ((atr / price) * 100).toFixed(2) : '--'
+      let atrPercent = '--'
+      if (price > 0 && atr > 0) {
+        atrPercent = ((atr / price) * 100).toFixed(2)
+      }
       conditions.push({
         label: 'ATR 波动率',
-        currentValue: atrPercent + '%',
+        currentValue: atrPercent !== '--' ? atrPercent + '%' : '--',
         operator: '>',
         threshold: (params.threshold || 2) + '%'
       })
@@ -1092,6 +1105,9 @@ const refreshIndicatorValues = async () => {
     const response = await botAPI.getBotIndicatorValues(bot.value.id)
     indicatorValues.value = response.data || {}
     indicatorValuesUpdatedAt.value = new Date().toISOString()
+
+    // 调试：打印返回的数据
+    console.log('📊 指标实时值:', indicatorValues.value)
   } catch (error) {
     console.error('获取指标值失败:', error)
     showError('获取指标实时值失败')

@@ -682,13 +682,13 @@
           <table class="w-full">
             <thead class="bg-gray-50 border-b border-gray-100">
               <tr>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 w-12">
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500" style="width: 60px;">
                   #
                 </th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 min-w-[200px]">
+                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500" style="width: 200px; min-width: 200px;">
                   名称
                 </th>
-                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" @click="sortBy('current_price')">
+                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 130px; min-width: 130px;" @click="sortBy('current_price')">
                   <div class="flex items-center justify-end gap-1">
                     价格
                     <div class="flex flex-col -space-y-1.5">
@@ -701,7 +701,7 @@
                     </div>
                   </div>
                 </th>
-                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" @click="sortBy('price_change_percentage_24h')">
+                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 100px; min-width: 100px;" @click="sortBy('price_change_percentage_24h')">
                   <div class="flex items-center justify-end gap-1">
                     24h涨跌
                     <div class="flex flex-col -space-y-1.5">
@@ -714,7 +714,7 @@
                     </div>
                   </div>
                 </th>
-                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" @click="sortBy('market_cap')">
+                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 120px; min-width: 120px;" @click="sortBy('market_cap')">
                   <div class="flex items-center justify-end gap-1">
                     市值
                     <div class="flex flex-col -space-y-1.5">
@@ -727,7 +727,7 @@
                     </div>
                   </div>
                 </th>
-                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" @click="sortBy('total_volume')">
+                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 120px; min-width: 120px;" @click="sortBy('total_volume')">
                   <div class="flex items-center justify-end gap-1">
                     24h成交量
                     <div class="flex flex-col -space-y-1.5">
@@ -740,7 +740,7 @@
                     </div>
                   </div>
                 </th>
-                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" @click="sortBy('avg_funding_rate')">
+                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 100px; min-width: 100px;" @click="sortBy('avg_funding_rate')">
                   <div class="flex items-center justify-end gap-1">
                     资金费率
                     <div class="flex flex-col -space-y-1.5">
@@ -753,7 +753,7 @@
                     </div>
                   </div>
                 </th>
-                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" @click="sortBy('total_open_interest')">
+                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 120px; min-width: 120px;" @click="sortBy('total_open_interest')">
                   <div class="flex items-center justify-end gap-1">
                     未平仓量
                     <div class="flex flex-col -space-y-1.5">
@@ -766,7 +766,7 @@
                     </div>
                   </div>
                 </th>
-                <th v-if="selectedTab === 'hot'" class="px-4 py-3 text-right text-xs font-medium text-gray-500">
+                <th v-if="selectedTab === 'hot'" class="px-4 py-3 text-right text-xs font-medium text-gray-500" style="width: 100px; min-width: 100px;">
                   <div class="flex items-center justify-end gap-1">
                     <span class="cursor-pointer hover:text-gray-700" @click="sortBy('hot_score')">热度</span>
                     <div class="relative group">
@@ -792,7 +792,7 @@
                     </div>
                   </div>
                 </th>
-                <th v-if="selectedTab === 'recommended'" class="px-4 py-3 text-right text-xs font-medium text-gray-500">
+                <th v-if="selectedTab === 'recommended'" class="px-4 py-3 text-right text-xs font-medium text-gray-500" style="width: 120px; min-width: 120px;">
                   <div class="flex items-center justify-end gap-1">
                     <span>推荐分数</span>
                     <div class="relative group">
@@ -809,10 +809,10 @@
                     </div>
                   </div>
                 </th>
-                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500">
+                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500" style="width: 110px; min-width: 110px;">
                   市场情绪
                 </th>
-                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500">
+                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500" style="width: 90px; min-width: 90px;">
                   收藏
                 </th>
               </tr>
@@ -828,16 +828,16 @@
                   {{ token.market_cap_rank || (currentPage - 1) * pageSize + index + 1 }}
                 </td>
                 <td class="px-4 py-3">
-                  <div class="flex items-center gap-3">
-                    <img v-if="token.logo" :src="token.logo" :alt="token.name" class="w-6 h-6 rounded-full" />
-                    <div v-else class="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center">
+                  <div class="flex items-center gap-3 min-w-0">
+                    <img v-if="token.logo" :src="token.logo" :alt="token.name" class="w-6 h-6 rounded-full flex-shrink-0" />
+                    <div v-else class="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
                       <span class="text-xs font-bold text-gray-500">{{ token.symbol.substring(0, 1) }}</span>
                     </div>
-                    <div class="flex flex-col gap-1">
-                      <div class="flex items-center gap-2">
-                        <span class="text-sm font-semibold text-gray-900">{{ token.name }}</span>
-                        <span class="text-xs text-gray-500 uppercase">{{ token.symbol }}</span>
-                        <span v-if="token.category" class="px-2 py-0.5 text-xs font-medium text-blue-700 bg-blue-100 rounded">
+                    <div class="flex flex-col gap-1 min-w-0 flex-1">
+                      <div class="flex items-center gap-2 min-w-0">
+                        <span class="text-sm font-semibold text-gray-900 truncate">{{ token.name }}</span>
+                        <span class="text-xs text-gray-500 uppercase flex-shrink-0">{{ token.symbol }}</span>
+                        <span v-if="token.category" class="px-2 py-0.5 text-xs font-medium text-blue-700 bg-blue-100 rounded flex-shrink-0">
                           {{ getCategoryLabel(token.category) }}
                         </span>
                       </div>
@@ -845,48 +845,51 @@
                   </div>
                 </td>
                 <td class="px-4 py-3 text-right text-sm font-medium text-gray-900">
-                  ${{ formatPrice(parseFloat(token.current_price)) }}
+                  <div class="flex items-center justify-end gap-1">
+                    <span class="tabular-nums">${{ formatPrice(parseFloat(realtimePrices.get(token.symbol) || token.current_price)) }}</span>
+                    <span v-if="realtimePrices.has(token.symbol)" class="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse flex-shrink-0" title="实时数据"></span>
+                  </div>
                 </td>
                 <td class="px-4 py-3 text-right text-sm font-medium">
-                  <span :class="getChangeColor(parseFloat(token.price_change_percentage_24h))">
+                  <span class="tabular-nums" :class="getChangeColor(parseFloat(token.price_change_percentage_24h))">
                     {{ token.price_change_24h_formatted }}
                   </span>
                 </td>
                 <td class="px-4 py-3 text-right">
-                  <div class="text-sm font-medium text-gray-900">{{ token.market_cap_formatted }}</div>
+                  <div class="text-sm font-medium text-gray-900 tabular-nums">{{ token.market_cap_formatted }}</div>
                 </td>
                 <td class="px-4 py-3 text-right">
-                  <div class="text-sm text-gray-900">{{ token.volume_formatted }}</div>
+                  <div class="text-sm text-gray-900 tabular-nums">{{ token.volume_formatted }}</div>
                 </td>
                 <td class="px-4 py-3 text-right text-sm font-medium">
-                  <span v-if="token.funding_rate_formatted" :class="getFundingRateColor(token.avg_funding_rate)">
+                  <span v-if="token.funding_rate_formatted" class="tabular-nums" :class="getFundingRateColor(token.avg_funding_rate)">
                     {{ token.funding_rate_formatted }}
                   </span>
                   <span v-else class="text-gray-400">-</span>
                 </td>
                 <td class="px-4 py-3 text-right">
-                  <div v-if="token.open_interest_formatted" class="text-sm text-gray-900">
+                  <div v-if="token.open_interest_formatted" class="text-sm text-gray-900 tabular-nums">
                     {{ token.open_interest_formatted }}
                   </div>
                   <span v-else class="text-gray-400">-</span>
                 </td>
                 <td v-if="selectedTab === 'hot'" class="px-4 py-3 text-right" :title="`热度 = 交易量 × 波动² / 10亿\n交易量越大、波动越大，热度越高`">
-                  <div v-if="token.hot_score_formatted" class="text-sm font-medium text-gray-900">
+                  <div v-if="token.hot_score_formatted" class="text-sm font-medium text-gray-900 tabular-nums">
                     {{ token.hot_score_formatted }}
                   </div>
                   <span v-else class="text-gray-400">-</span>
                 </td>
                 <td v-if="selectedTab === 'recommended'" class="px-4 py-3 text-right">
-                  <div v-if="token.recommendation_score !== undefined" class="flex items-center justify-end gap-2">
-                    <div class="text-sm font-bold" :class="getRecommendationScoreColor(token.recommendation_score)">
+                  <div v-if="token.recommendation_score !== undefined" class="flex items-center justify-end gap-1">
+                    <div class="text-sm font-bold tabular-nums" :class="getRecommendationScoreColor(token.recommendation_score)">
                       {{ token.recommendation_score }}
                     </div>
-                    <div class="text-xs text-gray-400">/100</div>
+                    <div class="text-xs text-gray-400 flex-shrink-0">/100</div>
                   </div>
                   <span v-else class="text-gray-400">-</span>
                 </td>
                 <td class="px-4 py-3 text-center">
-                  <div v-if="token.avg_funding_rate !== null || token.avg_long_short_ratio !== null" class="inline-flex items-center justify-center px-3 py-1 rounded text-xs font-medium" :class="getMarketSentimentStyle(token).class">
+                  <div v-if="token.avg_funding_rate !== null || token.avg_long_short_ratio !== null" class="inline-flex items-center justify-center px-2 py-1 rounded text-xs font-medium whitespace-nowrap" :class="getMarketSentimentStyle(token).class">
                     {{ getMarketSentimentStyle(token).label }}
                   </div>
                   <span v-else class="text-gray-400 text-xs">-</span>
@@ -1016,16 +1019,21 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import Header from '../common/Header.vue'
 import { apiRequest, API_ENDPOINTS } from '../../utils/api.js'
 import { getChainConfig, getExchangeConfig } from '../../utils/chainConfig.js'
 import { showFavoriteSuccess, showUnfavoriteSuccess, showLoginRequired, showError } from '../../utils/notification.js'
 import { useUserStore } from '../../utils/userStore.js'
+import wsManager from '../../utils/websocket.js'
 
 const router = useRouter()
 const userStore = useUserStore()
+
+// WebSocket 连接管理
+const wsConnections = new Map() // symbol -> callback
+const realtimePrices = ref(new Map()) // symbol -> price
 
 // 响应式数据
 const searchQuery = ref('')
@@ -1841,17 +1849,100 @@ const goToRiskAssessment = () => {
   window.location.href = '/risk-assessment'
 }
 
+// WebSocket 消息处理
+const handleWebSocketMessage = (symbol) => (data) => {
+  // 处理市场更新消息（包含价格、涨跌幅、成交量等）
+  if (data.type === 'market_update') {
+    const marketData = data.data
+    realtimePrices.value.set(symbol, marketData.price)
+
+    // 更新 tokens 数组中的数据
+    const token = tokens.value.find(t => t.symbol === symbol)
+    if (token) {
+      // 更新价格
+      token.current_price = marketData.price
+
+      // 更新 24h 涨跌幅
+      if (marketData.change_24h !== undefined) {
+        token.price_change_percentage_24h = marketData.change_24h
+        // 更新格式化的涨跌幅显示
+        const change = parseFloat(marketData.change_24h)
+        token.price_change_24h_formatted = change >= 0 ? `+${change.toFixed(2)}%` : `${change.toFixed(2)}%`
+      }
+
+      // 更新 24h 成交量
+      if (marketData.volume_24h !== undefined) {
+        token.total_volume = marketData.volume_24h
+      }
+
+      // 更新 24h 最高价
+      if (marketData.high_24h !== undefined) {
+        token.high_24h = marketData.high_24h
+      }
+
+      // 更新 24h 最低价
+      if (marketData.low_24h !== undefined) {
+        token.low_24h = marketData.low_24h
+      }
+    }
+  }
+  // 兼容旧的 price_update 消息类型
+  else if (data.type === 'price_update') {
+    const priceData = data.data
+    realtimePrices.value.set(symbol, priceData.price)
+
+    const token = tokens.value.find(t => t.symbol === symbol)
+    if (token) {
+      token.current_price = priceData.price
+    }
+  }
+}
+
+// 初始化 WebSocket 连接（只连接前20个代币）
+const initWebSocketConnections = () => {
+  // 断开所有现有连接
+  disconnectAllWebSockets()
+
+  // 只为当前页面的代币建立连接（最多20个）
+  const visibleTokens = paginatedTokens.value.slice(0, 20)
+
+  visibleTokens.forEach(token => {
+    const callback = handleWebSocketMessage(token.symbol)
+    wsConnections.set(token.symbol, callback)
+    wsManager.connect(token.symbol, callback)
+  })
+
+  console.log(`🔌 已连接 ${visibleTokens.length} 个代币的 WebSocket`)
+}
+
+// 断开所有 WebSocket 连接
+const disconnectAllWebSockets = () => {
+  wsConnections.forEach((callback, symbol) => {
+    wsManager.disconnect(symbol, callback)
+  })
+  wsConnections.clear()
+  console.log('🔌 已断开所有 WebSocket 连接')
+}
+
+// 监听代币列表变化，重新建立 WebSocket 连接
+watch(tokens, () => {
+  // 延迟初始化，等待 DOM 更新
+  setTimeout(() => {
+    initWebSocketConnections()
+  }, 100)
+})
+
 // 组件挂载时加载数据
 onMounted(() => {
   loadMarketStats()
   loadTokensList()
   loadChainFilters()
   loadExchangeFilters()
+})
 
-  // 每30秒刷新市场统计数据
-  setInterval(() => {
-    loadMarketStats()
-  }, 30000)
+// 组件卸载时断开所有 WebSocket
+onUnmounted(() => {
+  disconnectAllWebSockets()
 })
 </script>
 

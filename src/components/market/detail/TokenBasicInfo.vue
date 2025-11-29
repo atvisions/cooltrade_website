@@ -147,51 +147,25 @@
         <!-- 24h Volume -->
         <div class="flex flex-col">
           <span class="text-xs text-gray-500 mb-1">24h Volume</span>
-          <span class="text-base font-semibold text-gray-900">${{ formatLargeNumber(token.total_volume) }}</span>
+          <span class="text-base font-semibold text-gray-900">${{ formatLargeNumber(displayVolume24h) }}</span>
+        </div>
+
+        <!-- 24h High -->
+        <div v-if="displayHigh24h" class="flex flex-col">
+          <span class="text-xs text-gray-500 mb-1">24h High</span>
+          <span class="text-base font-semibold text-green-600">${{ formatPrice(displayHigh24h) }}</span>
+        </div>
+
+        <!-- 24h Low -->
+        <div v-if="displayLow24h" class="flex flex-col">
+          <span class="text-xs text-gray-500 mb-1">24h Low</span>
+          <span class="text-base font-semibold text-red-600">${{ formatPrice(displayLow24h) }}</span>
         </div>
 
         <!-- Market Cap -->
         <div v-if="token.market_cap" class="flex flex-col">
           <span class="text-xs text-gray-500 mb-1">Market Cap</span>
           <span class="text-base font-semibold text-gray-900">${{ formatLargeNumber(token.market_cap) }}</span>
-        </div>
-
-        <!-- Funding Rate -->
-        <div v-if="primaryExchange?.funding_rate" class="flex flex-col">
-          <span class="text-xs text-gray-500 mb-1">Funding Rate</span>
-          <span class="text-base font-semibold" :class="parseFloat(primaryExchange.funding_rate) >= 0 ? 'text-green-600' : 'text-red-600'">
-            {{ formatFundingRate(primaryExchange.funding_rate) }}
-          </span>
-        </div>
-
-        <!-- Open Interest -->
-        <div v-if="totalOpenInterest > 0" class="flex flex-col">
-          <span class="text-xs text-gray-500 mb-1">Open Interest</span>
-          <span class="text-base font-semibold text-gray-900">${{ formatLargeNumber(totalOpenInterest) }}</span>
-        </div>
-
-        <!-- Max Leverage -->
-        <div v-if="primaryExchange?.contract_spec" class="flex flex-col">
-          <span class="text-xs text-gray-500 mb-1">Max Leverage</span>
-          <span class="text-base font-semibold text-gray-900">{{ primaryExchange.contract_spec.max_leverage }}x</span>
-        </div>
-
-        <!-- Long/Short Ratio -->
-        <div v-if="primaryExchange?.long_short_ratio" class="flex flex-col">
-          <span class="text-xs text-gray-500 mb-1">Long/Short</span>
-          <span class="text-base font-semibold text-gray-900">{{ formatRatio(primaryExchange.long_short_ratio) }}</span>
-        </div>
-
-        <!-- Maker Fee -->
-        <div v-if="primaryExchange?.contract_spec" class="flex flex-col">
-          <span class="text-xs text-gray-500 mb-1">Maker Fee</span>
-          <span class="text-base font-semibold text-gray-900">{{ formatFeeRate(primaryExchange.contract_spec.maker_fee_rate) }}</span>
-        </div>
-
-        <!-- Taker Fee -->
-        <div v-if="primaryExchange?.contract_spec" class="flex flex-col">
-          <span class="text-xs text-gray-500 mb-1">Taker Fee</span>
-          <span class="text-base font-semibold text-gray-900">{{ formatFeeRate(primaryExchange.contract_spec.taker_fee_rate) }}</span>
         </div>
       </div>
     </div>
@@ -239,6 +213,27 @@ const displayChange24h = computed(() => {
     return props.realtimePrice.change_24h
   }
   return props.token.price_change_24h
+})
+
+const displayVolume24h = computed(() => {
+  if (props.realtimePrice && props.realtimePrice.volume_24h !== undefined) {
+    return props.realtimePrice.volume_24h
+  }
+  return props.token.total_volume
+})
+
+const displayHigh24h = computed(() => {
+  if (props.realtimePrice && props.realtimePrice.high_24h !== undefined) {
+    return props.realtimePrice.high_24h
+  }
+  return props.token.high_24h
+})
+
+const displayLow24h = computed(() => {
+  if (props.realtimePrice && props.realtimePrice.low_24h !== undefined) {
+    return props.realtimePrice.low_24h
+  }
+  return props.token.low_24h
 })
 
 // 计算主要交易所数据

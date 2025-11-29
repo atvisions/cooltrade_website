@@ -129,10 +129,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { apiRequest, API_ENDPOINTS } from '../../utils/api.js'
 import { showFavoriteSuccess, showUnfavoriteSuccess, showError, showSuccess, showInfo } from '../../utils/notification.js'
+import { useWebSocket } from '../../utils/websocket.js'
 
 // Import common components
 import Header from '../common/Header.vue'
@@ -156,13 +157,30 @@ const isFavoriteProcessing = ref(false)
 const lastFavoriteTime = ref(0)
 
 // K线实时价格（用于更新基本信息显示）
-const realtimePrice = ref(null)
+const realtimePrice = ref({
+  price: null,
+  change_24h: null,
+  volume_24h: null,
+  high_24h: null,
+  low_24h: null
+})
+
+// WebSocket 实时数据
+const wsConnected = ref(false)
+const lastUpdateTime = ref(null)
 
 // Load data
 const loadData = async () => {
   loading.value = true
   error.value = null
-  realtimePrice.value = null // 重置实时价格
+  // 重置实时价格
+  realtimePrice.value = {
+    price: null,
+    change_24h: null,
+    volume_24h: null,
+    high_24h: null,
+    low_24h: null
+  }
 
   try {
     const symbol = route.params.symbol
@@ -183,10 +201,106 @@ const loadData = async () => {
   }
 }
 
+// WebSocket 消息处理
+const handleWebSocketMessage = (data) => {
+  console.log('📡 收到 WebSocket 数据:', data)
+
+  if (data.type === 'token_info') {
+    // 初始代币信息
+    console.log('📊 代币信息:', data.data)
+  } else if (data.type === 'market_update') {
+    // 市场数据更新（包含价格、涨跌幅、成交量等）
+    const marketData = data.data
+
+    // 更新实时价格对象
+    realtimePrice.value.price = marketData.price
+    realtimePrice.value.change_24h = marketData.change_24h
+    realtimePrice.value.volume_24h = marketData.volume_24h
+    realtimePrice.value.high_24h = marketData.high_24h
+    realtimePrice.value.low_24h = marketData.low_24h
+
+    lastUpdateTime.value = new Date()
+
+    // 更新代币数据（注意：要更新 tokenData.value.token，而不是 tokenData.value）
+    if (tokenData.value && tokenData.value.token) {
+      tokenData.value.token.current_price = marketData.price
+
+      // 更新 24h 涨跌幅
+      if (marketData.change_24h !== undefined) {
+        tokenData.value.token.price_change_percentage_24h = marketData.change_24h
+      }
+
+      // 更新 24h 成交量
+      if (marketData.volume_24h !== undefined) {
+        tokenData.value.token.total_volume = marketData.volume_24h
+      }
+
+      // 更新 24h 最高价
+      if (marketData.high_24h !== undefined) {
+        tokenData.value.token.high_24h = marketData.high_24h
+      }
+
+      // 更新 24h 最低价
+      if (marketData.low_24h !== undefined) {
+        tokenData.value.token.low_24h = marketData.low_24h
+      }
+    }
+
+    console.log(`💰 市场更新: ${marketData.symbol} = $${marketData.price} (${marketData.change_24h >= 0 ? '+' : ''}${marketData.change_24h}%)`)
+  } else if (data.type === 'price_update') {
+    // 兼容旧的价格更新消息
+    const priceData = data.data
+    realtimePrice.value.price = priceData.price
+    lastUpdateTime.value = new Date()
+
+    if (tokenData.value && tokenData.value.token) {
+      tokenData.value.token.current_price = priceData.price
+    }
+
+    console.log(`💰 价格更新: ${priceData.symbol} = $${priceData.price}`)
+  } else if (data.type === 'kline_update') {
+    // K线数据更新（由 TradingChart 组件处理）
+    console.log('📈 K线更新:', data.data)
+  } else if (data.type === 'pong') {
+    // 心跳响应
+    wsConnected.value = true
+  }
+}
+
+// 初始化 WebSocket
+let wsDisconnect = null
+
+const initWebSocket = () => {
+  if (!tokenData.value) return
+
+  const symbol = tokenData.value.token.symbol
+  console.log(`🔌 初始化 WebSocket: ${symbol}`)
+
+  const { connect, disconnect } = useWebSocket(symbol, handleWebSocketMessage)
+  connect()
+  wsDisconnect = disconnect
+  wsConnected.value = true
+}
+
+// 断开 WebSocket
+const closeWebSocket = () => {
+  if (wsDisconnect) {
+    console.log('🔌 断开 WebSocket')
+    wsDisconnect()
+    wsDisconnect = null
+    wsConnected.value = false
+  }
+}
+
 // 监听路由参数变化，重新加载数据
 watch(() => route.params.symbol, (newSymbol, oldSymbol) => {
   if (newSymbol && newSymbol !== oldSymbol) {
     console.log('🔄 路由参数变化，重新加载:', oldSymbol, '->', newSymbol)
+
+    // 断开旧的 WebSocket
+    closeWebSocket()
+
+    // 加载新数据
     loadData()
   }
 })
@@ -293,8 +407,18 @@ const handleStopBot = (botId) => {
 }
 
 // Lifecycle
-onMounted(() => {
-  loadData()
+onMounted(async () => {
+  await loadData()
+
+  // 数据加载完成后，初始化 WebSocket
+  if (tokenData.value) {
+    initWebSocket()
+  }
+})
+
+onUnmounted(() => {
+  // 组件卸载时断开 WebSocket
+  closeWebSocket()
 })
 </script>
 

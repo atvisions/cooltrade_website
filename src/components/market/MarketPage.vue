@@ -291,10 +291,11 @@
               >
                 <!-- 线框图标 -->
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                  <path v-if="tab.value === 'top100'" stroke-linecap="round" stroke-linejoin="round" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>
-                  <path v-else-if="tab.value === 'recommended'" stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                  <path v-else-if="tab.value === 'ai'" stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
-                  <path v-else-if="tab.value === 'hot'" stroke-linecap="round" stroke-linejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path>
+                  <!-- 衍生品：图表上升趋势 -->
+                  <path v-if="tab.value === 'derivatives'" stroke-linecap="round" stroke-linejoin="round" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
+                  <!-- 现货：购物袋 -->
+                  <path v-else-if="tab.value === 'spot'" stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                  <!-- 收藏：星星 -->
                   <path v-else-if="tab.value === 'favorites'" stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
                 </svg>
                 <span>{{ tab.label }}</span>
@@ -305,50 +306,50 @@
 
         <!-- Filter Row -->
         <div class="flex items-center justify-between px-6 py-4 bg-gray-50">
-          <!-- Left: Personalized Recommendation Info (推荐Tab) or Chain Filters (其他Tab) -->
+          <!-- Left: Category Filters -->
           <div class="flex items-center gap-3 overflow-x-auto" @click.stop>
-            <!-- 个性化推荐信息（仅在推荐Tab且有用户画像时显示） -->
-            <div v-if="selectedTab === 'recommended' && userProfile" class="flex items-center gap-2 flex-shrink-0">
-              <span class="text-xs font-medium text-gray-600">个性化推荐：</span>
-              <span class="text-xs text-gray-700">风险偏好 <span class="font-semibold text-gray-900">{{ userProfile.risk_level }}</span></span>
-              <span v-if="userProfile.risk_score" class="text-gray-300">|</span>
-              <span v-if="userProfile.risk_score" class="text-xs text-gray-700">
-                风险分数 <span class="font-semibold text-blue-600">{{ userProfile.risk_score }}/10</span>
-              </span>
-              <span v-if="userProfile.preferred_categories && userProfile.preferred_categories.length > 0" class="text-gray-300">|</span>
-              <span v-if="userProfile.preferred_categories && userProfile.preferred_categories.length > 0" class="text-xs text-gray-700">
-                偏好类别 <span class="font-semibold text-gray-900">{{ userProfile.preferred_categories.join(', ') }}</span>
-              </span>
-              <span v-if="userProfile.market_cap_preference" class="text-gray-300">|</span>
-              <span v-if="userProfile.market_cap_preference" class="text-xs text-gray-700">
-                市值偏好 <span class="font-semibold text-gray-900">{{ getMarketCapLabel(userProfile.market_cap_preference) }}</span>
-              </span>
-            </div>
-
-            <!-- 网络筛选器（非推荐Tab或推荐Tab无用户画像时显示） -->
-            <div v-if="selectedTab !== 'recommended' || !userProfile" class="flex items-center gap-2">
+            <!-- 分类筛选器 -->
+            <div class="flex items-center gap-2">
               <button
-                v-for="filter in chainFilters"
+                v-for="filter in categoryFilters"
                 :key="filter.value"
                 :ref="filter.value === 'more' ? el => { if (el) moreButtonRef = el } : undefined"
-                @click.stop="filter.value === 'more' ? toggleMoreChains($event) : (selectedChain = filter.value, showMoreChains = false)"
+                @click.stop="filter.value === 'more' ? toggleMoreCategories($event) : (selectedCategory = filter.value, showMoreCategories = false)"
                 :class="[
                   'flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all border',
-                  filter.value === 'more' && showMoreChains
+                  filter.value === 'more' && showMoreCategories
                     ? 'bg-white border-gray-900 text-gray-900'
-                    : selectedChain === filter.value
+                    : selectedCategory === filter.value
                     ? 'bg-white border-gray-900 text-gray-900'
                     : 'bg-white border-gray-200 text-gray-600 hover:border-gray-300'
                 ]"
               >
-                <img v-if="filter.logo" :src="filter.logo" :alt="filter.label" class="w-4 h-4 rounded-full" />
-                <!-- More按钮的三点图标 -->
-                <svg v-else-if="filter.value === 'more'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h.01M12 12h.01M19 12h.01M6 12a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0z"></path>
-                </svg>
-                <!-- 默认的地球图标 -->
-                <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                <!-- 线框图标 -->
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <!-- All Categories -->
+                  <path v-if="filter.value === ''" stroke-linecap="round" stroke-linejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
+                  <!-- Layer 1 -->
+                  <path v-else-if="filter.value === 'layer1'" stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"></path>
+                  <!-- Layer 2 -->
+                  <path v-else-if="filter.value === 'layer2'" stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                  <!-- DeFi -->
+                  <path v-else-if="filter.value === 'defi'" stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  <!-- Meme -->
+                  <path v-else-if="filter.value === 'meme'" stroke-linecap="round" stroke-linejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                  <!-- NFT -->
+                  <path v-else-if="filter.value === 'nft'" stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                  <!-- AI -->
+                  <path v-else-if="filter.value === 'ai'" stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                  <!-- GameFi -->
+                  <path v-else-if="filter.value === 'gamefi'" stroke-linecap="round" stroke-linejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"></path>
+                  <!-- Stablecoin -->
+                  <path v-else-if="filter.value === 'stablecoin'" stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                  <!-- Exchange -->
+                  <path v-else-if="filter.value === 'exchange'" stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                  <!-- Payment -->
+                  <path v-else-if="filter.value === 'payment'" stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                  <!-- More -->
+                  <path v-else-if="filter.value === 'more'" stroke-linecap="round" stroke-linejoin="round" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                 </svg>
                 <span>{{ filter.label }}</span>
                 <span v-if="filter.count" class="text-xs text-gray-400">({{ filter.count }})</span>
@@ -356,10 +357,10 @@
             </div>
           </div>
 
-          <!-- Right: Search, Settings (推荐Tab), and Filter Button -->
+          <!-- Right: Search and Filter Button -->
           <div class="flex items-center gap-3" @click.stop>
-            <!-- Search (非推荐Tab时显示) -->
-            <div v-if="selectedTab !== 'recommended'" class="relative">
+            <!-- Search -->
+            <div class="relative">
               <input
                 v-model="searchQuery"
                 type="text"
@@ -371,33 +372,8 @@
               </svg>
             </div>
 
-            <!-- Re-assessment Button (仅在推荐Tab且有用户画像时显示) -->
+            <!-- Filter Button -->
             <button
-              v-if="selectedTab === 'recommended' && userProfile"
-              @click.stop="goToRiskAssessment"
-              class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-all"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
-              </svg>
-              重新评估
-            </button>
-
-            <!-- Complete Assessment Button (仅在推荐Tab且无用户画像时显示) -->
-            <button
-              v-if="selectedTab === 'recommended' && !userProfile && !loading"
-              @click.stop="goToRiskAssessment"
-              class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-all"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
-              </svg>
-              完成评估
-            </button>
-
-            <!-- Filter Button (非推荐Tab时显示) -->
-            <button
-              v-if="selectedTab !== 'recommended'"
               @click.stop="showFilterPanel = !showFilterPanel"
               :class="[
                 'flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all border',
@@ -679,16 +655,19 @@
       <!-- Tokens Table -->
       <div v-else class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="overflow-x-auto">
-          <table class="w-full">
+          <table class="w-full" style="table-layout: fixed; min-width: 1200px;">
             <thead class="bg-gray-50 border-b border-gray-100">
               <tr>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500" style="width: 60px;">
+                <!-- 排名 -->
+                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500" style="width: 60px;">
                   #
                 </th>
-                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500" style="width: 200px; min-width: 200px;">
-                  名称
+                <!-- 币种 -->
+                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500" style="width: 200px;">
+                  币种
                 </th>
-                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 130px; min-width: 130px;" @click="sortBy('current_price')">
+                <!-- 价格 -->
+                <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 120px;" @click="sortBy('current_price')">
                   <div class="flex items-center justify-end gap-1">
                     价格
                     <div class="flex flex-col -space-y-1.5">
@@ -701,118 +680,190 @@
                     </div>
                   </div>
                 </th>
-                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 100px; min-width: 100px;" @click="sortBy('price_change_percentage_24h')">
-                  <div class="flex items-center justify-end gap-1">
-                    24h涨跌
-                    <div class="flex flex-col -space-y-1.5">
-                      <svg class="w-3 h-3" :class="sortField === 'price_change_percentage_24h' && sortDirection === 'asc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
-                        <polyline points="4,10 8,6 12,10" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                      <svg class="w-3 h-3" :class="sortField === 'price_change_percentage_24h' && sortDirection === 'desc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
-                        <polyline points="4,6 8,10 12,6" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                    </div>
-                  </div>
-                </th>
-                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 120px; min-width: 120px;" @click="sortBy('market_cap')">
-                  <div class="flex items-center justify-end gap-1">
-                    市值
-                    <div class="flex flex-col -space-y-1.5">
-                      <svg class="w-3 h-3" :class="sortField === 'market_cap' && sortDirection === 'asc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
-                        <polyline points="4,10 8,6 12,10" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                      <svg class="w-3 h-3" :class="sortField === 'market_cap' && sortDirection === 'desc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
-                        <polyline points="4,6 8,10 12,6" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                    </div>
-                  </div>
-                </th>
-                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 120px; min-width: 120px;" @click="sortBy('total_volume')">
-                  <div class="flex items-center justify-end gap-1">
-                    24h成交量
-                    <div class="flex flex-col -space-y-1.5">
-                      <svg class="w-3 h-3" :class="sortField === 'total_volume' && sortDirection === 'asc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
-                        <polyline points="4,10 8,6 12,10" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                      <svg class="w-3 h-3" :class="sortField === 'total_volume' && sortDirection === 'desc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
-                        <polyline points="4,6 8,10 12,6" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                    </div>
-                  </div>
-                </th>
-                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 100px; min-width: 100px;" @click="sortBy('avg_funding_rate')">
-                  <div class="flex items-center justify-end gap-1">
-                    资金费率
-                    <div class="flex flex-col -space-y-1.5">
-                      <svg class="w-3 h-3" :class="sortField === 'avg_funding_rate' && sortDirection === 'asc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
-                        <polyline points="4,10 8,6 12,10" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                      <svg class="w-3 h-3" :class="sortField === 'avg_funding_rate' && sortDirection === 'desc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
-                        <polyline points="4,6 8,10 12,6" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                    </div>
-                  </div>
-                </th>
-                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 120px; min-width: 120px;" @click="sortBy('total_open_interest')">
-                  <div class="flex items-center justify-end gap-1">
-                    未平仓量
-                    <div class="flex flex-col -space-y-1.5">
-                      <svg class="w-3 h-3" :class="sortField === 'total_open_interest' && sortDirection === 'asc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
-                        <polyline points="4,10 8,6 12,10" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                      <svg class="w-3 h-3" :class="sortField === 'total_open_interest' && sortDirection === 'desc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
-                        <polyline points="4,6 8,10 12,6" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                    </div>
-                  </div>
-                </th>
-                <th v-if="selectedTab === 'hot'" class="px-4 py-3 text-right text-xs font-medium text-gray-500" style="width: 100px; min-width: 100px;">
-                  <div class="flex items-center justify-end gap-1">
-                    <span class="cursor-pointer hover:text-gray-700" @click="sortBy('hot_score')">热度</span>
-                    <div class="relative group">
-                      <svg class="w-3.5 h-3.5 text-gray-400 hover:text-blue-500 cursor-help" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-                      </svg>
-                      <div class="absolute right-0 top-full mt-1 w-64 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                        <div class="font-semibold mb-1">热度计算公式：</div>
-                        <div class="mb-2">热度 = 交易量 × (涨跌幅)² ÷ 10亿</div>
-                        <div class="text-gray-300">
-                          交易量越大、波动越大，热度越高。<br/>
-                          热度值反映了市场对该代币的关注度。
-                        </div>
+
+                <!-- 衍生品专属列 -->
+                <template v-if="selectedTab === 'derivatives'">
+                  <!-- 价格(24h%) -->
+                  <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 100px;" @click="sortBy('price_change_percentage_24h')">
+                    <div class="flex items-center justify-end gap-1">
+                      价格(24h%)
+                      <div class="flex flex-col -space-y-1.5">
+                        <svg class="w-3 h-3" :class="sortField === 'price_change_percentage_24h' && sortDirection === 'asc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                          <polyline points="4,10 8,6 12,10" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <svg class="w-3 h-3" :class="sortField === 'price_change_percentage_24h' && sortDirection === 'desc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                          <polyline points="4,6 8,10 12,6" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
                       </div>
                     </div>
-                    <div class="flex flex-col -space-y-1.5 cursor-pointer" @click="sortBy('hot_score')">
-                      <svg class="w-3 h-3" :class="sortField === 'hot_score' && sortDirection === 'asc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
-                        <polyline points="4,10 8,6 12,10" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                      <svg class="w-3 h-3" :class="sortField === 'hot_score' && sortDirection === 'desc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
-                        <polyline points="4,6 8,10 12,6" stroke-linecap="round" stroke-linejoin="round"/>
-                      </svg>
-                    </div>
-                  </div>
-                </th>
-                <th v-if="selectedTab === 'recommended'" class="px-4 py-3 text-right text-xs font-medium text-gray-500" style="width: 120px; min-width: 120px;">
-                  <div class="flex items-center justify-end gap-1">
-                    <span>推荐分数</span>
-                    <div class="relative group">
-                      <svg class="w-3.5 h-3.5 text-gray-400 hover:text-blue-500 cursor-help" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
-                      </svg>
-                      <div class="absolute right-0 top-full mt-1 w-64 bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                        <div class="font-semibold mb-1">推荐分数计算：</div>
-                        <div class="mb-2">总分100分 = 风险匹配(30) + 类别匹配(25) + 市值匹配(20) + 流动性(15) + 数据完整度(10)</div>
-                        <div class="text-gray-300">
-                          分数越高，代币越符合您的风险偏好和投资需求。
-                        </div>
+                  </th>
+                  <!-- 资金费率 -->
+                  <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 100px;" @click="sortBy('avg_funding_rate')">
+                    <div class="flex items-center justify-end gap-1">
+                      资金费率
+                      <div class="flex flex-col -space-y-1.5">
+                        <svg class="w-3 h-3" :class="sortField === 'avg_funding_rate' && sortDirection === 'asc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                          <polyline points="4,10 8,6 12,10" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <svg class="w-3 h-3" :class="sortField === 'avg_funding_rate' && sortDirection === 'desc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                          <polyline points="4,6 8,10 12,6" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
                       </div>
                     </div>
-                  </div>
-                </th>
-                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500" style="width: 110px; min-width: 110px;">
+                  </th>
+                  <!-- 24h交易额 -->
+                  <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 120px;" @click="sortBy('total_volume')">
+                    <div class="flex items-center justify-end gap-1">
+                      24h交易额
+                      <div class="flex flex-col -space-y-1.5">
+                        <svg class="w-3 h-3" :class="sortField === 'total_volume' && sortDirection === 'asc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                          <polyline points="4,10 8,6 12,10" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <svg class="w-3 h-3" :class="sortField === 'total_volume' && sortDirection === 'desc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                          <polyline points="4,6 8,10 12,6" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </div>
+                    </div>
+                  </th>
+                  <!-- 市值 -->
+                  <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 120px;" @click="sortBy('market_cap')">
+                    <div class="flex items-center justify-end gap-1">
+                      市值
+                      <div class="flex flex-col -space-y-1.5">
+                        <svg class="w-3 h-3" :class="sortField === 'market_cap' && sortDirection === 'asc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                          <polyline points="4,10 8,6 12,10" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <svg class="w-3 h-3" :class="sortField === 'market_cap' && sortDirection === 'desc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                          <polyline points="4,6 8,10 12,6" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </div>
+                    </div>
+                  </th>
+                  <!-- 持仓 -->
+                  <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 120px;" @click="sortBy('total_open_interest')">
+                    <div class="flex items-center justify-end gap-1">
+                      持仓
+                      <div class="flex flex-col -space-y-1.5">
+                        <svg class="w-3 h-3" :class="sortField === 'total_open_interest' && sortDirection === 'asc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                          <polyline points="4,10 8,6 12,10" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <svg class="w-3 h-3" :class="sortField === 'total_open_interest' && sortDirection === 'desc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                          <polyline points="4,6 8,10 12,6" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </div>
+                    </div>
+                  </th>
+                </template>
+
+                <!-- 现货专属列 -->
+                <template v-else-if="selectedTab === 'spot'">
+                  <!-- 价格(24h%) -->
+                  <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 100px;" @click="sortBy('price_change_percentage_24h')">
+                    <div class="flex items-center justify-end gap-1">
+                      价格(24h%)
+                      <div class="flex flex-col -space-y-1.5">
+                        <svg class="w-3 h-3" :class="sortField === 'price_change_percentage_24h' && sortDirection === 'asc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                          <polyline points="4,10 8,6 12,10" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <svg class="w-3 h-3" :class="sortField === 'price_change_percentage_24h' && sortDirection === 'desc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                          <polyline points="4,6 8,10 12,6" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </div>
+                    </div>
+                  </th>
+                  <!-- 价格(7d%) -->
+                  <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 100px;" @click="sortBy('price_change_percentage_7d')">
+                    <div class="flex items-center justify-end gap-1">
+                      价格(7d%)
+                      <div class="flex flex-col -space-y-1.5">
+                        <svg class="w-3 h-3" :class="sortField === 'price_change_percentage_7d' && sortDirection === 'asc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                          <polyline points="4,10 8,6 12,10" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <svg class="w-3 h-3" :class="sortField === 'price_change_percentage_7d' && sortDirection === 'desc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                          <polyline points="4,6 8,10 12,6" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </div>
+                    </div>
+                  </th>
+                  <!-- 成交额(24h) -->
+                  <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 120px;" @click="sortBy('total_volume')">
+                    <div class="flex items-center justify-end gap-1">
+                      成交额(24h)
+                      <div class="flex flex-col -space-y-1.5">
+                        <svg class="w-3 h-3" :class="sortField === 'total_volume' && sortDirection === 'asc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                          <polyline points="4,10 8,6 12,10" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <svg class="w-3 h-3" :class="sortField === 'total_volume' && sortDirection === 'desc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                          <polyline points="4,6 8,10 12,6" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </div>
+                    </div>
+                  </th>
+                  <!-- 市值 -->
+                  <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 120px;" @click="sortBy('market_cap')">
+                    <div class="flex items-center justify-end gap-1">
+                      市值
+                      <div class="flex flex-col -space-y-1.5">
+                        <svg class="w-3 h-3" :class="sortField === 'market_cap' && sortDirection === 'asc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                          <polyline points="4,10 8,6 12,10" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <svg class="w-3 h-3" :class="sortField === 'market_cap' && sortDirection === 'desc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                          <polyline points="4,6 8,10 12,6" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </div>
+                    </div>
+                  </th>
+                </template>
+
+                <!-- 收藏Tab的列（保持原有的列） -->
+                <template v-else-if="selectedTab === 'favorites'">
+                  <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 100px;" @click="sortBy('price_change_percentage_24h')">
+                    <div class="flex items-center justify-end gap-1">
+                      24h涨跌
+                      <div class="flex flex-col -space-y-1.5">
+                        <svg class="w-3 h-3" :class="sortField === 'price_change_percentage_24h' && sortDirection === 'asc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                          <polyline points="4,10 8,6 12,10" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <svg class="w-3 h-3" :class="sortField === 'price_change_percentage_24h' && sortDirection === 'desc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                          <polyline points="4,6 8,10 12,6" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </div>
+                    </div>
+                  </th>
+                  <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 120px;" @click="sortBy('market_cap')">
+                    <div class="flex items-center justify-end gap-1">
+                      市值
+                      <div class="flex flex-col -space-y-1.5">
+                        <svg class="w-3 h-3" :class="sortField === 'market_cap' && sortDirection === 'asc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                          <polyline points="4,10 8,6 12,10" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <svg class="w-3 h-3" :class="sortField === 'market_cap' && sortDirection === 'desc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                          <polyline points="4,6 8,10 12,6" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </div>
+                    </div>
+                  </th>
+                  <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 120px;" @click="sortBy('total_volume')">
+                    <div class="flex items-center justify-end gap-1">
+                      24h成交量
+                      <div class="flex flex-col -space-y-1.5">
+                        <svg class="w-3 h-3" :class="sortField === 'total_volume' && sortDirection === 'asc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                          <polyline points="4,10 8,6 12,10" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <svg class="w-3 h-3" :class="sortField === 'total_volume' && sortDirection === 'desc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                          <polyline points="4,6 8,10 12,6" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </div>
+                    </div>
+                  </th>
+                </template>
+
+                <!-- 市场情绪（所有Tab都显示） -->
+                <th class="px-3 py-3 text-center text-xs font-medium text-gray-500" style="width: 100px;">
                   市场情绪
                 </th>
-                <th class="px-4 py-3 text-center text-xs font-medium text-gray-500" style="width: 90px; min-width: 90px;">
+                <!-- 收藏（所有Tab都显示） -->
+                <th class="px-3 py-3 text-center text-xs font-medium text-gray-500" style="width: 80px;">
                   收藏
                 </th>
               </tr>
@@ -824,9 +875,11 @@
                 @click="navigateToTokenDetail(token.symbol)"
                 class="hover:bg-gray-50 transition-colors cursor-pointer"
               >
+                <!-- 排名 -->
                 <td class="px-4 py-3 text-sm text-gray-500">
                   {{ token.market_cap_rank || (currentPage - 1) * pageSize + index + 1 }}
                 </td>
+                <!-- 币种 -->
                 <td class="px-4 py-3">
                   <div class="flex items-center gap-3 min-w-0">
                     <img v-if="token.logo" :src="token.logo" :alt="token.name" class="w-6 h-6 rounded-full flex-shrink-0" />
@@ -844,50 +897,85 @@
                     </div>
                   </div>
                 </td>
+                <!-- 价格 -->
                 <td class="px-4 py-3 text-right text-sm font-medium text-gray-900">
                   <div class="flex items-center justify-end gap-1">
                     <span class="tabular-nums">${{ formatPrice(parseFloat(realtimePrices.get(token.symbol) || token.current_price)) }}</span>
                     <span v-if="realtimePrices.has(token.symbol)" class="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse flex-shrink-0" title="实时数据"></span>
                   </div>
                 </td>
-                <td class="px-4 py-3 text-right text-sm font-medium">
-                  <span class="tabular-nums" :class="getChangeColor(parseFloat(token.price_change_percentage_24h))">
-                    {{ token.price_change_24h_formatted }}
-                  </span>
-                </td>
-                <td class="px-4 py-3 text-right">
-                  <div class="text-sm font-medium text-gray-900 tabular-nums">{{ token.market_cap_formatted }}</div>
-                </td>
-                <td class="px-4 py-3 text-right">
-                  <div class="text-sm text-gray-900 tabular-nums">{{ token.volume_formatted }}</div>
-                </td>
-                <td class="px-4 py-3 text-right text-sm font-medium">
-                  <span v-if="token.funding_rate_formatted" class="tabular-nums" :class="getFundingRateColor(token.avg_funding_rate)">
-                    {{ token.funding_rate_formatted }}
-                  </span>
-                  <span v-else class="text-gray-400">-</span>
-                </td>
-                <td class="px-4 py-3 text-right">
-                  <div v-if="token.open_interest_formatted" class="text-sm text-gray-900 tabular-nums">
-                    {{ token.open_interest_formatted }}
-                  </div>
-                  <span v-else class="text-gray-400">-</span>
-                </td>
-                <td v-if="selectedTab === 'hot'" class="px-4 py-3 text-right" :title="`热度 = 交易量 × 波动² / 10亿\n交易量越大、波动越大，热度越高`">
-                  <div v-if="token.hot_score_formatted" class="text-sm font-medium text-gray-900 tabular-nums">
-                    {{ token.hot_score_formatted }}
-                  </div>
-                  <span v-else class="text-gray-400">-</span>
-                </td>
-                <td v-if="selectedTab === 'recommended'" class="px-4 py-3 text-right">
-                  <div v-if="token.recommendation_score !== undefined" class="flex items-center justify-end gap-1">
-                    <div class="text-sm font-bold tabular-nums" :class="getRecommendationScoreColor(token.recommendation_score)">
-                      {{ token.recommendation_score }}
+
+                <!-- 衍生品专属列 -->
+                <template v-if="selectedTab === 'derivatives'">
+                  <!-- 价格(24h%) -->
+                  <td class="px-4 py-3 text-right text-sm font-medium">
+                    <span class="tabular-nums" :class="getChangeColor(parseFloat(token.price_change_percentage_24h))">
+                      {{ token.price_change_24h_formatted || '-' }}
+                    </span>
+                  </td>
+                  <!-- 资金费率 -->
+                  <td class="px-4 py-3 text-right text-sm font-medium">
+                    <span v-if="token.funding_rate_formatted" class="tabular-nums" :class="getFundingRateColor(token.avg_funding_rate)">
+                      {{ token.funding_rate_formatted }}
+                    </span>
+                    <span v-else class="text-gray-400">-</span>
+                  </td>
+                  <!-- 24h交易额 -->
+                  <td class="px-4 py-3 text-right">
+                    <div class="text-sm text-gray-900 tabular-nums">{{ token.volume_formatted || '-' }}</div>
+                  </td>
+                  <!-- 市值 -->
+                  <td class="px-4 py-3 text-right">
+                    <div class="text-sm font-medium text-gray-900 tabular-nums">{{ token.market_cap_formatted || '-' }}</div>
+                  </td>
+                  <!-- 持仓 -->
+                  <td class="px-4 py-3 text-right">
+                    <div v-if="token.open_interest_formatted" class="text-sm text-gray-900 tabular-nums">
+                      {{ token.open_interest_formatted }}
                     </div>
-                    <div class="text-xs text-gray-400 flex-shrink-0">/100</div>
-                  </div>
-                  <span v-else class="text-gray-400">-</span>
-                </td>
+                    <span v-else class="text-gray-400">-</span>
+                  </td>
+                </template>
+
+                <!-- 现货专属列 -->
+                <template v-else-if="selectedTab === 'spot'">
+                  <!-- 价格(24h%) -->
+                  <td class="px-4 py-3 text-right text-sm font-medium">
+                    <span class="tabular-nums" :class="getChangeColor(parseFloat(token.price_change_percentage_24h))">
+                      {{ token.price_change_24h_formatted || '-' }}
+                    </span>
+                  </td>
+                  <!-- 价格(7d%) -->
+                  <td class="px-4 py-3 text-right text-sm font-medium">
+                    <span v-if="token.price_change_7d_formatted" class="tabular-nums" :class="getChangeColor(parseFloat(token.price_change_percentage_7d))">
+                      {{ token.price_change_7d_formatted }}
+                    </span>
+                    <span v-else class="text-gray-400">-</span>
+                  </td>
+                  <!-- 成交额(24h) -->
+                  <td class="px-4 py-3 text-right">
+                    <div class="text-sm text-gray-900 tabular-nums">{{ token.volume_formatted || '-' }}</div>
+                  </td>
+                  <!-- 市值 -->
+                  <td class="px-4 py-3 text-right">
+                    <div class="text-sm font-medium text-gray-900 tabular-nums">{{ token.market_cap_formatted || '-' }}</div>
+                  </td>
+                </template>
+
+                <!-- 收藏Tab的列 -->
+                <template v-else-if="selectedTab === 'favorites'">
+                  <td class="px-4 py-3 text-right text-sm font-medium">
+                    <span class="tabular-nums" :class="getChangeColor(parseFloat(token.price_change_percentage_24h))">
+                      {{ token.price_change_24h_formatted || '-' }}
+                    </span>
+                  </td>
+                  <td class="px-4 py-3 text-right">
+                    <div class="text-sm font-medium text-gray-900 tabular-nums">{{ token.market_cap_formatted || '-' }}</div>
+                  </td>
+                  <td class="px-4 py-3 text-right">
+                    <div class="text-sm text-gray-900 tabular-nums">{{ token.volume_formatted || '-' }}</div>
+                  </td>
+                </template>
                 <td class="px-4 py-3 text-center">
                   <div v-if="token.avg_funding_rate !== null || token.avg_long_short_ratio !== null" class="inline-flex items-center justify-center px-2 py-1 rounded text-xs font-medium whitespace-nowrap" :class="getMarketSentimentStyle(token).class">
                     {{ getMarketSentimentStyle(token).label }}
@@ -960,21 +1048,91 @@
             <div class="text-sm text-gray-700">
               显示 {{ (currentPage - 1) * pageSize + 1 }} - {{ Math.min(currentPage * pageSize, totalTokens) }} / 共 {{ totalTokens }} 个代币
             </div>
-            <div class="flex gap-2">
+            <div class="flex items-center gap-2">
+              <!-- 上一页 -->
               <button
-                @click="currentPage--"
-                :disabled="currentPage === 1"
-                class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                @click.prevent="currentPage--"
+                :disabled="currentPage === 1 || loading"
+                class="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 上一页
               </button>
+
+              <!-- 页码 -->
+              <div class="flex items-center gap-1">
+                <!-- 第一页 -->
+                <button
+                  v-if="totalPages > 0"
+                  @click.prevent="currentPage = 1"
+                  :disabled="loading"
+                  :class="[
+                    'px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                    currentPage === 1
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-700 hover:bg-gray-100',
+                    loading && 'opacity-50 cursor-not-allowed'
+                  ]"
+                >
+                  1
+                </button>
+
+                <!-- 左侧省略号 -->
+                <span v-if="currentPage > 3" class="px-2 text-gray-400">...</span>
+
+                <!-- 中间页码 -->
+                <button
+                  v-for="page in visiblePages"
+                  :key="page"
+                  @click.prevent="currentPage = page"
+                  :disabled="loading"
+                  :class="[
+                    'px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                    currentPage === page
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-700 hover:bg-gray-100',
+                    loading && 'opacity-50 cursor-not-allowed'
+                  ]"
+                >
+                  {{ page }}
+                </button>
+
+                <!-- 右侧省略号 -->
+                <span v-if="currentPage < totalPages - 2" class="px-2 text-gray-400">...</span>
+
+                <!-- 最后一页 -->
+                <button
+                  v-if="totalPages > 1"
+                  @click.prevent="currentPage = totalPages"
+                  :disabled="loading"
+                  :class="[
+                    'px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                    currentPage === totalPages
+                      ? 'bg-blue-600 text-white'
+                      : 'text-gray-700 hover:bg-gray-100',
+                    loading && 'opacity-50 cursor-not-allowed'
+                  ]"
+                >
+                  {{ totalPages }}
+                </button>
+              </div>
+
+              <!-- 下一页 -->
               <button
-                @click="currentPage++"
-                :disabled="currentPage >= totalPages"
-                class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                @click.prevent="currentPage++"
+                :disabled="currentPage >= totalPages || loading"
+                class="px-3 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 下一页
               </button>
+
+              <!-- 加载指示器 -->
+              <div v-if="loading" class="ml-3 flex items-center gap-2 text-sm text-gray-500">
+                <svg class="animate-spin h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>加载中...</span>
+              </div>
             </div>
           </div>
         </div>
@@ -982,10 +1140,10 @@
     </div>
   </div>
 
-  <!-- More Chains Dropdown (使用Teleport移到body) -->
+  <!-- More Categories Dropdown (使用Teleport移到body) -->
   <Teleport to="body">
     <div
-      v-if="showMoreChains"
+      v-if="showMoreCategories"
       class="fixed bg-white rounded-xl shadow-xl border border-gray-200 min-w-[280px]"
       @click.stop
       :style="{
@@ -998,20 +1156,39 @@
     >
       <div class="py-2">
         <button
-          v-for="chain in allChains.filter(c => !mainChains.includes(c.value))"
-          :key="chain.value"
-          @click="selectedChain = chain.value; showMoreChains = false"
+          v-for="category in allCategories.filter(c => !mainCategories.includes(c.value))"
+          :key="category.value"
+          @click="selectedCategory = category.value; showMoreCategories = false"
           :class="[
             'w-full flex items-center gap-3 px-4 py-2.5 text-sm transition-colors',
-            selectedChain === chain.value ? 'bg-gray-100 text-gray-900 font-medium' : 'hover:bg-gray-50'
+            selectedCategory === category.value ? 'bg-gray-100 text-gray-900 font-medium' : 'hover:bg-gray-50'
           ]"
         >
-          <img v-if="chain.logo" :src="chain.logo" :alt="chain.label" class="w-5 h-5 rounded-full" />
-          <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          <!-- 线框图标 -->
+          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+            <!-- Layer 1 -->
+            <path v-if="category.value === 'layer1'" stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01"></path>
+            <!-- Layer 2 -->
+            <path v-else-if="category.value === 'layer2'" stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+            <!-- DeFi -->
+            <path v-else-if="category.value === 'defi'" stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            <!-- Meme -->
+            <path v-else-if="category.value === 'meme'" stroke-linecap="round" stroke-linejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            <!-- NFT -->
+            <path v-else-if="category.value === 'nft'" stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            <!-- AI -->
+            <path v-else-if="category.value === 'ai'" stroke-linecap="round" stroke-linejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+            <!-- GameFi -->
+            <path v-else-if="category.value === 'gamefi'" stroke-linecap="round" stroke-linejoin="round" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"></path>
+            <!-- Stablecoin -->
+            <path v-else-if="category.value === 'stablecoin'" stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+            <!-- Exchange -->
+            <path v-else-if="category.value === 'exchange'" stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+            <!-- Payment -->
+            <path v-else-if="category.value === 'payment'" stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
           </svg>
-          <span class="flex-1 text-left font-medium">{{ chain.label }}</span>
-          <span class="text-xs text-gray-400">({{ chain.count }})</span>
+          <span class="flex-1 text-left font-medium">{{ category.label }}</span>
+          <span class="text-xs text-gray-400">({{ category.count }})</span>
         </button>
       </div>
     </div>
@@ -1037,33 +1214,32 @@ const realtimePrices = ref(new Map()) // symbol -> price
 
 // 响应式数据
 const searchQuery = ref('')
-// 从 localStorage 或 URL 参数读取上次选择的 tab，默认为 'top100'
+// 从 localStorage 或 URL 参数读取上次选择的 tab，默认为 'derivatives'
 const getInitialTab = () => {
   // 优先从 URL 参数读取
   const urlParams = new URLSearchParams(window.location.search)
   const tabFromUrl = urlParams.get('tab')
-  if (tabFromUrl && ['top100', 'recommended', 'hot', 'favorites', 'ai'].includes(tabFromUrl)) {
-    // 如果未登录且选择的是需要登录的 tab，重定向到 top100
-    if (!userStore.isAuthenticated.value && ['recommended', 'favorites'].includes(tabFromUrl)) {
-      return 'top100'
+  if (tabFromUrl && ['derivatives', 'spot', 'favorites'].includes(tabFromUrl)) {
+    // 如果未登录且选择的是收藏 tab，重定向到 derivatives
+    if (!userStore.isAuthenticated.value && tabFromUrl === 'favorites') {
+      return 'derivatives'
     }
     return tabFromUrl
   }
   // 其次从 localStorage 读取
   const savedTab = localStorage.getItem('market_selected_tab')
-  if (savedTab && ['top100', 'recommended', 'hot', 'favorites', 'ai'].includes(savedTab)) {
-    // 如果未登录且选择的是需要登录的 tab，重定向到 top100
-    if (!userStore.isAuthenticated.value && ['recommended', 'favorites'].includes(savedTab)) {
-      return 'top100'
+  if (savedTab && ['derivatives', 'spot', 'favorites'].includes(savedTab)) {
+    // 如果未登录且选择的是收藏 tab，重定向到 derivatives
+    if (!userStore.isAuthenticated.value && savedTab === 'favorites') {
+      return 'derivatives'
     }
     return savedTab
   }
-  return 'top100'
+  return 'derivatives'
 }
 const selectedTab = ref(getInitialTab())
 const selectedExchange = ref('')
-const selectedChain = ref('')  // 网络筛选
-const selectedCategory = ref('')  // 分类筛选（Layer1, DeFi等）
+const selectedCategory = ref('')  // 分类筛选（Layer1, DeFi, Meme等）
 const currentPage = ref(1)
 const pageSize = ref(20)
 const hasMore = ref(true)  // 是否还有更多数据
@@ -1071,11 +1247,7 @@ const hasMore = ref(true)  // 是否还有更多数据
 // 根据初始 Tab 设置默认排序
 const getInitialSort = () => {
   const tab = getInitialTab()
-  if (tab === 'top100') {
-    return { field: 'market_cap_rank', direction: 'asc' }
-  } else if (tab === 'hot') {
-    return { field: 'hot_score', direction: 'desc' }
-  } else if (tab === 'recommended') {
+  if (tab === 'derivatives' || tab === 'spot' || tab === 'favorites') {
     return { field: 'market_cap_rank', direction: 'asc' }
   }
   return { field: 'market_cap_rank', direction: 'asc' }
@@ -1087,7 +1259,7 @@ const loading = ref(false)
 const error = ref(null)
 const tokens = ref([])
 const totalTokens = ref(0)
-const showMoreChains = ref(false)  // 显示更多网络下拉菜单
+const showMoreCategories = ref(false)  // 显示更多分类下拉菜单
 const showFilterPanel = ref(false)  // 显示筛选面板
 const statsLoading = ref(true)  // 市场统计数据加载状态
 let moreButtonRef = null  // More按钮的引用
@@ -1107,62 +1279,71 @@ const filterMarketSentiment = ref('')  // 市场情绪：bullish(看多), bearis
 // 标签页配置（根据登录状态动态显示）
 const tabs = computed(() => {
   const allTabs = [
-    { label: 'Top', value: 'top100' },
-    { label: '推荐', value: 'recommended' },
-    { label: '热门', value: 'hot' },
+    { label: '衍生品', value: 'derivatives' },
+    { label: '现货', value: 'spot' },
     { label: '收藏', value: 'favorites' }
   ]
 
-  // 如果未登录，过滤掉推荐和收藏
+  // 如果未登录，过滤掉收藏
   if (!userStore.isAuthenticated.value) {
-    return allTabs.filter(tab => !['recommended', 'favorites'].includes(tab.value))
+    return allTabs.filter(tab => tab.value !== 'favorites')
   }
 
   return allTabs
 })
 
-// 网络筛选器配置（基于实际数据）
-const chainFilters = ref([
-  { label: 'All Networks', value: '', logo: null }
+// 分类筛选器配置
+const categoryFilters = ref([
+  { label: 'All Categories', value: '' }
 ])
 
-// 主流网络列表（只显示这3个）
-const mainChains = ['Ethereum', 'BNB', 'Solana']
+// 主流分类列表（显示在顶部）
+const mainCategories = ['layer1', 'defi', 'meme', 'ai']
 
-// 所有网络列表（用于More下拉菜单）
-const allChains = ref([])
+// 所有分类列表（用于More下拉菜单）
+const allCategories = ref([])
+
+// 分类名称映射
+const categoryNames = {
+  'layer1': 'Layer 1',
+  'layer2': 'Layer 2',
+  'defi': 'DeFi',
+  'meme': 'Meme',
+  'nft': 'NFT',
+  'ai': 'AI',
+  'gamefi': 'GameFi',
+  'stablecoin': 'Stablecoin',
+  'exchange': 'Exchange',
+  'payment': 'Payment'
+}
 
 // 所有交易所列表（用于筛选面板）
 const allExchanges = ref([])
 
-// 加载网络列表
-const loadChainFilters = async () => {
+// 加载分类列表
+const loadCategoryFilters = async () => {
   try {
-    // 根据当前tab加载对应的网络统计
-    const url = `${API_ENDPOINTS.MARKET_TOKENS_CHAINS}?tab=${selectedTab.value}`
+    // 根据当前tab加载对应的分类统计
+    const url = `${API_ENDPOINTS.MARKET_TOKENS_CATEGORIES}?tab=${selectedTab.value}`
     const response = await apiRequest(url)
 
-    // 保存所有网络
-    allChains.value = response.map(c => {
-      const config = getChainConfig(c.chain)
-      return {
-        label: config.name,
-        value: c.chain,
-        logo: config.logo,
-        count: c.count
-      }
-    })
+    // 保存所有分类
+    allCategories.value = response.map(c => ({
+      label: categoryNames[c.category] || c.category,
+      value: c.category,
+      count: c.count
+    }))
 
-    // 只显示主流网络
-    const mainChainFilters = allChains.value.filter(c => mainChains.includes(c.value))
+    // 只显示主流分类
+    const mainCategoryFilters = allCategories.value.filter(c => mainCategories.includes(c.value))
 
-    chainFilters.value = [
-      { label: 'All Networks', value: '', logo: null },
-      ...mainChainFilters,
-      { label: 'More', value: 'more', logo: null }
+    categoryFilters.value = [
+      { label: 'All Categories', value: '' },
+      ...mainCategoryFilters,
+      { label: 'More', value: 'more' }
     ]
   } catch (err) {
-    console.error('加载网络列表失败:', err)
+    console.error('加载分类列表失败:', err)
   }
 }
 
@@ -1239,6 +1420,39 @@ const paginatedTokens = computed(() => {
 
 const totalPages = computed(() => {
   return Math.ceil(totalTokens.value / pageSize.value)
+})
+
+// 计算可见的页码（显示当前页附近的页码）
+const visiblePages = computed(() => {
+  const pages = []
+  const current = currentPage.value
+  const total = totalPages.value
+
+  // 如果总页数小于等于7，显示所有页码
+  if (total <= 7) {
+    for (let i = 2; i < total; i++) {
+      pages.push(i)
+    }
+    return pages
+  }
+
+  // 显示当前页附近的页码
+  if (current <= 3) {
+    // 当前页在前面，显示 2, 3, 4
+    for (let i = 2; i <= 4; i++) {
+      if (i < total) pages.push(i)
+    }
+  } else if (current >= total - 2) {
+    // 当前页在后面，显示倒数第4、3、2页
+    for (let i = total - 3; i < total; i++) {
+      if (i > 1) pages.push(i)
+    }
+  } else {
+    // 当前页在中间，显示前后各一页
+    pages.push(current - 1, current, current + 1)
+  }
+
+  return pages
 })
 
 // 方法
@@ -1415,9 +1629,8 @@ const getMarketSentimentStyle = (token) => {
 
 // 重置筛选器
 const resetFilters = () => {
-  selectedChain.value = ''
-  selectedExchange.value = ''
   selectedCategory.value = ''
+  selectedExchange.value = ''
   filterMarketCapMin.value = ''
   filterMarketCapMax.value = ''
   filterPriceChangeMin.value = ''
@@ -1435,10 +1648,10 @@ const applyFilters = () => {
 }
 
 // 切换More下拉菜单
-const toggleMoreChains = () => {
-  showMoreChains.value = !showMoreChains.value
+const toggleMoreCategories = () => {
+  showMoreCategories.value = !showMoreCategories.value
 
-  if (showMoreChains.value && moreButtonRef) {
+  if (showMoreCategories.value && moreButtonRef) {
     // 计算More按钮的位置
     const rect = moreButtonRef.getBoundingClientRect()
     moreDropdownTop.value = rect.bottom + 8  // 按钮下方8px
@@ -1448,7 +1661,7 @@ const toggleMoreChains = () => {
 
 // 关闭所有下拉菜单
 const closeAllDropdowns = () => {
-  showMoreChains.value = false
+  showMoreCategories.value = false
   showFilterPanel.value = false
 }
 
@@ -1568,136 +1781,75 @@ const loadTokensList = async (append = false) => {
 
   try {
     let endpoint = API_ENDPOINTS.MARKET_TOKENS
-    let method = 'GET'
-    let requestData = null
 
     // 根据标签页选择不同的端点
-    switch (selectedTab.value) {
-      case 'favorites':
-        endpoint = API_ENDPOINTS.MARKET_TOKENS_FAVORITES
-        break
-      case 'top100':
-        endpoint = API_ENDPOINTS.MARKET_TOKENS_TOP100
-        break
-      case 'recommended':
-        // 使用个性化推荐接口（基于用户画像）
-        endpoint = API_ENDPOINTS.MARKET_TOKENS_PERSONALIZED
-        break
-      case 'hot':
-        endpoint = API_ENDPOINTS.MARKET_TOKENS_HOT
-        break
-      case 'ai':
-        endpoint = API_ENDPOINTS.MARKET_TOKENS_AI_RECOMMEND
-        method = 'POST'
-        requestData = {
-          user_profile: {
-            risk_tolerance: 'medium',
-            investment_amount: 10000,
-            preferred_categories: ['defi', 'layer1'],
-            trading_style: 'swing'
-          }
-        }
-        break
-      case 'newest':
-        endpoint = API_ENDPOINTS.MARKET_TOKENS_NEWEST
-        break
-      default:
-        endpoint = API_ENDPOINTS.MARKET_TOKENS
+    if (selectedTab.value === 'favorites') {
+      endpoint = API_ENDPOINTS.MARKET_TOKENS_FAVORITES
     }
 
-    // 对于"加载更多"模式，使用25条每页；推荐Tab固定10条
-    let currentPageSize
-    if (selectedTab.value === 'recommended') {
-      currentPageSize = 10  // 推荐固定10条
-    } else {
-      currentPageSize = useLoadMoreMode.value ? 25 : pageSize.value
-    }
+    // 使用25条每页（加载更多模式）或用户设置的pageSize
+    let currentPageSize = useLoadMoreMode.value ? 25 : pageSize.value
 
     const params = new URLSearchParams({
       page: currentPage.value,
       page_size: currentPageSize,
     })
 
-    // 推荐Tab不使用搜索和筛选参数
-    if (selectedTab.value !== 'recommended') {
-      if (searchQuery.value) {
-        params.append('search', searchQuery.value)
-      }
-
-      if (selectedExchange.value) {
-        params.append('exchange', selectedExchange.value)
-      }
-
-      if (selectedChain.value && selectedChain.value !== 'more') {
-        params.append('chain', selectedChain.value)
-      }
-
-      if (selectedCategory.value && selectedCategory.value !== 'more') {
-        params.append('category', selectedCategory.value)
-      }
-
-      // 注意：市场情绪筛选在前端进行（通过 paginatedTokens 计算属性）
-
-      // 添加市值范围筛选
-      if (filterMarketCapMin.value) {
-        params.append('market_cap_min', filterMarketCapMin.value)
-      }
-      if (filterMarketCapMax.value) {
-        params.append('market_cap_max', filterMarketCapMax.value)
-      }
-
-      // 添加价格变化范围筛选
-      if (filterPriceChangeMin.value) {
-        params.append('price_change_min', filterPriceChangeMin.value)
-      }
-      if (filterPriceChangeMax.value) {
-        params.append('price_change_max', filterPriceChangeMax.value)
-      }
-
-      // 添加成交量范围筛选
-      if (filterVolumeMin.value) {
-        params.append('volume_min', filterVolumeMin.value)
-      }
-      if (filterVolumeMax.value) {
-        params.append('volume_max', filterVolumeMax.value)
-      }
+    // 添加搜索和筛选参数
+    if (searchQuery.value) {
+      params.append('search', searchQuery.value)
     }
 
-    // 添加排序参数（支持 top100 和 hot）
-    if (sortField.value && (selectedTab.value === 'top100' || selectedTab.value === 'hot')) {
+    if (selectedExchange.value) {
+      params.append('exchange', selectedExchange.value)
+    }
+
+    if (selectedCategory.value && selectedCategory.value !== 'more') {
+      params.append('category', selectedCategory.value)
+    }
+
+    // 根据 tab 添加市场类型筛选
+    if (selectedTab.value === 'derivatives') {
+      params.append('is_futures_available', 'true')
+    } else if (selectedTab.value === 'spot') {
+      params.append('is_spot_available', 'true')
+    }
+
+    // 注意：市场情绪筛选在前端进行（通过 paginatedTokens 计算属性）
+
+    // 添加市值范围筛选
+    if (filterMarketCapMin.value) {
+      params.append('market_cap_min', filterMarketCapMin.value)
+    }
+    if (filterMarketCapMax.value) {
+      params.append('market_cap_max', filterMarketCapMax.value)
+    }
+
+    // 添加价格变化范围筛选
+    if (filterPriceChangeMin.value) {
+      params.append('price_change_min', filterPriceChangeMin.value)
+    }
+    if (filterPriceChangeMax.value) {
+      params.append('price_change_max', filterPriceChangeMax.value)
+    }
+
+    // 添加成交量范围筛选
+    if (filterVolumeMin.value) {
+      params.append('volume_min', filterVolumeMin.value)
+    }
+    if (filterVolumeMax.value) {
+      params.append('volume_max', filterVolumeMax.value)
+    }
+
+    // 添加排序参数
+    if (sortField.value) {
       const orderingField = sortDirection.value === 'desc' ? `-${sortField.value}` : sortField.value
       params.append('ordering', orderingField)
     }
 
-    let response
-    if (method === 'POST') {
-      // AI推荐使用POST请求
-      response = await apiRequest(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(requestData)
-      })
-    } else {
-      // 其他使用GET请求
-      const url = endpoint.includes('?') ? `${endpoint}&${params.toString()}` : `${endpoint}?${params.toString()}`
-
-      try {
-        response = await apiRequest(url)
-      } catch (err) {
-        // 如果个性化推荐失败（未登录或未完成风险评估），降级到简单推荐
-        if (selectedTab.value === 'recommended' && (err.message?.includes('401') || err.message?.includes('400'))) {
-          console.log('降级到简单推荐接口')
-          const fallbackUrl = `${API_ENDPOINTS.MARKET_TOKENS_RECOMMENDED}?limit=10`
-          response = await apiRequest(fallbackUrl)
-          // 清空用户画像
-          userProfile.value = null
-        } else {
-          throw err
-        }
-      }
-    }
+    // 使用GET请求
+    const url = endpoint.includes('?') ? `${endpoint}&${params.toString()}` : `${endpoint}?${params.toString()}`
+    const response = await apiRequest(url)
 
     // 处理不同的响应格式
     let newTokens = []
@@ -1752,6 +1904,12 @@ const loadTokensList = async (append = false) => {
       tokens.value = newTokens
       totalTokens.value = total
     }
+
+    // 手动触发 WebSocket 连接更新（延迟执行，等待 DOM 更新）
+    setTimeout(() => {
+      initWebSocketConnections()
+    }, 100)
+
   } catch (err) {
     console.error('加载代币列表失败:', err)
     error.value = '加载数据失败，请稍后重试'
@@ -1806,20 +1964,27 @@ const loadMore = async () => {
 }
 
 // 监听筛选条件变化
-watch([searchQuery, selectedTab, selectedExchange, selectedChain, selectedCategory], () => {
+watch([searchQuery, selectedTab, selectedExchange, selectedCategory], () => {
   currentPage.value = 1
   loadTokensList(false)  // 重新加载，不追加
 })
 
-// 监听tab变化，重新加载网络列表
+// 监听tab变化，重新加载分类列表
 watch(selectedTab, () => {
-  loadChainFilters()
+  loadCategoryFilters()
 })
 
 // 对于非"加载更多"模式，监听页码变化
-watch(currentPage, () => {
-  if (!useLoadMoreMode.value) {
-    loadTokensList(false)
+watch(currentPage, async (_newPage, oldPage) => {
+  if (!useLoadMoreMode.value && oldPage !== undefined) {
+    // 加载新数据
+    await loadTokensList(false)
+
+    // 滚动到表格顶部（平滑滚动）
+    const tableElement = document.querySelector('.bg-white.rounded-xl.shadow-sm')
+    if (tableElement) {
+      tableElement.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
   }
 })
 
@@ -1873,6 +2038,8 @@ const handleWebSocketMessage = (symbol) => (data) => {
       // 更新 24h 成交量
       if (marketData.volume_24h !== undefined) {
         token.total_volume = marketData.volume_24h
+        // 更新格式化的成交量显示
+        token.volume_formatted = formatNumber(marketData.volume_24h)
       }
 
       // 更新 24h 最高价
@@ -1884,6 +2051,13 @@ const handleWebSocketMessage = (symbol) => (data) => {
       if (marketData.low_24h !== undefined) {
         token.low_24h = marketData.low_24h
       }
+
+      // 重新计算市值（市值 = 价格 × 流通量）
+      if (token.circulating_supply && marketData.price) {
+        token.market_cap = marketData.price * token.circulating_supply
+        // 更新格式化的市值显示
+        token.market_cap_formatted = formatNumber(token.market_cap)
+      }
     }
   }
   // 兼容旧的 price_update 消息类型
@@ -1894,25 +2068,87 @@ const handleWebSocketMessage = (symbol) => (data) => {
     const token = tokens.value.find(t => t.symbol === symbol)
     if (token) {
       token.current_price = priceData.price
+
+      // 重新计算市值
+      if (token.circulating_supply && priceData.price) {
+        token.market_cap = priceData.price * token.circulating_supply
+        token.market_cap_formatted = formatNumber(token.market_cap)
+      }
     }
   }
 }
 
-// 初始化 WebSocket 连接（只连接前20个代币）
+// 初始化 WebSocket 连接（连接所有可见代币）
 const initWebSocketConnections = () => {
-  // 断开所有现有连接
-  disconnectAllWebSockets()
+  // 获取所有当前显示的代币（包括"加载更多"后的代币）
+  const visibleTokens = paginatedTokens.value
 
-  // 只为当前页面的代币建立连接（最多20个）
-  const visibleTokens = paginatedTokens.value.slice(0, 20)
+  console.log(`\n📊 [加载] 当前显示 ${visibleTokens.length} 个代币:`)
+  visibleTokens.forEach((t, i) => {
+    console.log(`  ${i+1}. ${t.symbol} - ${t.name}`)
+  })
 
-  visibleTokens.forEach(token => {
+  // 打印 wsManager 的全局连接数（调试用）
+  console.log(`\n🌐 [全局] wsManager 总连接数: ${wsManager.connections.size}`)
+  console.log(`🌐 [全局] wsManager 连接列表: ${Array.from(wsManager.connections.keys()).join(', ')}`)
+
+  // 找出需要新建连接的代币
+  const tokensToConnect = visibleTokens.filter(token => !wsConnections.has(token.symbol))
+
+  console.log(`\n🔌 [订阅] 需要新建连接: ${tokensToConnect.length} 个`)
+  if (tokensToConnect.length > 0) {
+    tokensToConnect.forEach((t, i) => {
+      console.log(`  ${i+1}. ${t.symbol}`)
+    })
+  }
+
+  // 找出需要断开连接的代币（不在可见列表中）
+  const visibleSymbols = new Set(visibleTokens.map(t => t.symbol))
+  const tokensToDisconnect = Array.from(wsConnections.keys()).filter(symbol => !visibleSymbols.has(symbol))
+
+  // 断开不需要的连接
+  if (tokensToDisconnect.length > 0) {
+    console.log(`\n🔌 [断开] 需要断开连接: ${tokensToDisconnect.length} 个`)
+    tokensToDisconnect.forEach((symbol, i) => {
+      console.log(`  ${i+1}. ${symbol}`)
+      const callback = wsConnections.get(symbol)
+      wsManager.disconnect(symbol, callback)
+      wsConnections.delete(symbol)
+    })
+  }
+
+  // 建立新连接
+  tokensToConnect.forEach(token => {
     const callback = handleWebSocketMessage(token.symbol)
     wsConnections.set(token.symbol, callback)
     wsManager.connect(token.symbol, callback)
   })
 
-  console.log(`🔌 已连接 ${visibleTokens.length} 个代币的 WebSocket`)
+  if (tokensToConnect.length > 0 || tokensToDisconnect.length > 0) {
+    console.log(`\n🔌 WebSocket 更新: +${tokensToConnect.length} -${tokensToDisconnect.length}, 总计 ${wsConnections.size} 个连接`)
+  }
+
+  // 打印订阅状态对比
+  console.log(`\n📡 [订阅状态] 已订阅的代币 (${wsConnections.size} 个):`)
+  const subscribedSymbols = Array.from(wsConnections.keys())
+  subscribedSymbols.forEach((symbol, i) => {
+    console.log(`  ${i+1}. ${symbol}`)
+  })
+
+  // 找出未订阅的代币
+  const notSubscribed = visibleTokens.filter(token => !wsConnections.has(token.symbol))
+  if (notSubscribed.length > 0) {
+    console.warn(`\n⚠️  [未订阅] ${notSubscribed.length} 个代币未订阅:`)
+    notSubscribed.forEach((t, i) => {
+      console.warn(`  ${i+1}. ${t.symbol} - ${t.name}`)
+    })
+  } else {
+    console.log(`\n✅ 所有可见代币都已订阅`)
+  }
+
+  // 再次打印 wsManager 的全局连接数（调试用）
+  console.log(`\n🌐 [全局] wsManager 总连接数（更新后）: ${wsManager.connections.size}`)
+  console.log('\n' + '='.repeat(60) + '\n')
 }
 
 // 断开所有 WebSocket 连接
@@ -1924,19 +2160,11 @@ const disconnectAllWebSockets = () => {
   console.log('🔌 已断开所有 WebSocket 连接')
 }
 
-// 监听代币列表变化，重新建立 WebSocket 连接
-watch(tokens, () => {
-  // 延迟初始化，等待 DOM 更新
-  setTimeout(() => {
-    initWebSocketConnections()
-  }, 100)
-})
-
 // 组件挂载时加载数据
 onMounted(() => {
   loadMarketStats()
   loadTokensList()
-  loadChainFilters()
+  loadCategoryFilters()
   loadExchangeFilters()
 })
 

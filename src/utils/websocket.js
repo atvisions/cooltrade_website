@@ -29,9 +29,17 @@ class WebSocketManager {
    */
   getWebSocketURL(symbol) {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-    const host = window.location.hostname
-    const port = import.meta.env.VITE_WS_PORT || '8001'
-    return `${protocol}//${host}:${port}/ws/market/${symbol}/`
+    const isProduction = import.meta.env.VITE_ENVIRONMENT === 'production'
+
+    if (isProduction) {
+      // 生产环境：使用 API 域名，通过 Nginx 代理
+      return `${protocol}//api.cooltrade.xyz/ws/market/${symbol}/`
+    } else {
+      // 开发环境：直接连接到 Daphne 端口
+      const host = window.location.hostname
+      const port = import.meta.env.VITE_WS_PORT || '8001'
+      return `${protocol}//${host}:${port}/ws/market/${symbol}/`
+    }
   }
 
   /**

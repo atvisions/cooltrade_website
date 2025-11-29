@@ -128,7 +128,7 @@ const timeframeMap = {
 }
 
 const timeframes = ['1m', '5m', '15m', '1h', '4h', '1D', '1W']
-const selectedTimeframe = ref('1h')
+const selectedTimeframe = ref('1m')  // 默认显示 1m（实时更新）
 const chartContainer = ref(null)
 const loading = ref(false)
 const error = ref(null)
@@ -328,9 +328,20 @@ const getSignalColorClass = (color) => {
 onMounted(() => {
   initChart()
   loadKlineData(selectedTimeframe.value)
+
+  // 延迟订阅 K线，等待 WebSocket 连接建立
+  setTimeout(() => {
+    if (selectedTimeframe.value === '1m') {
+      console.log('🔄 延迟订阅 1m K线（等待 WebSocket 连接）')
+      subscribeKlineRealtime()
+    }
+  }, 2000) // 延迟 2 秒，确保 WebSocket 已连接
 })
 
 onUnmounted(() => {
+  // 取消订阅
+  unsubscribeKlineRealtime()
+
   if (resizeObserver && chartContainer.value) {
     resizeObserver.unobserve(chartContainer.value)
   }

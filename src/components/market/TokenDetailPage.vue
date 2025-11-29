@@ -74,6 +74,7 @@
 
           <!-- Trading Chart -->
           <TradingChart
+            ref="tradingChartRef"
             :symbol="tokenData.token.symbol"
             :current-price="tokenData.token.current_price"
             :technical-signals="tokenData.market_analysis?.technical_signals"
@@ -169,6 +170,12 @@ const realtimePrice = ref({
 const wsConnected = ref(false)
 const lastUpdateTime = ref(null)
 
+// TradingChart 组件引用
+const tradingChartRef = ref(null)
+
+// WebSocket 实例
+let ws = null
+
 // Load data
 const loadData = async () => {
   loading.value = true
@@ -259,8 +266,11 @@ const handleWebSocketMessage = (data) => {
 
     console.log(`💰 价格更新: ${priceData.symbol} = $${priceData.price}`)
   } else if (data.type === 'kline_update') {
-    // K线数据更新（由 TradingChart 组件处理）
+    // K线数据更新（转发给 TradingChart 组件）
     console.log('📈 K线更新:', data.data)
+    if (tradingChartRef.value && tradingChartRef.value.handleKlineUpdate) {
+      tradingChartRef.value.handleKlineUpdate(data.data)
+    }
   } else if (data.type === 'pong') {
     // 心跳响应
     wsConnected.value = true
@@ -276,9 +286,10 @@ const initWebSocket = () => {
   const symbol = tokenData.value.token.symbol
   console.log(`🔌 初始化 WebSocket: ${symbol}`)
 
-  const { connect, disconnect } = useWebSocket(symbol, handleWebSocketMessage)
+  const { connect, disconnect, getConnection } = useWebSocket(symbol, handleWebSocketMessage)
   connect()
   wsDisconnect = disconnect
+  ws = getConnection(symbol)
   wsConnected.value = true
 }
 
@@ -288,6 +299,7 @@ const closeWebSocket = () => {
     console.log('🔌 断开 WebSocket')
     wsDisconnect()
     wsDisconnect = null
+    ws = null
     wsConnected.value = false
   }
 }

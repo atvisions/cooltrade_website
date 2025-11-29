@@ -232,9 +232,14 @@ export function useWebSocket(symbol, onMessage) {
     wsManager.disconnect(symbol, onMessage)
   }
 
+  const getConnection = (symbol) => {
+    return wsManager.connections.get(symbol)
+  }
+
   return {
     connect,
-    disconnect
+    disconnect,
+    getConnection
   }
 }
 

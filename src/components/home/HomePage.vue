@@ -376,7 +376,6 @@
           <div>
             <h4 class="text-black font-semibold mb-4 text-sm">产品</h4>
             <ul class="space-y-2 text-sm">
-              <li><router-link to="/ai-strategy" class="hover:text-black transition-colors">AI 策略生成</router-link></li>
               <li><router-link to="/market" class="hover:text-black transition-colors">市场行情</router-link></li>
               <li><router-link to="/trading" class="hover:text-black transition-colors">交易中心</router-link></li>
             </ul>

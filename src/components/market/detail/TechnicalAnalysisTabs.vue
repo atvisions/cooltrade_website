@@ -1,23 +1,23 @@
 <template>
-  <div class="bg-white rounded-xl overflow-hidden border border-gray-200">
+  <div class="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
     <!-- Header with Timeframe Selector -->
-    <div class="border-b border-gray-100 px-6 py-4 flex items-center justify-between">
-      <h2 class="text-lg font-semibold text-gray-900 flex items-center">
-        <svg class="w-5 h-5 mr-2 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+    <div class="border-b border-gray-100 px-5 py-4 flex items-center justify-between">
+      <h2 class="text-base font-semibold text-gray-900 flex items-center gap-2">
+        <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
         </svg>
         技术指标
       </h2>
 
       <!-- Timeframe Selector -->
-      <div class="flex items-center space-x-1 bg-gray-100 rounded-lg p-1">
+      <div class="flex items-center bg-gray-100 rounded-xl p-1">
         <button
           v-for="interval in intervals"
           :key="interval"
           @click="changeInterval(interval)"
           :class="[
-            selectedInterval === interval ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900',
-            'px-3 py-1.5 rounded text-xs font-medium transition-colors'
+            selectedInterval === interval ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-900',
+            'px-3 py-1.5 rounded-lg text-xs font-medium transition-all'
           ]"
         >
           {{ interval }}
@@ -26,15 +26,15 @@
     </div>
 
     <!-- Content -->
-    <div class="p-6">
+    <div class="p-5">
       <!-- Loading State -->
       <div v-if="loading" class="flex items-center justify-center py-12">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        <div class="animate-spin rounded-full h-8 w-8 border-2 border-blue-600 border-t-transparent"></div>
       </div>
 
       <!-- Error State -->
       <div v-else-if="error" class="text-center py-12">
-        <p class="text-red-600">{{ error }}</p>
+        <p class="text-sm text-red-600">{{ error }}</p>
       </div>
 
       <!-- Indicators Grid -->

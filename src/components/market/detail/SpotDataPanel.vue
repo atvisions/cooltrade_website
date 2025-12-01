@@ -131,7 +131,7 @@ const aggregatedExchanges = computed(() => {
 
 const getExchangeLogo = (exchange) => {
   const name = exchange?.toLowerCase() || 'binance'
-  return `/DEX/${name}.png`
+  return `https://cooltrade.xyz/dex/${name}.png`
 }
 
 const formatPrice = (price) => {

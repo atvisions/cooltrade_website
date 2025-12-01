@@ -2035,12 +2035,10 @@ const handleWebSocketMessage = (symbol) => (data) => {
         token.price_change_24h_formatted = change >= 0 ? `+${change.toFixed(2)}%` : `${change.toFixed(2)}%`
       }
 
-      // 更新 24h 成交量
-      if (marketData.volume_24h !== undefined) {
-        token.total_volume = marketData.volume_24h
-        // 更新格式化的成交量显示
-        token.volume_formatted = formatNumber(marketData.volume_24h)
-      }
+      // 注意：不更新 24h 成交量
+      // WebSocket 推送的是单个交易所的成交额，而 API 返回的是所有交易所的总成交额
+      // 如果用单个交易所的数据覆盖总成交额会导致数据不准确
+      // 总成交额应由后端定期任务汇总计算
 
       // 更新 24h 最高价
       if (marketData.high_24h !== undefined) {

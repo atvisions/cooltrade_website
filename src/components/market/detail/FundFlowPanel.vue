@@ -9,19 +9,19 @@
         {{ symbol }}{{ marketType === 'futures' ? '合约' : '现货' }}流入流出
       </h3>
       <!-- 现货/合约切换 -->
-      <div class="flex border border-gray-200 rounded-lg overflow-hidden">
+      <div class="flex bg-gray-100 rounded-lg p-1">
         <button
           @click="marketType = 'futures'"
           :class="[
-            'px-4 py-1.5 text-sm font-medium transition-all',
-            marketType === 'futures' ? 'bg-gray-900 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'
+            'px-4 py-1.5 text-sm font-medium rounded-md transition-all',
+            marketType === 'futures' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
           ]"
         >合约</button>
         <button
           @click="marketType = 'spot'"
           :class="[
-            'px-4 py-1.5 text-sm font-medium transition-all border-l border-gray-200',
-            marketType === 'spot' ? 'bg-gray-900 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'
+            'px-4 py-1.5 text-sm font-medium rounded-md transition-all',
+            marketType === 'spot' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
           ]"
         >现货</button>
       </div>

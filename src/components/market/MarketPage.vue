@@ -753,6 +753,34 @@
                       </div>
                     </div>
                   </th>
+                  <!-- 多空比（合并为一列） -->
+                  <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 110px;" @click="sortBy('avg_long_short_ratio')">
+                    <div class="flex items-center justify-center gap-1">
+                      多空比
+                      <div class="flex flex-col -space-y-1.5">
+                        <svg class="w-3 h-3" :class="sortField === 'avg_long_short_ratio' && sortDirection === 'asc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                          <polyline points="4,10 8,6 12,10" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <svg class="w-3 h-3" :class="sortField === 'avg_long_short_ratio' && sortDirection === 'desc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                          <polyline points="4,6 8,10 12,6" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </div>
+                    </div>
+                  </th>
+                  <!-- 24h爆仓 -->
+                  <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 100px;" @click="sortBy('liquidation_24h_total')">
+                    <div class="flex items-center justify-end gap-1">
+                      24h爆仓
+                      <div class="flex flex-col -space-y-1.5">
+                        <svg class="w-3 h-3" :class="sortField === 'liquidation_24h_total' && sortDirection === 'asc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                          <polyline points="4,10 8,6 12,10" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <svg class="w-3 h-3" :class="sortField === 'liquidation_24h_total' && sortDirection === 'desc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                          <polyline points="4,6 8,10 12,6" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </div>
+                    </div>
+                  </th>
                 </template>
 
                 <!-- 现货专属列 -->
@@ -933,6 +961,22 @@
                     <div v-if="token.open_interest_formatted" class="text-sm text-gray-900 tabular-nums">
                       {{ token.open_interest_formatted }}
                     </div>
+                    <span v-else class="text-gray-400">-</span>
+                  </td>
+                  <!-- 多空比（合并显示） -->
+                  <td class="px-4 py-3 text-center">
+                    <div v-if="token.long_ratio !== null && token.short_ratio !== null" class="text-xs tabular-nums whitespace-nowrap">
+                      <span class="text-emerald-600 font-medium">{{ token.long_ratio.toFixed(1) }}%</span>
+                      <span class="text-gray-400 mx-0.5">/</span>
+                      <span class="text-rose-600 font-medium">{{ token.short_ratio.toFixed(1) }}%</span>
+                    </div>
+                    <span v-else class="text-gray-400">-</span>
+                  </td>
+                  <!-- 24h爆仓 -->
+                  <td class="px-4 py-3 text-right">
+                    <span v-if="token.liquidation_24h_formatted" class="text-sm text-gray-900 tabular-nums">
+                      {{ token.liquidation_24h_formatted }}
+                    </span>
                     <span v-else class="text-gray-400">-</span>
                   </td>
                 </template>

@@ -358,9 +358,66 @@ watch(() => props.marketType, () => {
   loadKlineData(selectedTimeframe.value)
 })
 
+// 处理 WebSocket K线更新
+const handleKlineUpdate = (data) => {
+  // 检查是否是当前周期的数据
+  if (data.interval !== timeframeMap[selectedTimeframe.value]) {
+    return
+  }
+
+  if (!mainSeries || klineData.length === 0) return
+
+  const newBar = {
+    time: Math.floor(data.timestamp / 1000),
+    open: data.open,
+    high: data.high,
+    low: data.low,
+    close: data.close,
+    volume: data.volume
+  }
+
+  // 更新或添加K线
+  const lastBar = klineData[klineData.length - 1]
+  if (lastBar && lastBar.time === newBar.time) {
+    // 更新最后一根K线
+    klineData[klineData.length - 1] = newBar
+  } else if (data.is_closed) {
+    // 添加新K线
+    klineData.push(newBar)
+  }
+
+  // 更新图表
+  if (chartType.value === 'candle') {
+    mainSeries.update(newBar)
+  } else {
+    mainSeries.update({ time: newBar.time, value: newBar.close })
+  }
+
+  // 更新成交量
+  if (volumeSeries) {
+    volumeSeries.update({
+      time: newBar.time,
+      value: newBar.volume,
+      color: newBar.close >= newBar.open ? '#26a69a' : '#ef5350'
+    })
+  }
+
+  // 更新最新价格
+  latestPrice.value = {
+    price: newBar.close,
+    high_24h: Math.max(...klineData.slice(-24).map(k => k.high)),
+    low_24h: Math.min(...klineData.slice(-24).map(k => k.low)),
+    volume_24h: klineData.slice(-24).reduce((sum, k) => sum + k.volume, 0)
+  }
+  emit('price-update', latestPrice.value)
+
+  console.log(`📈 K线更新: ${data.symbol} ${data.interval} close=$${newBar.close}`)
+}
+
 // 暴露方法给父组件
 defineExpose({
-  loadKlineData: () => loadKlineData(selectedTimeframe.value)
+  loadKlineData: () => loadKlineData(selectedTimeframe.value),
+  handleKlineUpdate
 })
 </script>
 

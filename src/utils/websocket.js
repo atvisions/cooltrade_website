@@ -219,6 +219,47 @@ class WebSocketManager {
       this.disconnect(symbol)
     })
   }
+
+  /**
+   * 发送消息到指定代币的 WebSocket
+   */
+  send(symbol, message) {
+    const ws = this.connections.get(symbol)
+    if (ws && ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify(message))
+      return true
+    }
+    console.warn(`⚠️ WebSocket 未连接，无法发送消息: ${symbol}`)
+    return false
+  }
+
+  /**
+   * 订阅 K线数据
+   * @param {string} symbol - 代币符号
+   * @param {string} interval - K线周期，如 '1m', '5m', '15m', '1h'
+   * @param {string} marketType - 市场类型，'spot' 或 'futures'
+   */
+  subscribeKline(symbol, interval = '1m', marketType = 'spot') {
+    return this.send(symbol, {
+      type: 'subscribe_kline',
+      interval: interval,
+      market_type: marketType
+    })
+  }
+
+  /**
+   * 取消订阅 K线数据
+   * @param {string} symbol - 代币符号
+   * @param {string} interval - K线周期
+   * @param {string} marketType - 市场类型
+   */
+  unsubscribeKline(symbol, interval = '1m', marketType = 'spot') {
+    return this.send(symbol, {
+      type: 'unsubscribe_kline',
+      interval: interval,
+      market_type: marketType
+    })
+  }
 }
 
 // 创建全局单例
@@ -240,14 +281,29 @@ export function useWebSocket(symbol, onMessage) {
     wsManager.disconnect(symbol, onMessage)
   }
 
-  const getConnection = (symbol) => {
-    return wsManager.connections.get(symbol)
+  const getConnection = (sym) => {
+    return wsManager.connections.get(sym)
+  }
+
+  const send = (message) => {
+    return wsManager.send(symbol, message)
+  }
+
+  const subscribeKline = (interval = '1m') => {
+    return wsManager.subscribeKline(symbol, interval)
+  }
+
+  const unsubscribeKline = (interval = '1m') => {
+    return wsManager.unsubscribeKline(symbol, interval)
   }
 
   return {
     connect,
     disconnect,
-    getConnection
+    getConnection,
+    send,
+    subscribeKline,
+    unsubscribeKline
   }
 }
 

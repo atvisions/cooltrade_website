@@ -118,6 +118,12 @@
               @price-update="handlePriceUpdate"
             />
 
+            <!-- 资金流向面板 -->
+            <FundFlowPanel
+              :symbol="tokenData.token.symbol"
+              :default-market-type="activeMarketTab === 'futures' ? 'futures' : 'spot'"
+            />
+
             <!-- 市场数据表格（Coinglass 风格） -->
             <MarketDataTable
               :spot-exchanges="spotExchanges"
@@ -438,6 +444,12 @@
             </div>
           </div>
 
+          <!-- 爆仓数据模块（仅合约可用时显示） -->
+          <LiquidationCard
+            v-if="tokenData.token.is_futures_available"
+            :symbol="tokenData.token.symbol"
+          />
+
           <!-- 机器人面板 -->
           <BotTradingPanel
             :token="tokenData.token"
@@ -465,6 +477,8 @@ import TechnicalAnalysisTabs from './detail/TechnicalAnalysisTabs.vue'
 import BotTradingPanel from './detail/BotTradingPanel.vue'
 import StatCard from './detail/StatCard.vue'
 import MarketDataTable from './detail/MarketDataTable.vue'
+import LiquidationCard from './detail/LiquidationCard.vue'
+import FundFlowPanel from './detail/FundFlowPanel.vue'
 
 const route = useRoute()
 

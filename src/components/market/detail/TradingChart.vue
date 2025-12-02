@@ -3,7 +3,42 @@
     <!-- Chart Header -->
     <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
       <div class="flex items-center gap-4">
-        <h3 class="text-base font-semibold text-gray-900">{{ symbol }}/USDT</h3>
+        <!-- 图表类型切换 -->
+        <div class="flex items-center bg-gray-100 rounded-lg p-0.5">
+          <button
+            @click="chartType = 'line'"
+            :class="[
+              chartType === 'line' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700',
+              'p-1.5 rounded-md transition-all'
+            ]"
+            title="线形图"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
+            </svg>
+          </button>
+          <button
+            @click="chartType = 'candle'"
+            :class="[
+              chartType === 'candle' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700',
+              'p-1.5 rounded-md transition-all'
+            ]"
+            title="蜡烛图"
+          >
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+              <rect x="3" y="8" width="4" height="8" rx="0.5"/>
+              <rect x="4.5" y="5" width="1" height="3"/>
+              <rect x="4.5" y="16" width="1" height="3"/>
+              <rect x="10" y="6" width="4" height="10" rx="0.5"/>
+              <rect x="11.5" y="3" width="1" height="3"/>
+              <rect x="11.5" y="16" width="1" height="5"/>
+              <rect x="17" y="9" width="4" height="6" rx="0.5"/>
+              <rect x="18.5" y="6" width="1" height="3"/>
+              <rect x="18.5" y="15" width="1" height="3"/>
+            </svg>
+          </button>
+        </div>
+
         <span v-if="marketType === 'futures'" class="px-2 py-0.5 bg-purple-50 text-purple-600 text-xs font-medium rounded-lg">永续合约</span>
         <span v-else class="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-xs font-medium rounded-lg">现货</span>
         <!-- 涨跌指示 -->
@@ -32,7 +67,7 @@
     </div>
 
     <!-- Chart Area -->
-    <div class="relative p-4" style="height: 400px;">
+    <div class="relative" style="height: 400px;">
       <!-- Loading State -->
       <div v-if="loading" class="absolute inset-0 flex items-center justify-center bg-white/90 z-10">
         <div class="text-center">
@@ -54,11 +89,11 @@
         </div>
       </div>
 
-      <!-- Chart.js Canvas -->
-      <canvas ref="chartCanvas"></canvas>
+      <!-- Lightweight Charts Container -->
+      <div ref="chartContainer" class="w-full h-full"></div>
 
       <!-- Current Price Overlay -->
-      <div v-if="latestPrice?.price" class="absolute top-6 right-6 z-20">
+      <div v-if="latestPrice?.price" class="absolute top-4 right-4 z-20">
         <div class="px-3 py-2 bg-white/95 backdrop-blur-sm rounded-xl border border-gray-200 shadow-sm">
           <div class="text-xs text-gray-400 mb-0.5">当前价格</div>
           <div class="text-lg font-bold" :class="priceChange >= 0 ? 'text-emerald-600' : 'text-red-600'">
@@ -67,191 +102,137 @@
         </div>
       </div>
     </div>
-
-    <!-- Chart Footer - Quick Stats -->
-    <div class="px-5 py-3 border-t border-gray-100 grid grid-cols-4 gap-4 bg-gray-50/50">
-      <div>
-        <div class="text-xs text-gray-400 mb-0.5">24h最高</div>
-        <div class="text-sm font-semibold text-emerald-600">
-          ${{ latestPrice?.high_24h ? formatPrice(latestPrice.high_24h) : '--' }}
-        </div>
-      </div>
-      <div>
-        <div class="text-xs text-gray-400 mb-0.5">24h最低</div>
-        <div class="text-sm font-semibold text-red-600">
-          ${{ latestPrice?.low_24h ? formatPrice(latestPrice.low_24h) : '--' }}
-        </div>
-      </div>
-      <div>
-        <div class="text-xs text-gray-400 mb-0.5">24h成交额</div>
-        <div class="text-sm font-semibold text-gray-900">
-          {{ latestPrice?.volume_24h ? formatVolume(latestPrice.volume_24h) : '--' }}
-        </div>
-      </div>
-      <div>
-        <div class="text-xs text-gray-400 mb-0.5">K线数量</div>
-        <div class="text-sm font-semibold text-gray-900">{{ klineCount }}</div>
-      </div>
-    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
-import { Chart, registerables } from 'chart.js'
+import * as LightweightCharts from 'lightweight-charts'
 import { apiRequest, API_ENDPOINTS } from '../../../utils/api.js'
 
-// 注册 Chart.js 组件
-Chart.register(...registerables)
-
 const props = defineProps({
-  symbol: {
-    type: String,
-    required: true
-  },
-  currentPrice: {
-    type: [String, Number],
-    default: 0
-  },
-  marketType: {
-    type: String,
-    default: 'spot'
-  },
-  technicalSignals: {
-    type: Object,
-    default: () => ({})
-  },
-  marketCondition: {
-    type: String,
-    default: ''
-  }
+  symbol: { type: String, required: true },
+  currentPrice: { type: [String, Number], default: 0 },
+  marketType: { type: String, default: 'spot' },
+  technicalSignals: { type: Object, default: () => ({}) },
+  marketCondition: { type: String, default: '' }
 })
 
 const emit = defineEmits(['price-update'])
 
-// Timeframe mapping: display -> API format
-const timeframeMap = {
-  '1m': '1m',
-  '5m': '5m',
-  '15m': '15m',
-  '1h': '1h',
-  '4h': '4h',
-  '1D': '1d',
-  '1W': '1w'
-}
-
+// Timeframe mapping
+const timeframeMap = { '1m': '1m', '5m': '5m', '15m': '15m', '1h': '1h', '4h': '4h', '1D': '1d', '1W': '1w' }
 const timeframes = ['1m', '5m', '15m', '1h', '4h', '1D', '1W']
+
 const selectedTimeframe = ref('1h')
-const chartCanvas = ref(null)
+const chartType = ref('line') // 'line' | 'candle'
+const chartContainer = ref(null)
 const loading = ref(false)
 const error = ref(null)
 const latestPrice = ref(null)
-const klineCount = ref(0)
 const priceChange = ref(null)
 
-let chartInstance = null
+let chart = null
+let mainSeries = null
+let volumeSeries = null
+let klineData = [] // 存储原始数据
 
-// 创建渐变
-const createGradient = (ctx, chartArea, isUp) => {
-  const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom)
-  if (isUp) {
-    gradient.addColorStop(0, 'rgba(38, 166, 154, 0.4)')
-    gradient.addColorStop(1, 'rgba(38, 166, 154, 0.02)')
-  } else {
-    gradient.addColorStop(0, 'rgba(239, 83, 80, 0.4)')
-    gradient.addColorStop(1, 'rgba(239, 83, 80, 0.02)')
-  }
-  return gradient
-}
+// 创建图表
+const initChart = () => {
+  if (!chartContainer.value || chart) return
 
-// 创建/更新图表
-const createChart = (labels, data, isUp) => {
-  if (!chartCanvas.value) return
-
-  // 销毁旧图表
-  if (chartInstance) {
-    chartInstance.destroy()
-    chartInstance = null
-  }
-
-  const ctx = chartCanvas.value.getContext('2d')
-  const lineColor = isUp ? 'rgb(38, 166, 154)' : 'rgb(239, 83, 80)'
-
-  chartInstance = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: labels,
-      datasets: [{
-        data: data,
-        borderColor: lineColor,
-        borderWidth: 2,
-        fill: true,
-        backgroundColor: (context) => {
-          const chart = context.chart
-          const { ctx, chartArea } = chart
-          if (!chartArea) return null
-          return createGradient(ctx, chartArea, isUp)
-        },
-        tension: 0.1,
-        pointRadius: 0,
-        pointHoverRadius: 6,
-        pointHoverBackgroundColor: '#fff',
-        pointHoverBorderColor: lineColor,
-        pointHoverBorderWidth: 2,
-      }]
+  chart = LightweightCharts.createChart(chartContainer.value, {
+    layout: {
+      background: { color: '#ffffff' },
+      textColor: '#999',
     },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      interaction: {
-        intersect: false,
-        mode: 'index',
-      },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: 'rgba(255, 255, 255, 0.95)',
-          titleColor: '#333',
-          bodyColor: '#666',
-          borderColor: '#e5e5e5',
-          borderWidth: 1,
-          padding: 12,
-          displayColors: false,
-          callbacks: {
-            title: (items) => items[0]?.label || '',
-            label: (item) => `$${formatPrice(item.raw)}`,
-          }
-        }
-      },
-      scales: {
-        x: {
-          display: true,
-          grid: { display: false },
-          ticks: {
-            color: '#999',
-            font: { size: 11 },
-            maxRotation: 0,
-            maxTicksLimit: 8,
-          },
-          border: { display: false }
-        },
-        y: {
-          display: true,
-          position: 'right',
-          grid: { color: '#f5f5f5' },
-          ticks: {
-            color: '#999',
-            font: { size: 11 },
-            callback: (value) => '$' + formatPrice(value),
-          },
-          border: { display: false }
-        }
-      }
-    }
+    grid: {
+      vertLines: { color: '#f5f5f5' },
+      horzLines: { color: '#f5f5f5' },
+    },
+    rightPriceScale: {
+      borderColor: '#f0f0f0',
+      scaleMargins: { top: 0.1, bottom: 0.25 },
+    },
+    timeScale: {
+      borderColor: '#f0f0f0',
+      timeVisible: true,
+      secondsVisible: false,
+    },
+    crosshair: {
+      mode: 1,
+      vertLine: { color: '#6366f1', width: 1, style: 2, labelBackgroundColor: '#6366f1' },
+      horzLine: { color: '#6366f1', width: 1, style: 2, labelBackgroundColor: '#6366f1' },
+    },
+  })
+
+  // 创建交易量柱状图 (v5 API)
+  volumeSeries = chart.addSeries(LightweightCharts.HistogramSeries, {
+    color: '#26a69a',
+    priceFormat: { type: 'volume' },
+    priceScaleId: 'volume',
+  })
+
+  // 配置交易量的价格轴
+  chart.priceScale('volume').applyOptions({
+    scaleMargins: { top: 0.85, bottom: 0 },
   })
 }
 
-// Load K-line data
+// 更新图表数据
+const updateChartData = () => {
+  if (!chart || klineData.length === 0) return
+
+  // 移除旧的主系列
+  if (mainSeries) {
+    chart.removeSeries(mainSeries)
+    mainSeries = null
+  }
+
+  const isUp = klineData[klineData.length - 1].close >= klineData[0].close
+  const lineColor = isUp ? '#26a69a' : '#ef5350'
+
+  // 确保数据有效
+  const validData = klineData.filter(k => k.close > 0 && !isNaN(k.close))
+  if (validData.length === 0) return
+
+  if (chartType.value === 'line') {
+    // 线形图 (v5 API)
+    mainSeries = chart.addSeries(LightweightCharts.AreaSeries, {
+      lineColor: lineColor,
+      topColor: isUp ? 'rgba(38, 166, 154, 0.4)' : 'rgba(239, 83, 80, 0.4)',
+      bottomColor: isUp ? 'rgba(38, 166, 154, 0.02)' : 'rgba(239, 83, 80, 0.02)',
+      lineWidth: 2,
+    })
+    const lineData = validData.map(k => ({ time: k.time, value: k.close }))
+    console.log('📊 Line data sample:', lineData.slice(0, 3))
+    mainSeries.setData(lineData)
+  } else {
+    // 蜡烛图 (v5 API)
+    mainSeries = chart.addSeries(LightweightCharts.CandlestickSeries, {
+      upColor: '#26a69a',
+      downColor: '#ef5350',
+      borderUpColor: '#26a69a',
+      borderDownColor: '#ef5350',
+      wickUpColor: '#26a69a',
+      wickDownColor: '#ef5350',
+    })
+    console.log('📊 Candle data sample:', validData.slice(0, 3))
+    mainSeries.setData(validData)
+  }
+
+  // 更新交易量数据
+  const volumeData = validData.map(k => ({
+    time: k.time,
+    value: k.volume || 0,
+    color: k.close >= k.open ? 'rgba(38, 166, 154, 0.5)' : 'rgba(239, 83, 80, 0.5)'
+  }))
+  volumeSeries.setData(volumeData)
+
+  chart.timeScale().fitContent()
+}
+
+// 加载K线数据
 const loadKlineData = async (timeframe) => {
   loading.value = true
   error.value = null
@@ -274,7 +255,6 @@ const loadKlineData = async (timeframe) => {
         return
       }
 
-      // Update latest price info
       if (latest_price) {
         latestPrice.value = {
           ...latest_price,
@@ -285,44 +265,36 @@ const loadKlineData = async (timeframe) => {
         emit('price-update', latestPrice.value)
       }
 
-      // 格式化数据
-      const sortedKlines = klines
-        .filter(k => k.timestamp && k.close)
+      // 转换为 lightweight-charts 格式 (过滤掉任何 null/undefined/NaN 值)
+      klineData = klines
+        .filter(k => k.timestamp && k.close != null && k.open != null && k.high != null && k.low != null)
         .sort((a, b) => a.timestamp - b.timestamp)
+        .map(k => ({
+          time: Math.floor(k.timestamp / 1000),
+          open: Number(k.open) || 0,
+          high: Number(k.high) || 0,
+          low: Number(k.low) || 0,
+          close: Number(k.close) || 0,
+          volume: Number(k.volume || k.quote_volume || 0)
+        }))
+        .filter(k => !isNaN(k.close) && k.close > 0)
 
-      if (sortedKlines.length === 0) {
+      if (klineData.length === 0) {
         error.value = '该代币暂无有效K线数据'
         return
       }
 
-      // 格式化时间标签
-      const labels = sortedKlines.map(k => {
-        const date = new Date(k.timestamp)
-        if (timeframe === '1D' || timeframe === '1W') {
-          return `${date.getMonth() + 1}/${date.getDate()}`
-        }
-        return `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
-      })
-
-      const data = sortedKlines.map(k => Number(k.close))
-      klineCount.value = data.length
-
       // 计算涨跌
-      const firstPrice = data[0]
-      const lastPrice = data[data.length - 1]
-      const isUp = lastPrice >= firstPrice
+      const firstPrice = klineData[0].close
+      const lastPrice = klineData[klineData.length - 1].close
       priceChange.value = ((lastPrice - firstPrice) / firstPrice) * 100
 
-      console.log('📊 K线数据数量:', data.length, '涨跌:', isUp ? '涨' : '跌')
-
-      // 创建图表
       await nextTick()
-      createChart(labels, data, isUp)
+      initChart()
+      updateChartData()
 
     } else {
-      const errorMsg = response.message || '加载K线数据失败'
-      const errorDetail = response.detail || ''
-      error.value = errorDetail ? `${errorMsg}: ${errorDetail}` : errorMsg
+      error.value = response.message || '加载K线数据失败'
     }
   } catch (err) {
     console.error('Error loading kline data:', err)
@@ -332,52 +304,50 @@ const loadKlineData = async (timeframe) => {
   }
 }
 
-// Change timeframe
 const changeTimeframe = (timeframe) => {
   selectedTimeframe.value = timeframe
   loadKlineData(timeframe)
 }
 
-// Format price
 const formatPrice = (price) => {
   if (!price) return '0.00'
   const num = parseFloat(price)
-  if (num >= 1) {
-    return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-  }
+  if (num >= 1) return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
   return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 8 })
 }
 
-// Format volume
-const formatVolume = (volume) => {
-  if (!volume) return '0'
-  const num = parseFloat(volume)
-  if (num >= 1e9) {
-    return `$${(num / 1e9).toFixed(2)}B`
-  } else if (num >= 1e6) {
-    return `$${(num / 1e6).toFixed(2)}M`
-  } else if (num >= 1e3) {
-    return `$${(num / 1e3).toFixed(2)}K`
+// 监听图表类型变化
+watch(chartType, () => {
+  if (klineData.length > 0) updateChartData()
+})
+
+// 监听容器大小变化
+const handleResize = () => {
+  if (chart && chartContainer.value) {
+    chart.applyOptions({ width: chartContainer.value.clientWidth })
   }
-  return `$${num.toFixed(2)}`
 }
 
-
-
-// Lifecycle hooks
 onMounted(() => {
   loadKlineData(selectedTimeframe.value)
+  window.addEventListener('resize', handleResize)
 })
 
 onUnmounted(() => {
-  if (chartInstance) {
-    chartInstance.destroy()
-    chartInstance = null
+  window.removeEventListener('resize', handleResize)
+  if (chart) {
+    chart.remove()
+    chart = null
   }
 })
 
-// Watch for symbol changes
 watch(() => props.symbol, () => {
+  if (chart) {
+    chart.remove()
+    chart = null
+    mainSeries = null
+    volumeSeries = null
+  }
   loadKlineData(selectedTimeframe.value)
 })
 </script>

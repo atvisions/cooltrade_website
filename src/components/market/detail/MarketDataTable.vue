@@ -29,120 +29,122 @@
       </div>
     </div>
 
-    <!-- Table -->
-    <div class="overflow-x-auto">
-      <table class="w-full">
-        <!-- Table Header -->
-        <thead>
-          <tr class="text-xs text-gray-500 border-b border-gray-100">
-            <th class="px-3 py-3 text-left font-medium w-8">#</th>
-            <th class="px-3 py-3 text-left font-medium">交易所</th>
-            <th class="px-3 py-3 text-right font-medium">价格</th>
-            <!-- 合约列 -->
-            <th v-if="activeTab === 'futures'" class="px-3 py-3 text-right font-medium">资金费率</th>
-            <th v-if="activeTab === 'futures'" class="px-3 py-3 text-right font-medium">24h成交额</th>
-            <th v-if="activeTab === 'futures'" class="px-3 py-3 text-right font-medium">持仓量</th>
-            <th v-if="activeTab === 'futures'" class="px-3 py-3 text-right font-medium">多空比</th>
-            <th v-if="activeTab === 'futures'" class="px-3 py-3 text-right font-medium">24h爆仓</th>
-            <!-- 现货列 -->
-            <th v-if="activeTab === 'spot'" class="px-3 py-3 text-right font-medium">24h涨跌</th>
-            <th v-if="activeTab === 'spot'" class="px-3 py-3 text-right font-medium">24h最高</th>
-            <th v-if="activeTab === 'spot'" class="px-3 py-3 text-right font-medium">24h最低</th>
-            <th v-if="activeTab === 'spot'" class="px-3 py-3 text-right font-medium">24h成交额</th>
-            <th v-if="activeTab === 'spot'" class="px-3 py-3 text-right font-medium">净流入</th>
-          </tr>
-        </thead>
-        <!-- Table Body -->
-        <tbody class="divide-y divide-gray-50">
-          <tr
-            v-for="(item, index) in displayedData"
-            :key="item.exchange"
-            class="hover:bg-gray-50/50 transition-colors text-sm"
-          >
-            <!-- Rank -->
-            <td class="px-3 py-3 text-gray-400">{{ index + 1 }}</td>
-            <!-- Exchange -->
-            <td class="px-3 py-3">
-              <div class="flex items-center gap-2">
-                <img :src="getExchangeLogo(item.exchange)" :alt="item.exchange" class="w-6 h-6 rounded-lg" />
-                <span class="font-semibold text-gray-900 capitalize">{{ item.exchange }}</span>
-              </div>
-            </td>
-            <!-- Price -->
-            <td class="px-3 py-3 text-right">
-              <span class="font-semibold text-gray-900">${{ formatPrice(item.price) }}</span>
-            </td>
-
-            <!-- ===== 合约数据列 ===== -->
-            <!-- Funding Rate -->
-            <td v-if="activeTab === 'futures'" class="px-3 py-3 text-right">
-              <span :class="getFundingRateColor(item.funding_rate)" class="font-semibold">
-                {{ formatFundingRate(item.funding_rate) }}
-              </span>
-            </td>
-            <!-- Volume 24h (Futures) -->
-            <td v-if="activeTab === 'futures'" class="px-3 py-3 text-right">
-              <span class="font-semibold text-gray-900">${{ formatLargeNumber(item.volume_24h) }}</span>
-            </td>
-            <!-- Open Interest -->
-            <td v-if="activeTab === 'futures'" class="px-3 py-3 text-right">
-              <span class="font-semibold text-gray-900">${{ formatLargeNumber(item.open_interest) }}</span>
-            </td>
-            <!-- Long/Short Ratio -->
-            <td v-if="activeTab === 'futures'" class="px-3 py-3 text-right">
-              <div v-if="item.long_short_ratio" class="flex flex-col items-end">
-                <span :class="getLongShortColor(item.long_short_ratio)" class="font-semibold">
-                  {{ formatNumber(item.long_short_ratio) }}
+    <!-- Table with sticky first column -->
+    <div class="relative">
+      <div class="overflow-x-auto">
+        <table class="w-full min-w-max">
+          <!-- Table Header -->
+          <thead>
+            <tr class="text-xs text-gray-500 border-b border-gray-100 h-11">
+              <th class="sticky left-0 z-10 bg-white px-3 py-3 text-left font-medium w-10">#</th>
+              <th class="sticky left-10 z-10 bg-white px-3 py-3 text-left font-medium min-w-[140px]">交易所</th>
+              <th class="px-3 py-3 text-left font-medium min-w-[120px]">交易对</th>
+              <th class="px-3 py-3 text-right font-medium min-w-[100px]">价格</th>
+              <th class="px-3 py-3 text-right font-medium min-w-[90px]">24h涨跌</th>
+              <th class="px-3 py-3 text-right font-medium min-w-[100px]">24h最高</th>
+              <th class="px-3 py-3 text-right font-medium min-w-[100px]">24h最低</th>
+              <th class="px-3 py-3 text-right font-medium min-w-[110px]">24h成交额</th>
+              <!-- 合约专属列 -->
+              <th v-if="activeTab === 'futures'" class="px-3 py-3 text-right font-medium min-w-[100px]">资金费率</th>
+              <th v-if="activeTab === 'futures'" class="px-3 py-3 text-right font-medium min-w-[110px]">持仓量</th>
+              <th v-if="activeTab === 'futures'" class="px-3 py-3 text-right font-medium min-w-[100px]">多空比</th>
+              <th v-if="activeTab === 'futures'" class="px-3 py-3 text-right font-medium min-w-[130px]">24h爆仓</th>
+              <!-- 现货专属列 -->
+              <th v-if="activeTab === 'spot'" class="px-3 py-3 text-right font-medium min-w-[110px]">净流入</th>
+            </tr>
+          </thead>
+          <!-- Table Body -->
+          <tbody class="divide-y divide-gray-50">
+            <tr
+              v-for="(item, index) in displayedData"
+              :key="item.exchange + item.trading_pair"
+              class="hover:bg-gray-50/50 transition-colors text-sm h-14"
+            >
+              <!-- Rank (sticky) -->
+              <td class="sticky left-0 z-10 bg-white px-3 py-3 text-gray-400">{{ index + 1 }}</td>
+              <!-- Exchange (sticky) -->
+              <td class="sticky left-10 z-10 bg-white px-3 py-3">
+                <div class="flex items-center gap-2">
+                  <img :src="getExchangeLogo(item.exchange)" :alt="item.exchange" class="w-5 h-5 rounded" />
+                  <span class="font-medium text-gray-900 capitalize">{{ item.exchange }}</span>
+                </div>
+              </td>
+              <!-- Trading Pair -->
+              <td class="px-3 py-3">
+                <span class="text-gray-700">{{ item.trading_pair }}</span>
+              </td>
+              <!-- Price -->
+              <td class="px-3 py-3 text-right">
+                <span class="font-semibold text-gray-900">${{ formatPrice(item.price) }}</span>
+              </td>
+              <!-- Price Change 24h -->
+              <td class="px-3 py-3 text-right">
+                <span :class="getPriceChangeColor(item.price_change_24h)" class="font-medium">
+                  {{ formatPriceChange(item.price_change_24h) }}
                 </span>
-                <div class="flex items-center gap-1 text-xs mt-0.5">
-                  <span class="text-emerald-600">多{{ getLongPercent(item.long_short_ratio) }}%</span>
-                  <span class="text-gray-300">/</span>
-                  <span class="text-red-500">空{{ getShortPercent(item.long_short_ratio) }}%</span>
-                </div>
-              </div>
-              <span v-else class="text-gray-400">-</span>
-            </td>
-            <!-- 24h Liquidation -->
-            <td v-if="activeTab === 'futures'" class="px-3 py-3 text-right">
-              <div v-if="item.liquidation_24h_long || item.liquidation_24h_short" class="flex flex-col items-end">
-                <span class="font-semibold text-gray-900">${{ formatLargeNumber(getTotalLiquidation(item)) }}</span>
-                <div class="flex items-center gap-1 text-xs mt-0.5">
-                  <span class="text-emerald-600">多${{ formatLargeNumber(item.liquidation_24h_long) }}</span>
-                  <span class="text-gray-300">/</span>
-                  <span class="text-red-500">空${{ formatLargeNumber(item.liquidation_24h_short) }}</span>
-                </div>
-              </div>
-              <span v-else class="text-gray-400">-</span>
-            </td>
+              </td>
+              <!-- 24h High -->
+              <td class="px-3 py-3 text-right">
+                <span class="text-gray-700">${{ formatPrice(item.high_24h) }}</span>
+              </td>
+              <!-- 24h Low -->
+              <td class="px-3 py-3 text-right">
+                <span class="text-gray-700">${{ formatPrice(item.low_24h) }}</span>
+              </td>
+              <!-- Volume 24h -->
+              <td class="px-3 py-3 text-right">
+                <span class="font-medium text-gray-900">${{ formatLargeNumber(item.volume_24h) }}</span>
+              </td>
 
-            <!-- ===== 现货数据列 ===== -->
-            <!-- Price Change 24h -->
-            <td v-if="activeTab === 'spot'" class="px-3 py-3 text-right">
-              <span :class="getPriceChangeColor(item.price_change_24h)" class="font-semibold">
-                {{ formatPriceChange(item.price_change_24h) }}
-              </span>
-            </td>
-            <!-- 24h High -->
-            <td v-if="activeTab === 'spot'" class="px-3 py-3 text-right">
-              <span class="text-gray-900">${{ formatPrice(item.high_24h) }}</span>
-            </td>
-            <!-- 24h Low -->
-            <td v-if="activeTab === 'spot'" class="px-3 py-3 text-right">
-              <span class="text-gray-900">${{ formatPrice(item.low_24h) }}</span>
-            </td>
-            <!-- Volume 24h (Spot) -->
-            <td v-if="activeTab === 'spot'" class="px-3 py-3 text-right">
-              <span class="font-semibold text-gray-900">${{ formatLargeNumber(item.volume_24h) }}</span>
-            </td>
-            <!-- Net Inflow -->
-            <td v-if="activeTab === 'spot'" class="px-3 py-3 text-right">
-              <span :class="getNetInflowColor(item.net_inflow)" class="font-semibold">
-                {{ formatNetInflow(item.net_inflow) }}
-              </span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+              <!-- ===== 合约专属列 ===== -->
+              <!-- Funding Rate -->
+              <td v-if="activeTab === 'futures'" class="px-3 py-3 text-right">
+                <span :class="getFundingRateColor(item.funding_rate)" class="font-medium">
+                  {{ formatFundingRate(item.funding_rate) }}
+                </span>
+              </td>
+              <!-- Open Interest -->
+              <td v-if="activeTab === 'futures'" class="px-3 py-3 text-right">
+                <span class="font-medium text-gray-900">${{ formatLargeNumber(item.open_interest) }}</span>
+              </td>
+              <!-- Long/Short Ratio -->
+              <td v-if="activeTab === 'futures'" class="px-3 py-3 text-right">
+                <div v-if="item.long_short_ratio" class="flex flex-col items-end">
+                  <span :class="getLongShortColor(item.long_short_ratio)" class="font-medium">
+                    {{ formatNumber(item.long_short_ratio, 4) }}
+                  </span>
+                  <div class="flex items-center gap-1 text-xs mt-0.5">
+                    <span class="text-emerald-600">{{ getLongPercent(item.long_short_ratio) }}%</span>
+                    <span class="text-gray-300">/</span>
+                    <span class="text-red-500">{{ getShortPercent(item.long_short_ratio) }}%</span>
+                  </div>
+                </div>
+                <span v-else class="text-gray-400">-</span>
+              </td>
+              <!-- 24h Liquidation -->
+              <td v-if="activeTab === 'futures'" class="px-3 py-3 text-right">
+                <div v-if="item.liquidation_24h_long || item.liquidation_24h_short" class="flex flex-col items-end">
+                  <span class="font-medium text-gray-900">${{ formatLargeNumber(getTotalLiquidation(item)) }}</span>
+                  <div class="flex items-center gap-1 text-xs mt-0.5">
+                    <span class="text-emerald-600">${{ formatLargeNumber(item.liquidation_24h_long) }}</span>
+                    <span class="text-gray-300">/</span>
+                    <span class="text-red-500">${{ formatLargeNumber(item.liquidation_24h_short) }}</span>
+                  </div>
+                </div>
+                <span v-else class="text-gray-400">-</span>
+              </td>
+
+              <!-- ===== 现货专属列 ===== -->
+              <!-- Net Inflow -->
+              <td v-if="activeTab === 'spot'" class="px-3 py-3 text-right">
+                <span :class="getNetInflowColor(item.net_inflow)" class="font-medium">
+                  {{ formatNetInflow(item.net_inflow) }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
       <!-- Empty State -->
       <div v-if="!displayedData.length" class="px-5 py-12 text-center text-gray-500">
@@ -229,6 +231,7 @@ const aggregateExchanges = (exchanges, isFutures) => {
 
       exchangeMap.set(name, {
         exchange: name,
+        trading_pair: ex.trading_pair,
         price: ex.price,
         volume_24h: ex.volume_24h,
         high_24h: ex.high_24h,
@@ -343,3 +346,32 @@ const getTotalLiquidation = (item) => {
 }
 </script>
 
+<style scoped>
+/* 固定列阴影效果 */
+.sticky {
+  position: sticky;
+}
+
+/* 当滚动时给固定列添加阴影 */
+td.sticky::after,
+th.sticky::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -8px;
+  bottom: 0;
+  width: 8px;
+  pointer-events: none;
+}
+
+/* 第二个固定列的阴影 */
+td.sticky.left-10::after,
+th.sticky.left-10::after {
+  box-shadow: 4px 0 8px -4px rgba(0, 0, 0, 0.1);
+}
+
+/* hover时保持背景色 */
+tr:hover td.sticky {
+  background-color: rgb(249 250 251 / 0.5);
+}
+</style>

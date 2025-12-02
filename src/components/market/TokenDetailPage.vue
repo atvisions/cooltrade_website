@@ -35,95 +35,6 @@
     <!-- Main Content -->
     <div v-else-if="tokenData" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-8">
 
-      <!-- ===== 顶部信息栏 ===== -->
-      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 mb-4">
-        <div class="flex items-center justify-between">
-          <!-- 左侧：代币信息 -->
-          <div class="flex items-center gap-4">
-            <!-- Logo -->
-            <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center border border-gray-200 overflow-hidden">
-              <img v-if="tokenData.token.logo" :src="tokenData.token.logo" :alt="tokenData.token.name" class="w-10 h-10 object-contain" />
-              <span v-else class="text-xl font-bold text-gray-400">{{ tokenData.token.symbol.charAt(0) }}</span>
-            </div>
-
-            <!-- 名称和标签 -->
-            <div>
-              <div class="flex items-center gap-2 mb-1">
-                <h1 class="text-2xl font-bold text-gray-900">{{ tokenData.token.symbol }}</h1>
-                <span class="text-base text-gray-500">{{ tokenData.token.name }}</span>
-                <span v-if="tokenData.token.market_cap_rank" class="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-lg">
-                  #{{ tokenData.token.market_cap_rank }}
-                </span>
-              </div>
-              <div class="flex items-center gap-2">
-                <span v-if="tokenData.token.category" class="px-2 py-0.5 bg-blue-50 text-blue-600 text-xs font-medium rounded-lg">
-                  {{ getCategoryLabel(tokenData.token.category) }}
-                </span>
-                <span v-if="tokenData.token.is_spot_available" class="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-xs font-medium rounded-lg">
-                  现货
-                </span>
-                <span v-if="tokenData.token.is_futures_available" class="px-2 py-0.5 bg-purple-50 text-purple-600 text-xs font-medium rounded-lg">
-                  合约
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <!-- 中间：价格 -->
-          <div class="flex items-center gap-6">
-            <div class="text-right">
-              <div class="text-3xl font-bold text-gray-900 tracking-tight">
-                ${{ formatPrice(displayPrice) }}
-              </div>
-              <div class="flex items-center justify-end gap-2 mt-1">
-                <span
-                  :class="displayChange24h >= 0 ? 'text-emerald-600 bg-emerald-50' : 'text-red-600 bg-red-50'"
-                  class="px-2 py-0.5 rounded-lg text-sm font-semibold flex items-center gap-1"
-                >
-                  <svg v-if="displayChange24h >= 0" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
-                  </svg>
-                  <svg v-else class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
-                  </svg>
-                  {{ displayChange24h >= 0 ? '+' : '' }}{{ formatPercent(displayChange24h) }}%
-                </span>
-                <span class="text-xs text-gray-400">24h</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- 右侧：操作按钮 -->
-          <div class="flex items-center gap-3">
-            <!-- 收藏按钮 -->
-            <button
-              @click="toggleWatchlist"
-              :disabled="isFavoriteProcessing"
-              :class="tokenData.is_in_watchlist ? 'text-yellow-500 bg-yellow-50 border-yellow-200' : 'text-gray-400 bg-gray-50 border-gray-200'"
-              class="w-10 h-10 flex items-center justify-center border rounded-xl hover:scale-105 transition-all disabled:opacity-50"
-            >
-              <svg v-if="isFavoriteProcessing" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-              </svg>
-              <svg v-else class="w-5 h-5" :fill="tokenData.is_in_watchlist ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
-              </svg>
-            </button>
-            <!-- 交易按钮 -->
-            <button
-              @click="handleTrade"
-              class="px-5 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-medium hover:from-blue-700 hover:to-indigo-700 transition-all flex items-center gap-2"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
-              </svg>
-              交易
-            </button>
-          </div>
-        </div>
-      </div>
-
       <!-- ===== 市场类型 Tab ===== -->
       <div class="flex items-center gap-2 mb-4">
         <button
@@ -145,42 +56,40 @@
         </button>
       </div>
 
-      <!-- ===== 数据统计卡片 ===== -->
-      <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 mb-4">
-        <!-- 现货数据卡片 -->
-        <template v-if="activeMarketTab === 'spot'">
-          <StatCard label="24h 成交额" :value="formatLargeNumber(tokenData.token.total_volume)" prefix="$" icon="volume" />
-          <StatCard label="24h 最高" :value="formatPrice(tokenData.token.high_24h)" prefix="$" icon="high" color="green" />
-          <StatCard label="24h 最低" :value="formatPrice(tokenData.token.low_24h)" prefix="$" icon="low" color="red" />
-          <StatCard label="市值" :value="formatLargeNumber(tokenData.token.market_cap)" prefix="$" icon="market" />
-          <StatCard label="流通量" :value="formatLargeNumber(tokenData.token.circulating_supply)" :suffix="tokenData.token.symbol" icon="supply" />
-        </template>
-
-        <!-- 合约数据卡片 -->
-        <template v-else>
-          <StatCard
-            label="资金费率"
-            :value="formatFundingRate(futuresData.avgFundingRate)"
-            suffix="%"
-            icon="funding"
-            :color="futuresData.avgFundingRate > 0 ? 'red' : futuresData.avgFundingRate < 0 ? 'green' : 'gray'"
-          />
-          <StatCard label="未平仓量" :value="formatLargeNumber(futuresData.totalOpenInterest)" prefix="$" icon="openInterest" />
-          <StatCard
-            label="多空比"
-            :value="formatNumber(futuresData.avgLongShortRatio, 2)"
-            icon="ratio"
-            :color="futuresData.avgLongShortRatio > 1 ? 'green' : 'red'"
-          />
-          <StatCard label="24h 成交额" :value="formatLargeNumber(tokenData.token.total_volume)" prefix="$" icon="volume" />
-          <StatCard label="最大杠杆" :value="futuresData.maxLeverage" suffix="x" icon="leverage" />
-        </template>
-      </div>
-
       <!-- ===== 主体内容：图表 + 侧边栏 ===== -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        <!-- 左侧：K线图表 + 市场数据表格 + 技术指标 (8/12) -->
+        <!-- 左侧：数据卡片 + K线图表 + 市场数据表格 + 技术指标 (8/12) -->
         <div class="lg:col-span-8 space-y-4">
+          <!-- 数据统计卡片 -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <!-- 现货数据卡片 -->
+            <template v-if="activeMarketTab === 'spot'">
+              <StatCard label="24h 成交额" :value="formatLargeNumber(tokenData.token.total_volume)" prefix="$" icon="volume" />
+              <StatCard label="24h 最高" :value="formatPrice(tokenData.token.high_24h)" prefix="$" icon="high" color="green" />
+              <StatCard label="24h 最低" :value="formatPrice(tokenData.token.low_24h)" prefix="$" icon="low" color="red" />
+              <StatCard label="市值" :value="formatLargeNumber(tokenData.token.market_cap)" prefix="$" icon="market" />
+            </template>
+
+            <!-- 合约数据卡片 -->
+            <template v-else>
+              <StatCard
+                label="资金费率"
+                :value="formatFundingRate(futuresData.avgFundingRate)"
+                suffix="%"
+                icon="funding"
+                :color="futuresData.avgFundingRate > 0 ? 'red' : futuresData.avgFundingRate < 0 ? 'green' : 'gray'"
+              />
+              <StatCard label="未平仓量" :value="formatLargeNumber(futuresData.totalOpenInterest)" prefix="$" icon="openInterest" />
+              <StatCard
+                label="多空比"
+                :value="formatNumber(futuresData.avgLongShortRatio, 2)"
+                icon="ratio"
+                :color="futuresData.avgLongShortRatio > 1 ? 'green' : 'red'"
+              />
+              <StatCard label="24h 成交额" :value="formatLargeNumber(futuresData.totalVolume)" prefix="$" icon="volume" />
+            </template>
+          </div>
+
           <!-- K线图表 -->
           <TradingChart
             ref="tradingChartRef"
@@ -211,8 +120,224 @@
 
         <!-- 右侧：数据面板 (4/12) -->
         <div class="lg:col-span-4 space-y-4">
-          <!-- 代币信息面板 -->
-          <TokenInfoPanel :token="tokenData.token" />
+          <!-- 代币价格卡片 (CoinMarketCap 风格) -->
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+            <!-- 代币基本信息 + 收藏按钮 -->
+            <div class="flex items-start justify-between mb-4">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center border border-gray-200 overflow-hidden">
+                  <img v-if="tokenData.token.logo" :src="tokenData.token.logo" :alt="tokenData.token.name" class="w-8 h-8 object-contain" />
+                  <span v-else class="text-lg font-bold text-gray-400">{{ tokenData.token.symbol?.charAt(0) }}</span>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="font-bold text-gray-900">{{ tokenData.token.name }}</span>
+                    <span class="text-gray-500 text-sm">{{ tokenData.token.symbol }} Price</span>
+                    <span v-if="tokenData.token.market_cap_rank" class="px-1.5 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded">
+                      #{{ tokenData.token.market_cap_rank }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <!-- 收藏按钮 -->
+              <button
+                @click="toggleWatchlist"
+                :disabled="isFavoriteProcessing"
+                :class="tokenData.is_in_watchlist ? 'text-yellow-500 bg-yellow-50 border-yellow-200' : 'text-gray-400 bg-gray-50 border-gray-200'"
+                class="w-9 h-9 flex items-center justify-center border rounded-xl hover:scale-105 transition-all disabled:opacity-50"
+              >
+                <svg v-if="isFavoriteProcessing" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+                </svg>
+                <svg v-else class="w-4 h-4" :fill="tokenData.is_in_watchlist ? 'currentColor' : 'none'" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/>
+                </svg>
+              </button>
+            </div>
+
+            <!-- 价格和涨跌幅 -->
+            <div class="mb-4">
+              <div class="flex items-baseline gap-3">
+                <span class="text-3xl font-bold text-gray-900">${{ formatPrice(displayPrice) }}</span>
+                <span
+                  :class="displayChange24h >= 0 ? 'text-emerald-600' : 'text-red-600'"
+                  class="flex items-center gap-1 text-base font-semibold"
+                >
+                  <svg v-if="displayChange24h >= 0" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  <svg v-else class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  {{ formatPercent(displayChange24h) }}% (24h)
+                </span>
+              </div>
+            </div>
+
+            <!-- 24h 价格范围条 -->
+            <div v-if="tokenData.token.high_24h && tokenData.token.low_24h" class="mb-4">
+              <div class="h-2 bg-gray-100 rounded-full overflow-hidden relative">
+                <div
+                  class="absolute h-full bg-gradient-to-r from-red-400 via-yellow-400 to-emerald-400 rounded-full"
+                  style="width: 100%"
+                ></div>
+                <div
+                  class="absolute top-1/2 -translate-y-1/2 w-2 h-2 bg-white border-2 border-gray-800 rounded-full"
+                  :style="{ left: getPriceRangePosition() + '%' }"
+                ></div>
+              </div>
+              <div class="flex justify-between text-xs mt-1.5">
+                <span class="text-gray-500">${{ formatPrice(tokenData.token.low_24h) }}</span>
+                <span class="text-gray-400">24h Range</span>
+                <span class="text-gray-500">${{ formatPrice(tokenData.token.high_24h) }}</span>
+              </div>
+            </div>
+
+            <!-- 看多看空投票 -->
+            <div class="mb-4 pb-4 border-b border-gray-100">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-sm text-gray-500">市场情绪</span>
+                <span class="text-xs text-gray-400">{{ sentimentVotes.total }} 票</span>
+              </div>
+              <div class="flex gap-2 mb-2">
+                <button
+                  @click="voteSentiment('bullish')"
+                  :disabled="userSentimentVote !== null"
+                  :class="userSentimentVote === 'bullish' ? 'bg-emerald-500 text-white border-emerald-500' : 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100'"
+                  class="flex-1 flex items-center justify-center gap-1.5 py-2 border rounded-lg text-sm font-medium transition-all disabled:cursor-default"
+                >
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  看多
+                </button>
+                <button
+                  @click="voteSentiment('bearish')"
+                  :disabled="userSentimentVote !== null"
+                  :class="userSentimentVote === 'bearish' ? 'bg-red-500 text-white border-red-500' : 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100'"
+                  class="flex-1 flex items-center justify-center gap-1.5 py-2 border rounded-lg text-sm font-medium transition-all disabled:cursor-default"
+                >
+                  <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M14.707 10.293a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L9 12.586V5a1 1 0 012 0v7.586l2.293-2.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  看空
+                </button>
+              </div>
+              <!-- 情绪比例条 -->
+              <div class="h-2 bg-gray-100 rounded-full overflow-hidden flex">
+                <div
+                  class="h-full bg-emerald-500 transition-all duration-300"
+                  :style="{ width: sentimentVotes.bullishPercent + '%' }"
+                ></div>
+                <div
+                  class="h-full bg-red-500 transition-all duration-300"
+                  :style="{ width: sentimentVotes.bearishPercent + '%' }"
+                ></div>
+              </div>
+              <div class="flex justify-between text-xs mt-1.5">
+                <span class="text-emerald-600 font-medium">{{ sentimentVotes.bullishPercent }}% 看多</span>
+                <span class="text-red-600 font-medium">{{ sentimentVotes.bearishPercent }}% 看空</span>
+              </div>
+            </div>
+
+            <!-- 关键数据列表 -->
+            <div class="space-y-2.5 text-sm">
+              <div class="flex justify-between items-center">
+                <span class="text-gray-500">市值</span>
+                <span class="font-semibold text-gray-900">${{ formatLargeNumber(tokenData.token.market_cap) }}</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-gray-500">完全稀释市值</span>
+                <span class="font-semibold text-gray-900">${{ formatLargeNumber(tokenData.token.fully_diluted_valuation) }}</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-gray-500">24h 成交额</span>
+                <span class="font-semibold text-gray-900">${{ formatLargeNumber(tokenData.token.total_volume) }}</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-gray-500">流通量</span>
+                <span class="font-semibold text-gray-900">{{ formatLargeNumber(tokenData.token.circulating_supply) }} {{ tokenData.token.symbol }}</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-gray-500">总供应量</span>
+                <span class="font-semibold text-gray-900">{{ formatLargeNumber(tokenData.token.total_supply) }} {{ tokenData.token.symbol }}</span>
+              </div>
+              <div v-if="tokenData.token.max_supply" class="flex justify-between items-center">
+                <span class="text-gray-500">最大供应量</span>
+                <span class="font-semibold text-gray-900">{{ formatLargeNumber(tokenData.token.max_supply) }}</span>
+              </div>
+            </div>
+
+            <!-- ATH / ATL -->
+            <div class="mt-3 pt-3 border-t border-gray-100 space-y-2.5 text-sm">
+              <div class="flex justify-between items-center">
+                <span class="text-gray-500">历史最高 (ATH)</span>
+                <div class="text-right">
+                  <span class="font-semibold text-gray-900">${{ formatPrice(tokenData.token.ath) }}</span>
+                  <span v-if="tokenData.token.ath_change_percentage" class="text-xs text-red-500 ml-1">
+                    {{ parseFloat(tokenData.token.ath_change_percentage).toFixed(1) }}%
+                  </span>
+                </div>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-gray-500">历史最低 (ATL)</span>
+                <div class="text-right">
+                  <span class="font-semibold text-gray-900">${{ formatPrice(tokenData.token.atl) }}</span>
+                  <span v-if="tokenData.token.atl_change_percentage" class="text-xs text-emerald-500 ml-1">
+                    +{{ parseFloat(tokenData.token.atl_change_percentage).toFixed(1) }}%
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 标签和链接 -->
+            <div class="mt-3 pt-3 border-t border-gray-100">
+              <!-- 标签 -->
+              <div class="flex flex-wrap gap-2 mb-3">
+                <span v-if="tokenData.token.category" class="px-2 py-1 bg-blue-50 text-blue-600 text-xs font-medium rounded-lg">
+                  {{ getCategoryLabel(tokenData.token.category) }}
+                </span>
+                <span v-if="tokenData.token.is_spot_available" class="px-2 py-1 bg-emerald-50 text-emerald-600 text-xs font-medium rounded-lg">
+                  现货
+                </span>
+                <span v-if="tokenData.token.is_futures_available" class="px-2 py-1 bg-purple-50 text-purple-600 text-xs font-medium rounded-lg">
+                  合约
+                </span>
+              </div>
+              <!-- 链接 -->
+              <div v-if="hasTokenLinks" class="flex flex-wrap gap-2">
+                <a v-if="tokenData.token.website" :href="tokenData.token.website" target="_blank"
+                   class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-medium text-gray-700 transition-colors flex items-center gap-1">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+                  </svg>
+                  官网
+                </a>
+                <a v-if="tokenData.token.twitter" :href="tokenData.token.twitter" target="_blank"
+                   class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-medium text-gray-700 transition-colors flex items-center gap-1">
+                  <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                  </svg>
+                  X
+                </a>
+                <a v-if="tokenData.token.telegram" :href="tokenData.token.telegram" target="_blank"
+                   class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-medium text-gray-700 transition-colors flex items-center gap-1">
+                  <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                  </svg>
+                  TG
+                </a>
+                <a v-if="tokenData.token.github" :href="tokenData.token.github" target="_blank"
+                   class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg text-xs font-medium text-gray-700 transition-colors flex items-center gap-1">
+                  <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                  </svg>
+                  GitHub
+                </a>
+              </div>
+            </div>
+          </div>
 
           <!-- 机器人面板 -->
           <BotTradingPanel
@@ -234,7 +359,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, watch, h } from 'vue'
 import { useRoute } from 'vue-router'
-import { apiRequest, API_ENDPOINTS, API_BASE_URL } from '../../utils/api.js'
+import { apiRequest, API_ENDPOINTS } from '../../utils/api.js'
 import { showFavoriteSuccess, showUnfavoriteSuccess, showError, showSuccess, showInfo } from '../../utils/notification.js'
 import { useWebSocket } from '../../utils/websocket.js'
 
@@ -247,7 +372,6 @@ import TechnicalAnalysisTabs from './detail/TechnicalAnalysisTabs.vue'
 import BotTradingPanel from './detail/BotTradingPanel.vue'
 import StatCard from './detail/StatCard.vue'
 import MarketDataTable from './detail/MarketDataTable.vue'
-import TokenInfoPanel from './detail/TokenInfoPanel.vue'
 
 const route = useRoute()
 
@@ -299,6 +423,12 @@ const futuresExchanges = computed(() => {
   return tokenData.value.exchanges.filter(e => e.is_futures)
 })
 
+// 是否有代币链接
+const hasTokenLinks = computed(() => {
+  const token = tokenData.value?.token
+  return token?.website || token?.twitter || token?.telegram || token?.github
+})
+
 // 合约汇总数据
 const futuresData = computed(() => {
   const exchanges = futuresExchanges.value
@@ -307,26 +437,79 @@ const futuresData = computed(() => {
       avgFundingRate: 0,
       totalOpenInterest: 0,
       avgLongShortRatio: 1,
-      maxLeverage: 0
+      totalVolume: 0
     }
   }
 
   const fundingRates = exchanges.filter(e => e.funding_rate).map(e => parseFloat(e.funding_rate))
   const openInterests = exchanges.filter(e => e.open_interest).map(e => parseFloat(e.open_interest))
   const longShortRatios = exchanges.filter(e => e.long_short_ratio).map(e => parseFloat(e.long_short_ratio))
-  const leverages = exchanges.filter(e => e.contract_spec?.max_leverage).map(e => e.contract_spec.max_leverage)
+  const volumes = exchanges.filter(e => e.volume_24h).map(e => parseFloat(e.volume_24h))
 
   return {
     avgFundingRate: fundingRates.length ? fundingRates.reduce((a, b) => a + b, 0) / fundingRates.length : 0,
     totalOpenInterest: openInterests.reduce((a, b) => a + b, 0),
     avgLongShortRatio: longShortRatios.length ? longShortRatios.reduce((a, b) => a + b, 0) / longShortRatios.length : 1,
-    maxLeverage: leverages.length ? Math.max(...leverages) : 125
+    totalVolume: volumes.reduce((a, b) => a + b, 0)
   }
 })
 
 // 防止重复点击收藏
 const isFavoriteProcessing = ref(false)
 const lastFavoriteTime = ref(0)
+
+// 看多看空投票
+const userSentimentVote = ref(null) // 'bullish' | 'bearish' | null
+const sentimentData = ref({
+  bullish_count: 0,
+  bearish_count: 0,
+  total: 0,
+  bullish_percent: 50,
+  bearish_percent: 50
+})
+
+const sentimentVotes = computed(() => ({
+  bullish: sentimentData.value.bullish_count,
+  bearish: sentimentData.value.bearish_count,
+  total: sentimentData.value.total,
+  bullishPercent: sentimentData.value.bullish_percent,
+  bearishPercent: sentimentData.value.bearish_percent
+}))
+
+// 加载情绪数据
+const loadSentimentData = async () => {
+  if (!tokenData.value) return
+  try {
+    const response = await apiRequest(API_ENDPOINTS.MARKET_TOKEN_SENTIMENT(tokenData.value.token.symbol))
+    if (response.status === 'success' && response.data) {
+      sentimentData.value = response.data
+      userSentimentVote.value = response.data.user_vote
+    }
+  } catch (err) {
+    console.error('加载情绪数据失败:', err)
+  }
+}
+
+const voteSentiment = async (vote) => {
+  if (userSentimentVote.value || !tokenData.value) return
+  try {
+    const response = await apiRequest(API_ENDPOINTS.MARKET_TOKEN_SENTIMENT(tokenData.value.token.symbol), {
+      method: 'POST',
+      body: JSON.stringify({ sentiment: vote })
+    })
+    if (response.status === 'success') {
+      userSentimentVote.value = vote
+      // 重新加载情绪数据
+      await loadSentimentData()
+      showSuccess('投票成功')
+    } else {
+      showError(response.message || '投票失败')
+    }
+  } catch (err) {
+    console.error('投票失败:', err)
+    showError(err.message || '投票失败，请稍后重试')
+  }
+}
 
 // K线实时价格
 const realtimePrice = ref({
@@ -345,6 +528,16 @@ const displayPrice = computed(() => {
 const displayChange24h = computed(() => {
   return realtimePrice.value.change_24h ?? tokenData.value?.token?.price_change_percentage_24h ?? 0
 })
+
+// 计算价格在24h范围内的位置 (百分比)
+const getPriceRangePosition = () => {
+  const token = tokenData.value?.token
+  if (!token?.high_24h || !token?.low_24h || !displayPrice.value) return 50
+  const range = token.high_24h - token.low_24h
+  if (range === 0) return 50
+  const position = ((displayPrice.value - token.low_24h) / range) * 100
+  return Math.max(0, Math.min(100, position))
+}
 
 // WebSocket 实时数据
 const wsConnected = ref(false)
@@ -437,6 +630,8 @@ const loadData = async () => {
     if (response.status === 'success') {
       tokenData.value = response.data
       console.log('✅ 代币详情加载成功:', tokenData.value.token.symbol)
+      // 加载情绪数据
+      loadSentimentData()
     } else {
       throw new Error(response.message || '加载失败')
     }
@@ -580,7 +775,7 @@ const toggleWatchlist = async () => {
     isFavoriteProcessing.value = true
 
     // 使用后端的 toggle_favorite 接口
-    const response = await apiRequest(`${API_BASE_URL}/market/tokens/${token.symbol}/toggle_favorite/`, {
+    const response = await apiRequest(API_ENDPOINTS.MARKET_TOKEN_TOGGLE_FAVORITE(token.symbol), {
       method: 'POST'
     })
 

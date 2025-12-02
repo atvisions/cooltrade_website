@@ -141,6 +141,7 @@ const createAPIEndpoints = () => {
     MARKET_TOKENS: `${API_BASE_URL}/market/tokens/`,
     MARKET_TOKEN_DETAIL: (symbol) => `${API_BASE_URL}/market/tokens/${symbol}/detail/`,
     MARKET_TOKEN_TOGGLE_FAVORITE: (symbol) => `${API_BASE_URL}/market/tokens/${symbol}/toggle_favorite/`,
+    MARKET_TOKEN_SENTIMENT: (symbol) => `${API_BASE_URL}/market/tokens/${symbol}/sentiment/`,
     MARKET_TOKENS_CHAINS: `${API_BASE_URL}/market/tokens/chains/`,
     MARKET_TOKENS_EXCHANGES: `${API_BASE_URL}/market/tokens/exchanges/`,
     MARKET_TOKENS_CATEGORIES: `${API_BASE_URL}/market/tokens/categories/`,

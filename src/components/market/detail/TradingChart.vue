@@ -92,15 +92,6 @@
       <!-- Lightweight Charts Container -->
       <div ref="chartContainer" class="w-full h-full"></div>
 
-      <!-- Current Price Overlay -->
-      <div v-if="latestPrice?.price" class="absolute top-4 right-4 z-20">
-        <div class="px-3 py-2 bg-white/95 backdrop-blur-sm rounded-xl border border-gray-200 shadow-sm">
-          <div class="text-xs text-gray-400 mb-0.5">当前价格</div>
-          <div class="text-lg font-bold" :class="priceChange >= 0 ? 'text-emerald-600' : 'text-red-600'">
-            ${{ formatPrice(latestPrice.price) }}
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </template>
@@ -242,60 +233,65 @@ const loadKlineData = async (timeframe) => {
     const limit = timeframe === '1m' || timeframe === '5m' ? 500 : 200
     const cleanSymbol = props.symbol.replace('/USDT', '').replace('USDT', '')
 
+    // 使用支持 market_type 的新 API
     const response = await apiRequest(
-      API_ENDPOINTS.MARKET_KLINES(cleanSymbol),
-      { method: 'GET', params: { timeframe: apiTimeframe, limit: limit } }
+      API_ENDPOINTS.MARKET_TOKEN_KLINES(cleanSymbol),
+      { method: 'GET', params: { interval: apiTimeframe, limit: limit, market_type: props.marketType } }
     )
 
-    if (response.status === 'success' && response.data) {
-      const { klines, latest_price, high_24h, low_24h, volume_24h } = response.data
+    // 新 API 返回格式: { symbol, interval, spot: {count, data}, futures: {count, data} }
+    const marketData = props.marketType === 'futures' ? response.futures : response.spot
+    const klines = marketData?.data || []
 
-      if (!klines || klines.length === 0) {
-        error.value = '该代币暂无K线数据'
-        return
-      }
+    if (!klines || klines.length === 0) {
+      error.value = props.marketType === 'futures' ? '该代币暂无合约K线数据' : '该代币暂无现货K线数据'
+      return
+    }
 
-      if (latest_price) {
-        latestPrice.value = {
-          ...latest_price,
-          high_24h: high_24h || latest_price.high_24h,
-          low_24h: low_24h || latest_price.low_24h,
-          volume_24h: volume_24h || latest_price.volume_24h
-        }
-        emit('price-update', latestPrice.value)
-      }
-
-      // 转换为 lightweight-charts 格式 (过滤掉任何 null/undefined/NaN 值)
-      klineData = klines
-        .filter(k => k.timestamp && k.close != null && k.open != null && k.high != null && k.low != null)
-        .sort((a, b) => a.timestamp - b.timestamp)
-        .map(k => ({
-          time: Math.floor(k.timestamp / 1000),
+    // 转换为 lightweight-charts 格式
+    // 新 API 返回的字段: time, open, high, low, close, volume
+    klineData = klines
+      .filter(k => k.time && k.close != null && k.open != null && k.high != null && k.low != null)
+      .map(k => {
+        // time 字段是 ISO 字符串，需要转换为 Unix 时间戳（秒）
+        const timestamp = typeof k.time === 'string' ? Math.floor(new Date(k.time).getTime() / 1000) : k.time
+        return {
+          time: timestamp,
           open: Number(k.open) || 0,
           high: Number(k.high) || 0,
           low: Number(k.low) || 0,
           close: Number(k.close) || 0,
           volume: Number(k.volume || k.quote_volume || 0)
-        }))
-        .filter(k => !isNaN(k.close) && k.close > 0)
+        }
+      })
+      .filter(k => !isNaN(k.close) && k.close > 0 && !isNaN(k.time))
+      .sort((a, b) => a.time - b.time)
 
-      if (klineData.length === 0) {
-        error.value = '该代币暂无有效K线数据'
-        return
-      }
-
-      // 计算涨跌
-      const firstPrice = klineData[0].close
-      const lastPrice = klineData[klineData.length - 1].close
-      priceChange.value = ((lastPrice - firstPrice) / firstPrice) * 100
-
-      await nextTick()
-      initChart()
-      updateChartData()
-
-    } else {
-      error.value = response.message || '加载K线数据失败'
+    if (klineData.length === 0) {
+      error.value = '该代币暂无有效K线数据'
+      return
     }
+
+    // 更新最新价格
+    const lastKline = klineData[klineData.length - 1]
+    if (lastKline) {
+      latestPrice.value = {
+        price: lastKline.close,
+        high_24h: Math.max(...klineData.slice(-24).map(k => k.high)),
+        low_24h: Math.min(...klineData.slice(-24).map(k => k.low)),
+        volume_24h: klineData.slice(-24).reduce((sum, k) => sum + k.volume, 0)
+      }
+      emit('price-update', latestPrice.value)
+    }
+
+    // 计算涨跌
+    const firstPrice = klineData[0].close
+    const lastPrice = klineData[klineData.length - 1].close
+    priceChange.value = ((lastPrice - firstPrice) / firstPrice) * 100
+
+    await nextTick()
+    initChart()
+    updateChartData()
   } catch (err) {
     console.error('Error loading kline data:', err)
     error.value = err.message || '加载K线数据失败，请稍后重试'
@@ -349,6 +345,22 @@ watch(() => props.symbol, () => {
     volumeSeries = null
   }
   loadKlineData(selectedTimeframe.value)
+})
+
+// 监听 marketType 变化
+watch(() => props.marketType, () => {
+  if (chart) {
+    chart.remove()
+    chart = null
+    mainSeries = null
+    volumeSeries = null
+  }
+  loadKlineData(selectedTimeframe.value)
+})
+
+// 暴露方法给父组件
+defineExpose({
+  loadKlineData: () => loadKlineData(selectedTimeframe.value)
 })
 </script>
 

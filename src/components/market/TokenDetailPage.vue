@@ -35,93 +35,298 @@
     <!-- Main Content -->
     <div v-else-if="tokenData" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-8">
 
-      <!-- ===== 市场类型 Tab ===== -->
-      <div class="flex items-center gap-2 mb-4">
-        <button
-          v-for="tab in marketTabs"
-          :key="tab.key"
-          @click="activeMarketTab = tab.key"
-          :disabled="!tab.available"
-          :class="[
-            'px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center gap-2',
-            activeMarketTab === tab.key
-              ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
-              : tab.available
-                ? 'text-gray-600 hover:bg-white/50'
-                : 'text-gray-400 cursor-not-allowed'
-          ]"
-        >
-          <component :is="tab.icon" class="w-4 h-4" />
-          {{ tab.label }}
-        </button>
-      </div>
-
       <!-- ===== 主体内容：图表 + 侧边栏 ===== -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
         <!-- 左侧：数据卡片 + K线图表 + 市场数据表格 + 技术指标 (8/12) -->
         <div class="lg:col-span-8 space-y-4">
-          <!-- 数据统计卡片 -->
-          <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <!-- 现货数据卡片 -->
-            <template v-if="activeMarketTab === 'spot'">
-              <StatCard label="24h 成交额" :value="formatLargeNumber(tokenData.token.total_volume)" prefix="$" icon="volume" />
-              <StatCard label="24h 最高" :value="formatPrice(tokenData.token.high_24h)" prefix="$" icon="high" color="green" />
-              <StatCard label="24h 最低" :value="formatPrice(tokenData.token.low_24h)" prefix="$" icon="low" color="red" />
-              <StatCard label="市值" :value="formatLargeNumber(tokenData.token.market_cap)" prefix="$" icon="market" />
-            </template>
 
-            <!-- 合约数据卡片 -->
-            <template v-else>
-              <StatCard
-                label="资金费率"
-                :value="formatFundingRate(futuresData.avgFundingRate)"
-                suffix="%"
-                icon="funding"
-                :color="futuresData.avgFundingRate > 0 ? 'red' : futuresData.avgFundingRate < 0 ? 'green' : 'gray'"
-              />
-              <StatCard label="未平仓量" :value="formatLargeNumber(futuresData.totalOpenInterest)" prefix="$" icon="openInterest" />
-              <StatCard
-                label="多空比"
-                :value="formatNumber(futuresData.avgLongShortRatio, 2)"
-                icon="ratio"
-                :color="futuresData.avgLongShortRatio > 1 ? 'green' : 'red'"
-              />
-              <StatCard label="24h 成交额" :value="formatLargeNumber(futuresData.totalVolume)" prefix="$" icon="volume" />
-            </template>
+          <!-- ===== 市场类型 Tab (CoinGecko 风格) ===== -->
+          <div class="border-b border-gray-200">
+            <nav class="flex gap-1 -mb-px">
+              <button
+                v-for="tab in marketTabs"
+                :key="tab.key"
+                @click="handleTabClick(tab)"
+                :disabled="!tab.available"
+                :class="[
+                  'py-2.5 px-4 text-sm font-medium border-b-2 transition-all whitespace-nowrap flex items-center gap-2',
+                  activeMarketTab === tab.key
+                    ? 'border-blue-500 text-blue-600'
+                    : tab.available
+                      ? 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      : 'border-transparent text-gray-300 cursor-not-allowed'
+                ]"
+              >
+                <!-- Tab 图标 -->
+                <svg v-if="tab.key === 'spot'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <svg v-else-if="tab.key === 'futures'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                </svg>
+                <svg v-else-if="tab.key === 'news'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                </svg>
+                <svg v-else-if="tab.key === 'signal_bots'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                </svg>
+                {{ tab.label }}
+                <span v-if="tab.badge" class="px-1.5 py-0.5 text-xs rounded-full bg-blue-100 text-blue-600">
+                  {{ tab.badge }}
+                </span>
+              </button>
+            </nav>
           </div>
 
-          <!-- K线图表 -->
-          <TradingChart
-            ref="tradingChartRef"
-            :symbol="tokenData.token.symbol"
-            :current-price="tokenData.token.current_price"
-            :market-type="activeMarketTab"
-            :technical-signals="tokenData.market_analysis?.technical_signals"
-            :market-condition="tokenData.market_analysis?.condition_label"
-            @price-update="handlePriceUpdate"
-          />
+          <!-- 现货/合约 Tab 内容 -->
+          <template v-if="activeMarketTab === 'spot' || activeMarketTab === 'futures'">
+            <!-- 数据统计卡片 -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+              <!-- 现货数据卡片 -->
+              <template v-if="activeMarketTab === 'spot'">
+                <StatCard label="24h 成交额" :value="formatLargeNumber(tokenData.token.total_volume)" prefix="$" icon="volume" />
+                <StatCard label="24h 最高" :value="formatPrice(tokenData.token.high_24h)" prefix="$" icon="high" color="green" />
+                <StatCard label="24h 最低" :value="formatPrice(tokenData.token.low_24h)" prefix="$" icon="low" color="red" />
+                <StatCard label="市值" :value="formatLargeNumber(tokenData.token.market_cap)" prefix="$" icon="market" />
+              </template>
 
-          <!-- 市场数据表格（Coinglass 风格） -->
-          <MarketDataTable
-            :spot-exchanges="spotExchanges"
-            :futures-exchanges="futuresExchanges"
-            :token="tokenData.token"
-            :default-tab="activeMarketTab"
-          />
+              <!-- 合约数据卡片 -->
+              <template v-else>
+                <StatCard
+                  label="资金费率"
+                  :value="formatFundingRate(futuresData.avgFundingRate)"
+                  suffix="%"
+                  icon="funding"
+                  :color="futuresData.avgFundingRate > 0 ? 'red' : futuresData.avgFundingRate < 0 ? 'green' : 'gray'"
+                />
+                <StatCard label="未平仓量" :value="formatLargeNumber(futuresData.totalOpenInterest)" prefix="$" icon="openInterest" />
+                <StatCard
+                  label="多空比"
+                  :value="formatNumber(futuresData.avgLongShortRatio, 2)"
+                  icon="ratio"
+                  :color="futuresData.avgLongShortRatio > 1 ? 'green' : 'red'"
+                />
+                <StatCard label="24h 成交额" :value="formatLargeNumber(futuresData.totalVolume)" prefix="$" icon="volume" />
+              </template>
+            </div>
 
-          <!-- 技术指标面板 -->
-          <TechnicalAnalysisTabs
-            :technical-indicator="tokenData.technical_indicator"
-            :technical-signals="tokenData.market_analysis?.technical_signals"
-            :exchanges="tokenData.exchanges"
-            :token="tokenData.token"
-          />
+            <!-- K线图表 -->
+            <TradingChart
+              ref="tradingChartRef"
+              :symbol="tokenData.token.symbol"
+              :current-price="tokenData.token.current_price"
+              :market-type="activeMarketTab"
+              :technical-signals="tokenData.market_analysis?.technical_signals"
+              :market-condition="tokenData.market_analysis?.condition_label"
+              @price-update="handlePriceUpdate"
+            />
+
+            <!-- 市场数据表格（Coinglass 风格） -->
+            <MarketDataTable
+              :spot-exchanges="spotExchanges"
+              :futures-exchanges="futuresExchanges"
+              :token="tokenData.token"
+              :default-tab="activeMarketTab"
+            />
+
+            <!-- 技术指标面板 -->
+            <TechnicalAnalysisTabs
+              :technical-indicator="tokenData.technical_indicator"
+              :technical-signals="tokenData.market_analysis?.technical_signals"
+              :exchanges="tokenData.exchanges"
+              :token="tokenData.token"
+            />
+          </template>
+
+          <!-- 新闻 Tab 内容 -->
+          <template v-else-if="activeMarketTab === 'news'">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+              <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                </svg>
+                {{ tokenData.token.symbol }} 相关新闻
+              </h3>
+
+              <!-- 加载状态 -->
+              <div v-if="newsLoading" class="space-y-4">
+                <div v-for="i in 5" :key="i" class="animate-pulse flex gap-4">
+                  <div class="w-20 h-16 bg-gray-200 rounded-lg flex-shrink-0"></div>
+                  <div class="flex-1 space-y-2">
+                    <div class="h-4 bg-gray-200 rounded w-3/4"></div>
+                    <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 新闻列表 -->
+              <div v-else-if="newsList.length" class="space-y-4">
+                <a
+                  v-for="news in newsList"
+                  :key="news.id"
+                  :href="news.url"
+                  target="_blank"
+                  class="block p-4 rounded-xl border border-gray-100 hover:border-blue-200 hover:bg-blue-50/30 transition-all group"
+                >
+                  <div class="flex items-start gap-3">
+                    <div class="flex-1 min-w-0">
+                      <h4 class="font-medium text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2">
+                        {{ news.title }}
+                      </h4>
+                      <div class="flex items-center gap-2 mt-2 text-xs text-gray-500">
+                        <span v-if="news.source?.title" class="font-medium">{{ news.source.title }}</span>
+                        <span>•</span>
+                        <span>{{ formatNewsTime(news.published_at) }}</span>
+                        <span v-if="news.votes" class="ml-auto flex items-center gap-1">
+                          <span v-if="news.votes.positive" class="text-green-600">👍 {{ news.votes.positive }}</span>
+                          <span v-if="news.votes.negative" class="text-red-600 ml-1">👎 {{ news.votes.negative }}</span>
+                        </span>
+                      </div>
+                    </div>
+                    <svg class="w-4 h-4 text-gray-400 group-hover:text-blue-500 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                  </div>
+                </a>
+              </div>
+
+              <!-- 无数据 -->
+              <div v-else class="text-center py-12 text-gray-500">
+                <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+                </svg>
+                <p>暂无 {{ tokenData.token.symbol }} 相关新闻</p>
+              </div>
+            </div>
+          </template>
+
+          <!-- 信号机器人 Tab 内容 -->
+          <template v-else-if="activeMarketTab === 'signal_bots'">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+              <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                </svg>
+                {{ tokenData.token.symbol }} 信号机器人
+                <span class="text-sm font-normal text-gray-500">（社区分享）</span>
+              </h3>
+
+              <!-- 加载状态 -->
+              <div v-if="signalBotsLoading" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div v-for="i in 4" :key="i" class="animate-pulse bg-gray-100 rounded-xl p-4 h-48"></div>
+              </div>
+
+              <!-- 机器人列表 - 一行2个 -->
+              <div v-else-if="signalBotsList.length" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div
+                  v-for="bot in signalBotsList"
+                  :key="bot.id"
+                  class="bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-blue-300 hover:shadow-lg transition-all"
+                >
+                  <!-- 头部：用户信息 + 状态 -->
+                  <div class="p-4 border-b border-gray-100">
+                    <div class="flex items-center gap-3">
+                      <!-- 用户头像 -->
+                      <div class="w-10 h-10 rounded-full overflow-hidden bg-blue-500 flex-shrink-0">
+                        <img v-if="bot.user?.avatar" :src="bot.user.avatar" :alt="bot.user.username" class="w-full h-full object-cover" />
+                        <div v-else class="w-full h-full flex items-center justify-center text-white font-bold">
+                          {{ (bot.user?.username || 'A').charAt(0).toUpperCase() }}
+                        </div>
+                      </div>
+                      <!-- 用户名 + 机器人名 -->
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2">
+                          <span class="font-semibold text-blue-600 text-sm">{{ bot.user?.username || '匿名' }}</span>
+                          <span :class="[
+                            'px-1.5 py-0.5 text-xs font-medium rounded',
+                            bot.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'
+                          ]">{{ bot.is_active ? '运行中' : '已停止' }}</span>
+                        </div>
+                        <h4 class="text-gray-900 text-sm font-medium truncate" :title="bot.name">{{ bot.name }}</h4>
+                      </div>
+                    </div>
+                    <!-- 简介 -->
+                    <p v-if="bot.description" class="mt-2 text-xs text-gray-500 line-clamp-2">{{ bot.description }}</p>
+                  </div>
+
+                  <!-- 中间：关键参数 -->
+                  <div class="p-4 space-y-3">
+                    <!-- 信号类型 + 周期 -->
+                    <div class="flex items-center gap-2 flex-wrap">
+                      <span class="px-2 py-1 text-xs font-medium bg-blue-50 text-blue-600 rounded-lg">
+                        {{ getSignalTypeLabel(bot.signal_type) }}
+                      </span>
+                      <span class="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded-lg">
+                        {{ bot.timeframe || '1h' }}
+                      </span>
+                      <span v-if="bot.latest_signal_direction" :class="[
+                        'px-2 py-1 text-xs font-medium rounded-lg',
+                        bot.latest_signal_direction === 'buy' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'
+                      ]">
+                        {{ bot.latest_signal_direction === 'buy' ? '📈 做多' : '📉 做空' }}
+                      </span>
+                    </div>
+
+                    <!-- 统计数据 -->
+                    <div class="grid grid-cols-3 gap-2 text-center">
+                      <div class="bg-gray-50 rounded-lg py-2">
+                        <p class="text-lg font-bold text-gray-900">{{ bot.total_signals || 0 }}</p>
+                        <p class="text-xs text-gray-500">信号数</p>
+                      </div>
+                      <div class="bg-gray-50 rounded-lg py-2">
+                        <p class="text-lg font-bold text-gray-900">{{ bot.copy_count || 0 }}</p>
+                        <p class="text-xs text-gray-500">跟单数</p>
+                      </div>
+                      <div class="bg-gray-50 rounded-lg py-2">
+                        <p class="text-lg font-bold" :class="(bot.win_rate || 0) >= 50 ? 'text-green-600' : 'text-gray-900'">{{ bot.win_rate || 0 }}%</p>
+                        <p class="text-xs text-gray-500">胜率</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 底部：操作按钮 -->
+                  <div class="px-4 pb-4">
+                    <button
+                      @click.stop="copyBot(bot)"
+                      class="w-full py-2.5 text-sm font-medium text-white bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors flex items-center justify-center gap-1.5"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                      </svg>
+                      跟单
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- 无数据 -->
+              <div v-else class="text-center py-12 text-gray-500">
+                <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+                </svg>
+                <p class="mb-2">暂无 {{ tokenData.token.symbol }} 相关的公开信号机器人</p>
+                <p class="text-sm">分享您的信号机器人，让更多人受益</p>
+              </div>
+            </div>
+          </template>
+
         </div>
 
         <!-- 右侧：数据面板 (4/12) -->
         <div class="lg:col-span-4 space-y-4">
           <!-- 代币价格卡片 (CoinMarketCap 风格) -->
           <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+            <!-- 面包屑导航 -->
+            <nav class="flex items-center gap-1.5 text-xs mb-3">
+              <router-link to="/market" class="text-gray-400 hover:text-blue-600 transition-colors">
+                市场
+              </router-link>
+              <svg class="w-3 h-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+              </svg>
+              <span class="text-gray-600">{{ tokenData.token?.symbol }}</span>
+            </nav>
+
             <!-- 代币基本信息 + 收藏按钮 -->
             <div class="flex items-start justify-between mb-4">
               <div class="flex items-center gap-3">
@@ -172,25 +377,6 @@
                   </svg>
                   {{ formatPercent(displayChange24h) }}% (24h)
                 </span>
-              </div>
-            </div>
-
-            <!-- 24h 价格范围条 -->
-            <div v-if="tokenData.token.high_24h && tokenData.token.low_24h" class="mb-4">
-              <div class="h-2 bg-gray-100 rounded-full overflow-hidden relative">
-                <div
-                  class="absolute h-full bg-gradient-to-r from-red-400 via-yellow-400 to-emerald-400 rounded-full"
-                  style="width: 100%"
-                ></div>
-                <div
-                  class="absolute top-1/2 -translate-y-1/2 w-2 h-2 bg-white border-2 border-gray-800 rounded-full"
-                  :style="{ left: getPriceRangePosition() + '%' }"
-                ></div>
-              </div>
-              <div class="flex justify-between text-xs mt-1.5">
-                <span class="text-gray-500">${{ formatPrice(tokenData.token.low_24h) }}</span>
-                <span class="text-gray-400">24h Range</span>
-                <span class="text-gray-500">${{ formatPrice(tokenData.token.high_24h) }}</span>
               </div>
             </div>
 
@@ -247,9 +433,9 @@
                 <span class="text-gray-500">市值</span>
                 <span class="font-semibold text-gray-900">${{ formatLargeNumber(tokenData.token.market_cap) }}</span>
               </div>
-              <div class="flex justify-between items-center">
+              <div v-if="fullyDilutedMarketCap" class="flex justify-between items-center">
                 <span class="text-gray-500">完全稀释市值</span>
-                <span class="font-semibold text-gray-900">${{ formatLargeNumber(tokenData.token.fully_diluted_valuation) }}</span>
+                <span class="font-semibold text-gray-900">${{ formatLargeNumber(fullyDilutedMarketCap) }}</span>
               </div>
               <div class="flex justify-between items-center">
                 <span class="text-gray-500">24h 成交额</span>
@@ -266,28 +452,6 @@
               <div v-if="tokenData.token.max_supply" class="flex justify-between items-center">
                 <span class="text-gray-500">最大供应量</span>
                 <span class="font-semibold text-gray-900">{{ formatLargeNumber(tokenData.token.max_supply) }}</span>
-              </div>
-            </div>
-
-            <!-- ATH / ATL -->
-            <div class="mt-3 pt-3 border-t border-gray-100 space-y-2.5 text-sm">
-              <div class="flex justify-between items-center">
-                <span class="text-gray-500">历史最高 (ATH)</span>
-                <div class="text-right">
-                  <span class="font-semibold text-gray-900">${{ formatPrice(tokenData.token.ath) }}</span>
-                  <span v-if="tokenData.token.ath_change_percentage" class="text-xs text-red-500 ml-1">
-                    {{ parseFloat(tokenData.token.ath_change_percentage).toFixed(1) }}%
-                  </span>
-                </div>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-gray-500">历史最低 (ATL)</span>
-                <div class="text-right">
-                  <span class="font-semibold text-gray-900">${{ formatPrice(tokenData.token.atl) }}</span>
-                  <span v-if="tokenData.token.atl_change_percentage" class="text-xs text-emerald-500 ml-1">
-                    +{{ parseFloat(tokenData.token.atl_change_percentage).toFixed(1) }}%
-                  </span>
-                </div>
               </div>
             </div>
 
@@ -343,12 +507,6 @@
           <BotTradingPanel
             :token="tokenData.token"
             :exchanges="tokenData.exchanges"
-            :strategies="tokenData.recommended_strategies"
-            :market-condition="tokenData.market_analysis?.condition_label"
-            :technical-signals="tokenData.market_analysis?.technical_signals"
-            @create-bot="handleCreateBot"
-            @start-bot="handleStartBot"
-            @stop-bot="handleStopBot"
           />
         </div>
       </div>
@@ -357,7 +515,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, onUnmounted, watch, h } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { apiRequest, API_ENDPOINTS } from '../../utils/api.js'
 import { showFavoriteSuccess, showUnfavoriteSuccess, showError, showSuccess, showInfo } from '../../utils/notification.js'
@@ -380,8 +538,50 @@ const loading = ref(true)
 const error = ref(null)
 const tokenData = ref(null)
 
-// 市场类型 Tab
-const activeMarketTab = ref('spot')
+// 市场类型 Tab（从 localStorage 读取持久化的值）
+const getInitialTab = () => {
+  const saved = localStorage.getItem('tokenDetailActiveTab')
+  return saved || 'spot'
+}
+const activeMarketTab = ref(getInitialTab())
+
+// 校验并修正当前 Tab（在数据加载后调用）
+const validateActiveTab = () => {
+  const currentTab = activeMarketTab.value
+  const token = tokenData.value?.token
+
+  if (!token) return
+
+  // 检查当前 Tab 是否可用
+  let isCurrentTabAvailable = true
+  if (currentTab === 'spot' && !token.is_spot_available) {
+    isCurrentTabAvailable = false
+  } else if (currentTab === 'futures' && !token.is_futures_available) {
+    isCurrentTabAvailable = false
+  }
+
+  // 如果当前 Tab 不可用，切换到第一个可用的 Tab
+  if (!isCurrentTabAvailable) {
+    if (token.is_spot_available) {
+      activeMarketTab.value = 'spot'
+    } else if (token.is_futures_available) {
+      activeMarketTab.value = 'futures'
+    } else {
+      // 如果现货和合约都不可用，默认显示新闻
+      activeMarketTab.value = 'news'
+    }
+    // 更新持久化
+    localStorage.setItem('tokenDetailActiveTab', activeMarketTab.value)
+  }
+}
+
+// 新闻数据
+const newsList = ref([])
+const newsLoading = ref(false)
+
+// 信号机器人数据
+const signalBotsList = ref([])
+const signalBotsLoading = ref(false)
 
 // 市场 Tab 配置
 const marketTabs = computed(() => [
@@ -389,25 +589,23 @@ const marketTabs = computed(() => [
     key: 'spot',
     label: '现货',
     available: tokenData.value?.token?.is_spot_available ?? false,
-    icon: {
-      render() {
-        return h('svg', { fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' }, [
-          h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-width': '2', d: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z' })
-        ])
-      }
-    }
   },
   {
     key: 'futures',
     label: '合约',
     available: tokenData.value?.token?.is_futures_available ?? false,
-    icon: {
-      render() {
-        return h('svg', { fill: 'none', stroke: 'currentColor', viewBox: '0 0 24 24' }, [
-          h('path', { 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-width': '2', d: 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6' })
-        ])
-      }
-    }
+  },
+  {
+    key: 'news',
+    label: '新闻',
+    available: true,
+    badge: newsList.value.length || null,
+  },
+  {
+    key: 'signal_bots',
+    label: '信号机器人',
+    available: true,
+    badge: signalBotsList.value.length || null,
   }
 ])
 
@@ -529,15 +727,18 @@ const displayChange24h = computed(() => {
   return realtimePrice.value.change_24h ?? tokenData.value?.token?.price_change_percentage_24h ?? 0
 })
 
-// 计算价格在24h范围内的位置 (百分比)
-const getPriceRangePosition = () => {
+// 计算完全稀释市值 = max_supply * current_price
+const fullyDilutedMarketCap = computed(() => {
   const token = tokenData.value?.token
-  if (!token?.high_24h || !token?.low_24h || !displayPrice.value) return 50
-  const range = token.high_24h - token.low_24h
-  if (range === 0) return 50
-  const position = ((displayPrice.value - token.low_24h) / range) * 100
-  return Math.max(0, Math.min(100, position))
-}
+  if (!token) return null
+  // 优先使用后端返回的值
+  if (token.fully_diluted_valuation) return token.fully_diluted_valuation
+  // 否则计算: max_supply * current_price
+  if (token.max_supply && displayPrice.value) {
+    return token.max_supply * parseFloat(displayPrice.value)
+  }
+  return null
+})
 
 // WebSocket 实时数据
 const wsConnected = ref(false)
@@ -630,6 +831,10 @@ const loadData = async () => {
     if (response.status === 'success') {
       tokenData.value = response.data
       console.log('✅ 代币详情加载成功:', tokenData.value.token.symbol)
+
+      // 校验当前 Tab 是否可用，如果不可用则切换到第一个可用的 Tab
+      validateActiveTab()
+
       // 加载情绪数据
       loadSentimentData()
     } else {
@@ -828,29 +1033,117 @@ const handleTrade = (exchange = 'binance') => {
     default:
       tradeUrl = `https://www.binance.com/zh-CN/futures/${symbol}USDT`
   }
-  
+
   window.open(tradeUrl, '_blank')
 }
 
-// Handle create bot
-const handleCreateBot = (botConfig) => {
-  console.log('Creating bot:', botConfig)
-  showSuccess('Bot 创建成功', 'Bot 创建')
+// ===== 新闻和信号机器人加载 =====
+const CRYPTOPANIC_API_KEY = '2c34efdcc05ff910783b0a6f8dae630f121f6d25'
+
+// 加载新闻数据
+const loadNews = async () => {
+  if (!tokenData.value?.token?.symbol) return
+
+  try {
+    newsLoading.value = true
+    const symbol = tokenData.value.token.symbol
+    const response = await fetch(
+      `https://cryptopanic.com/api/developer/v2/posts/?auth_token=${CRYPTOPANIC_API_KEY}&currencies=${symbol}&limit=10`
+    )
+    const data = await response.json()
+    newsList.value = data.results || []
+  } catch (err) {
+    console.error('加载新闻失败:', err)
+    newsList.value = []
+  } finally {
+    newsLoading.value = false
+  }
 }
 
-// Handle start bot
-const handleStartBot = (botId) => {
-  console.log('Starting bot:', botId)
-  showSuccess('Bot 已启动', 'Bot 启动')
+// 加载信号机器人列表
+const loadSignalBots = async () => {
+  if (!tokenData.value?.token?.symbol) return
+
+  try {
+    signalBotsLoading.value = true
+    const symbol = tokenData.value.token.symbol
+    const response = await apiRequest(
+      `${API_ENDPOINTS.MARKETPLACE_LIST}?bot_type=signal&token=${symbol}`
+    )
+    signalBotsList.value = response.results || response.data || []
+  } catch (err) {
+    console.error('加载信号机器人失败:', err)
+    signalBotsList.value = []
+  } finally {
+    signalBotsLoading.value = false
+  }
 }
 
-// Handle stop bot
-const handleStopBot = (botId) => {
-  console.log('Stopping bot:', botId)
-  showInfo('Bot 已停止', 'Bot 停止')
+// Tab 切换处理
+const handleTabClick = (tab) => {
+  if (!tab.available) return
 
-  // For now, just open trade with recommended parameters
-  handleTrade()
+  activeMarketTab.value = tab.key
+
+  // 持久化到 localStorage
+  localStorage.setItem('tokenDetailActiveTab', tab.key)
+
+  // 按需加载数据
+  if (tab.key === 'news' && !newsList.value.length && !newsLoading.value) {
+    loadNews()
+  } else if (tab.key === 'signal_bots' && !signalBotsList.value.length && !signalBotsLoading.value) {
+    loadSignalBots()
+  }
+  // 注意：现货/合约切换时 K 线会自动刷新，因为 TradingChart 监听 marketType 变化
+}
+
+// 格式化新闻时间
+const formatNewsTime = (dateString) => {
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffMs = now - date
+  const diffMins = Math.floor(diffMs / 60000)
+  const diffHours = Math.floor(diffMs / 3600000)
+  const diffDays = Math.floor(diffMs / 86400000)
+
+  if (diffMins < 60) return `${diffMins} 分钟前`
+  if (diffHours < 24) return `${diffHours} 小时前`
+  if (diffDays < 7) return `${diffDays} 天前`
+  return date.toLocaleDateString('zh-CN')
+}
+
+// 信号类型标签
+const getSignalTypeLabel = (type) => {
+  const labels = {
+    'price_alert': '价格提醒',
+    'indicator_alert': '指标信号',
+    'volatility': '波动性提醒',
+    'volume': '成交量提醒'
+  }
+  return labels[type] || type || '指标信号'
+}
+
+// 复制机器人（跟单）
+const copyBot = async (bot) => {
+  if (!bot.share_code) {
+    showError('该机器人暂不支持复制')
+    return
+  }
+
+  try {
+    const response = await apiRequest(API_ENDPOINTS.MARKETPLACE_COPY(bot.share_code), {
+      method: 'POST'
+    })
+
+    if (response.success || response.bot_id) {
+      showSuccess('复制成功！机器人已添加到您的列表')
+    } else {
+      showError(response.message || '复制失败')
+    }
+  } catch (err) {
+    console.error('复制机器人失败:', err)
+    showError(err.message || '复制失败，请稍后重试')
+  }
 }
 
 // Lifecycle
@@ -860,6 +1153,13 @@ onMounted(async () => {
   // 数据加载完成后，初始化 WebSocket
   if (tokenData.value) {
     initWebSocket()
+
+    // 根据当前 tab 加载对应数据
+    if (activeMarketTab.value === 'news') {
+      loadNews()
+    } else if (activeMarketTab.value === 'signal_bots') {
+      loadSignalBots()
+    }
   }
 })
 

@@ -78,6 +78,13 @@ const createAPIEndpoints = () => {
     BOT_STATISTICS: `${API_BASE_URL}/trading/bots/statistics/`,
     BOT_PERFORMANCE_ANALYSIS: `${API_BASE_URL}/trading/bots/performance_analysis/`,
     BOT_MY_SHARES: `${API_BASE_URL}/trading/bots/my_shares/`,
+
+    // 策略市场相关
+    MARKETPLACE_LIST: `${API_BASE_URL}/trading/marketplace/`,
+    MARKETPLACE_DETAIL: (shareCode) => `${API_BASE_URL}/trading/marketplace/${shareCode}/`,
+    MARKETPLACE_COPY: (shareCode) => `${API_BASE_URL}/trading/marketplace/${shareCode}/copy/`,
+    MARKETPLACE_STATS: `${API_BASE_URL}/trading/marketplace/stats/`,
+
     TRADING_PAIRS: `${API_BASE_URL}/trading/trading-pairs/`,
     TRADING_PAIR_INFO: `${API_BASE_URL}/market/trading-pair-info/`,
     EXCHANGE_API_SYNC: (id) => `${API_BASE_URL}/auth/exchange-apis/${id}/sync/`,
@@ -157,6 +164,7 @@ const createAPIEndpoints = () => {
     MARKET_TOKENS_TOP_LOSERS: `${API_BASE_URL}/market/tokens/top_losers/`,
     MARKET_TOKENS_TOP_VOLUME: `${API_BASE_URL}/market/tokens/top_volume/`,
     MARKET_KLINES: (symbol) => `${API_BASE_URL}/market/klines/${symbol}/`,
+    MARKET_TOKEN_KLINES: (symbol) => `${API_BASE_URL}/market/tokens/${symbol}/klines/`,
 
     // 其他端点可以在这里添加
   }

@@ -1279,10 +1279,44 @@ onMounted(async () => {
     // 如果是编辑模式，加载机器人数据
     if (isEditMode.value) {
       await loadBotData()
+    } else {
+      // 创建模式：检查是否有 token 参数（从代币详情页跳转）
+      const tokenSymbol = route.query.token
+      if (tokenSymbol) {
+        // 自动加载该代币
+        await autoSelectToken(tokenSymbol)
+      }
     }
   } catch (error) {
     console.error('初始化失败:', error)
     showError('加载数据失败')
   }
 })
+
+// 自动选择代币（从 URL 参数）
+const autoSelectToken = async (symbol) => {
+  try {
+    tokenSearching.value = true
+    // 先尝试在默认交易所（gate）上搜索
+    const defaultExchange = 'gate'
+    const response = await apiRequest(
+      `${API_ENDPOINTS.AI_STRATEGY_SEARCH_TOKEN}?q=${symbol}&exchange=${defaultExchange}`
+    )
+
+    if (response.status === 'success' && response.data.results && response.data.results.length > 0) {
+      const token = response.data.results[0]
+      // 自动设置交易所
+      formData.value.exchange_name = defaultExchange
+      // 选择代币
+      selectToken(token)
+      console.log(`✅ 自动选择代币: ${symbol}`)
+    } else {
+      console.log(`⚠️ 未找到代币: ${symbol}`)
+    }
+  } catch (error) {
+    console.error('自动选择代币失败:', error)
+  } finally {
+    tokenSearching.value = false
+  }
+}
 </script>

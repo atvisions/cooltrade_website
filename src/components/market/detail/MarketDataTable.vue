@@ -2,7 +2,13 @@
   <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
     <!-- Header with Tabs -->
     <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-      <h3 class="text-base font-semibold text-gray-900">{{ token.symbol }} 市场</h3>
+      <h3 class="text-base font-semibold text-gray-900 flex items-center gap-2">
+        <svg class="w-5 h-5 text-blue-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 3V21H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M7 14L11 10L15 14L21 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        {{ token.symbol }} 市场
+      </h3>
       <div class="flex bg-gray-100 rounded-lg p-1">
         <button
           @click="activeTab = 'futures'"
@@ -98,15 +104,10 @@
               </td>
               <!-- Long/Short Ratio -->
               <td v-if="activeTab === 'futures'" class="px-3 py-3 text-right">
-                <div v-if="item.long_short_ratio" class="flex flex-col items-end">
-                  <span :class="getLongShortColor(item.long_short_ratio)" class="font-medium">
-                    {{ formatNumber(item.long_short_ratio, 4) }}
-                  </span>
-                  <div class="flex items-center gap-1 text-xs mt-0.5">
-                    <span class="text-emerald-600">{{ getLongPercent(item.long_short_ratio) }}%</span>
-                    <span class="text-gray-300">/</span>
-                    <span class="text-red-500">{{ getShortPercent(item.long_short_ratio) }}%</span>
-                  </div>
+                <div v-if="item.long_short_ratio" class="flex items-center justify-end gap-1 text-xs">
+                  <span class="text-emerald-600 font-medium">{{ getLongPercent(item.long_short_ratio) }}%</span>
+                  <span class="text-gray-400">/</span>
+                  <span class="text-red-500 font-medium">{{ getShortPercent(item.long_short_ratio) }}%</span>
                 </div>
                 <span v-else class="text-gray-400">-</span>
               </td>

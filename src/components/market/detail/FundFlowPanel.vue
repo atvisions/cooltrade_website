@@ -3,27 +3,27 @@
     <!-- Header -->
     <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
       <h3 class="text-base font-semibold text-gray-900 flex items-center gap-2">
-        <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4"/>
+        <svg class="w-5 h-5 text-blue-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 4V20M12 4L8 8M12 4L16 8M12 20L8 16M12 20L16 16" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
         {{ symbol }}{{ marketType === 'futures' ? '合约' : '现货' }}流入流出
       </h3>
       <!-- 现货/合约切换 -->
-      <div class="flex gap-1 bg-gray-100 p-1 rounded-lg">
-        <button
-          @click="marketType = 'spot'"
-          :class="[
-            'px-3 py-1 text-xs font-medium rounded-md transition-all',
-            marketType === 'spot' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'
-          ]"
-        >现货</button>
+      <div class="flex border border-gray-200 rounded-lg overflow-hidden">
         <button
           @click="marketType = 'futures'"
           :class="[
-            'px-3 py-1 text-xs font-medium rounded-md transition-all',
-            marketType === 'futures' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500'
+            'px-4 py-1.5 text-sm font-medium transition-all',
+            marketType === 'futures' ? 'bg-gray-900 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'
           ]"
         >合约</button>
+        <button
+          @click="marketType = 'spot'"
+          :class="[
+            'px-4 py-1.5 text-sm font-medium transition-all border-l border-gray-200',
+            marketType === 'spot' ? 'bg-gray-900 text-white' : 'bg-white text-gray-600 hover:bg-gray-50'
+          ]"
+        >现货</button>
       </div>
     </div>
 

@@ -179,7 +179,7 @@
 
       <!-- ===== 主体内容：图表 + 侧边栏 ===== -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
-        <!-- 左侧：K线图表 + 技术指标 (8/12) -->
+        <!-- 左侧：K线图表 + 市场数据表格 + 技术指标 (8/12) -->
         <div class="lg:col-span-8 space-y-4">
           <!-- K线图表 -->
           <TradingChart
@@ -190,6 +190,14 @@
             :technical-signals="tokenData.market_analysis?.technical_signals"
             :market-condition="tokenData.market_analysis?.condition_label"
             @price-update="handlePriceUpdate"
+          />
+
+          <!-- 市场数据表格（Coinglass 风格） -->
+          <MarketDataTable
+            :spot-exchanges="spotExchanges"
+            :futures-exchanges="futuresExchanges"
+            :token="tokenData.token"
+            :default-tab="activeMarketTab"
           />
 
           <!-- 技术指标面板 -->
@@ -203,20 +211,6 @@
 
         <!-- 右侧：数据面板 (4/12) -->
         <div class="lg:col-span-4 space-y-4">
-          <!-- 合约数据面板 -->
-          <FuturesDataPanel
-            v-if="activeMarketTab === 'futures'"
-            :exchanges="futuresExchanges"
-            :token="tokenData.token"
-          />
-
-          <!-- 现货数据面板 -->
-          <SpotDataPanel
-            v-else
-            :exchanges="spotExchanges"
-            :token="tokenData.token"
-          />
-
           <!-- 代币信息面板 -->
           <TokenInfoPanel :token="tokenData.token" />
 
@@ -252,8 +246,7 @@ import TradingChart from './detail/TradingChart.vue'
 import TechnicalAnalysisTabs from './detail/TechnicalAnalysisTabs.vue'
 import BotTradingPanel from './detail/BotTradingPanel.vue'
 import StatCard from './detail/StatCard.vue'
-import FuturesDataPanel from './detail/FuturesDataPanel.vue'
-import SpotDataPanel from './detail/SpotDataPanel.vue'
+import MarketDataTable from './detail/MarketDataTable.vue'
 import TokenInfoPanel from './detail/TokenInfoPanel.vue'
 
 const route = useRoute()

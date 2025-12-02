@@ -64,9 +64,6 @@
                 <svg v-else-if="tab.key === 'futures'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                 </svg>
-                <svg v-else-if="tab.key === 'news'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-                </svg>
                 <svg v-else-if="tab.key === 'signal_bots'" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
                 </svg>
@@ -136,68 +133,6 @@
               :exchanges="tokenData.exchanges"
               :token="tokenData.token"
             />
-          </template>
-
-          <!-- 新闻 Tab 内容 -->
-          <template v-else-if="activeMarketTab === 'news'">
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
-              <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-                </svg>
-                {{ tokenData.token.symbol }} 相关新闻
-              </h3>
-
-              <!-- 加载状态 -->
-              <div v-if="newsLoading" class="space-y-4">
-                <div v-for="i in 5" :key="i" class="animate-pulse flex gap-4">
-                  <div class="w-20 h-16 bg-gray-200 rounded-lg flex-shrink-0"></div>
-                  <div class="flex-1 space-y-2">
-                    <div class="h-4 bg-gray-200 rounded w-3/4"></div>
-                    <div class="h-3 bg-gray-200 rounded w-1/2"></div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 新闻列表 -->
-              <div v-else-if="newsList.length" class="space-y-4">
-                <a
-                  v-for="news in newsList"
-                  :key="news.id"
-                  :href="news.url"
-                  target="_blank"
-                  class="block p-4 rounded-xl border border-gray-100 hover:border-blue-200 hover:bg-blue-50/30 transition-all group"
-                >
-                  <div class="flex items-start gap-3">
-                    <div class="flex-1 min-w-0">
-                      <h4 class="font-medium text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2">
-                        {{ news.title }}
-                      </h4>
-                      <div class="flex items-center gap-2 mt-2 text-xs text-gray-500">
-                        <span v-if="news.source?.title" class="font-medium">{{ news.source.title }}</span>
-                        <span>•</span>
-                        <span>{{ formatNewsTime(news.published_at) }}</span>
-                        <span v-if="news.votes" class="ml-auto flex items-center gap-1">
-                          <span v-if="news.votes.positive" class="text-green-600">👍 {{ news.votes.positive }}</span>
-                          <span v-if="news.votes.negative" class="text-red-600 ml-1">👎 {{ news.votes.negative }}</span>
-                        </span>
-                      </div>
-                    </div>
-                    <svg class="w-4 h-4 text-gray-400 group-hover:text-blue-500 flex-shrink-0 mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                    </svg>
-                  </div>
-                </a>
-              </div>
-
-              <!-- 无数据 -->
-              <div v-else class="text-center py-12 text-gray-500">
-                <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
-                </svg>
-                <p>暂无 {{ tokenData.token.symbol }} 相关新闻</p>
-              </div>
-            </div>
           </template>
 
           <!-- 信号机器人 Tab 内容 -->
@@ -567,17 +502,13 @@ const validateActiveTab = () => {
     } else if (token.is_futures_available) {
       activeMarketTab.value = 'futures'
     } else {
-      // 如果现货和合约都不可用，默认显示新闻
-      activeMarketTab.value = 'news'
+      // 如果现货和合约都不可用，默认显示信号机器人
+      activeMarketTab.value = 'signal_bots'
     }
     // 更新持久化
     localStorage.setItem('tokenDetailActiveTab', activeMarketTab.value)
   }
 }
-
-// 新闻数据
-const newsList = ref([])
-const newsLoading = ref(false)
 
 // 信号机器人数据
 const signalBotsList = ref([])
@@ -594,12 +525,6 @@ const marketTabs = computed(() => [
     key: 'futures',
     label: '合约',
     available: tokenData.value?.token?.is_futures_available ?? false,
-  },
-  {
-    key: 'news',
-    label: '新闻',
-    available: true,
-    badge: newsList.value.length || null,
   },
   {
     key: 'signal_bots',
@@ -1037,28 +962,7 @@ const handleTrade = (exchange = 'binance') => {
   window.open(tradeUrl, '_blank')
 }
 
-// ===== 新闻和信号机器人加载 =====
-const CRYPTOPANIC_API_KEY = '2c34efdcc05ff910783b0a6f8dae630f121f6d25'
-
-// 加载新闻数据
-const loadNews = async () => {
-  if (!tokenData.value?.token?.symbol) return
-
-  try {
-    newsLoading.value = true
-    const symbol = tokenData.value.token.symbol
-    const response = await fetch(
-      `https://cryptopanic.com/api/developer/v2/posts/?auth_token=${CRYPTOPANIC_API_KEY}&currencies=${symbol}&limit=10`
-    )
-    const data = await response.json()
-    newsList.value = data.results || []
-  } catch (err) {
-    console.error('加载新闻失败:', err)
-    newsList.value = []
-  } finally {
-    newsLoading.value = false
-  }
-}
+// ===== 信号机器人加载 =====
 
 // 加载信号机器人列表
 const loadSignalBots = async () => {
@@ -1089,27 +993,10 @@ const handleTabClick = (tab) => {
   localStorage.setItem('tokenDetailActiveTab', tab.key)
 
   // 按需加载数据
-  if (tab.key === 'news' && !newsList.value.length && !newsLoading.value) {
-    loadNews()
-  } else if (tab.key === 'signal_bots' && !signalBotsList.value.length && !signalBotsLoading.value) {
+  if (tab.key === 'signal_bots' && !signalBotsList.value.length && !signalBotsLoading.value) {
     loadSignalBots()
   }
   // 注意：现货/合约切换时 K 线会自动刷新，因为 TradingChart 监听 marketType 变化
-}
-
-// 格式化新闻时间
-const formatNewsTime = (dateString) => {
-  const date = new Date(dateString)
-  const now = new Date()
-  const diffMs = now - date
-  const diffMins = Math.floor(diffMs / 60000)
-  const diffHours = Math.floor(diffMs / 3600000)
-  const diffDays = Math.floor(diffMs / 86400000)
-
-  if (diffMins < 60) return `${diffMins} 分钟前`
-  if (diffHours < 24) return `${diffHours} 小时前`
-  if (diffDays < 7) return `${diffDays} 天前`
-  return date.toLocaleDateString('zh-CN')
 }
 
 // 信号类型标签
@@ -1155,9 +1042,7 @@ onMounted(async () => {
     initWebSocket()
 
     // 根据当前 tab 加载对应数据
-    if (activeMarketTab.value === 'news') {
-      loadNews()
-    } else if (activeMarketTab.value === 'signal_bots') {
+    if (activeMarketTab.value === 'signal_bots') {
       loadSignalBots()
     }
   }

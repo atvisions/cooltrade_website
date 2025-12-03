@@ -11,17 +11,21 @@
       <!-- 现货/合约切换 -->
       <div class="flex bg-gray-100 rounded-lg p-1">
         <button
-          @click="marketType = 'futures'"
+          @click="hasFutures && (marketType = 'futures')"
+          :disabled="!hasFutures"
           :class="[
             'px-4 py-1.5 text-sm font-medium rounded-md transition-all',
-            marketType === 'futures' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+            marketType === 'futures' ? 'bg-white text-gray-900 shadow-sm' :
+              hasFutures ? 'text-gray-500 hover:text-gray-700' : 'text-gray-300 cursor-not-allowed'
           ]"
         >合约</button>
         <button
-          @click="marketType = 'spot'"
+          @click="hasSpot && (marketType = 'spot')"
+          :disabled="!hasSpot"
           :class="[
             'px-4 py-1.5 text-sm font-medium rounded-md transition-all',
-            marketType === 'spot' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
+            marketType === 'spot' ? 'bg-white text-gray-900 shadow-sm' :
+              hasSpot ? 'text-gray-500 hover:text-gray-700' : 'text-gray-300 cursor-not-allowed'
           ]"
         >现货</button>
       </div>
@@ -81,10 +85,19 @@ import { apiRequest, API_ENDPOINTS } from '../../../utils/api.js'
 
 const props = defineProps({
   symbol: { type: String, required: true },
-  defaultMarketType: { type: String, default: 'futures' }
+  defaultMarketType: { type: String, default: 'futures' },
+  hasSpot: { type: Boolean, default: true },
+  hasFutures: { type: Boolean, default: true }
 })
 
 const marketType = ref(props.defaultMarketType)
+
+// 监听父组件 tab 变化
+watch(() => props.defaultMarketType, (newVal) => {
+  if ((newVal === 'spot' && props.hasSpot) || (newVal === 'futures' && props.hasFutures)) {
+    marketType.value = newVal
+  }
+})
 const loading = ref(false)
 const flowData = ref(null)
 

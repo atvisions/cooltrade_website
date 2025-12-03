@@ -122,6 +122,8 @@
             <FundFlowPanel
               :symbol="tokenData.token.symbol"
               :default-market-type="activeMarketTab === 'futures' ? 'futures' : 'spot'"
+              :has-spot="tokenData.token.is_spot_available"
+              :has-futures="tokenData.token.is_futures_available"
             />
 
             <!-- 市场数据表格（Coinglass 风格） -->
@@ -130,6 +132,8 @@
               :futures-exchanges="futuresExchanges"
               :token="tokenData.token"
               :default-tab="activeMarketTab"
+              :has-spot="tokenData.token.is_spot_available"
+              :has-futures="tokenData.token.is_futures_available"
             />
 
             <!-- 技术指标面板 -->

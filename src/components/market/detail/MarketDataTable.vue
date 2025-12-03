@@ -11,23 +11,25 @@
       </h3>
       <div class="flex bg-gray-100 rounded-lg p-1">
         <button
-          @click="activeTab = 'futures'"
+          @click="hasFutures && (activeTab = 'futures')"
+          :disabled="!hasFutures"
           :class="[
             'px-4 py-1.5 text-sm font-medium rounded-md transition-all',
             activeTab === 'futures'
               ? 'bg-white text-gray-900 shadow-sm'
-              : 'text-gray-500 hover:text-gray-700'
+              : hasFutures ? 'text-gray-500 hover:text-gray-700' : 'text-gray-300 cursor-not-allowed'
           ]"
         >
           合约
         </button>
         <button
-          @click="activeTab = 'spot'"
+          @click="hasSpot && (activeTab = 'spot')"
+          :disabled="!hasSpot"
           :class="[
             'px-4 py-1.5 text-sm font-medium rounded-md transition-all',
             activeTab === 'spot'
               ? 'bg-white text-gray-900 shadow-sm'
-              : 'text-gray-500 hover:text-gray-700'
+              : hasSpot ? 'text-gray-500 hover:text-gray-700' : 'text-gray-300 cursor-not-allowed'
           ]"
         >
           现货
@@ -139,16 +141,25 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 
 const props = defineProps({
   spotExchanges: { type: Array, default: () => [] },
   futuresExchanges: { type: Array, default: () => [] },
   token: { type: Object, default: () => ({}) },
-  defaultTab: { type: String, default: 'futures' }
+  defaultTab: { type: String, default: 'futures' },
+  hasSpot: { type: Boolean, default: true },
+  hasFutures: { type: Boolean, default: true }
 })
 
 const activeTab = ref(props.defaultTab)
+
+// 监听父组件 tab 变化
+watch(() => props.defaultTab, (newVal) => {
+  if ((newVal === 'spot' && props.hasSpot) || (newVal === 'futures' && props.hasFutures)) {
+    activeTab.value = newVal
+  }
+})
 
 // Aggregate and filter data - 每个交易所只保留一条记录
 const aggregateExchanges = (exchanges, isFutures) => {

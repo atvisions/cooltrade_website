@@ -35,8 +35,8 @@
       </div>
     </div>
 
-    <!-- Table with sticky first column - 固定最小高度保持一致 -->
-    <div class="relative min-h-[280px]">
+    <!-- Table with sticky first column - 自适应高度 -->
+    <div class="relative">
       <div class="overflow-x-auto max-h-[400px]">
         <table class="w-full min-w-max">
           <!-- Table Header -->
@@ -44,20 +44,18 @@
             <tr class="text-xs text-gray-500 border-b border-gray-100 h-11">
               <th class="sticky left-0 z-10 bg-white px-3 py-3 text-left font-medium w-10">#</th>
               <th class="sticky left-10 z-10 bg-white px-3 py-3 text-left font-medium min-w-[140px]">交易所</th>
-              <th class="px-3 py-3 text-left font-medium min-w-[120px]">交易对</th>
               <th class="px-3 py-3 text-right font-medium min-w-[100px]">价格</th>
               <th class="px-3 py-3 text-right font-medium min-w-[90px]">24h涨跌</th>
-              <!-- 合约专属列（重要数据前置） -->
-              <th v-if="activeTab === 'futures'" class="px-3 py-3 text-right font-medium min-w-[100px]">资金费率</th>
-              <th v-if="activeTab === 'futures'" class="px-3 py-3 text-right font-medium min-w-[110px]">持仓量</th>
-              <th v-if="activeTab === 'futures'" class="px-3 py-3 text-right font-medium min-w-[100px]">多空比</th>
-              <th v-if="activeTab === 'futures'" class="px-3 py-3 text-right font-medium min-w-[130px]">24h爆仓</th>
-              <!-- 通用列 -->
               <th class="px-3 py-3 text-right font-medium min-w-[110px]">24h成交额</th>
               <th class="px-3 py-3 text-right font-medium min-w-[100px]">24h最高</th>
               <th class="px-3 py-3 text-right font-medium min-w-[100px]">24h最低</th>
               <!-- 现货专属列 -->
               <th v-if="activeTab === 'spot'" class="px-3 py-3 text-right font-medium min-w-[110px]">净流入</th>
+              <!-- 合约专属列 -->
+              <th v-if="activeTab === 'futures'" class="px-3 py-3 text-right font-medium min-w-[100px]">资金费率</th>
+              <th v-if="activeTab === 'futures'" class="px-3 py-3 text-right font-medium min-w-[110px]">持仓量</th>
+              <th v-if="activeTab === 'futures'" class="px-3 py-3 text-right font-medium min-w-[100px]">多空比</th>
+              <th v-if="activeTab === 'futures'" class="px-3 py-3 text-right font-medium min-w-[130px]">24h爆仓</th>
             </tr>
           </thead>
           <!-- Table Body -->
@@ -76,10 +74,6 @@
                   <span class="font-medium text-gray-900 capitalize">{{ item.exchange }}</span>
                 </div>
               </td>
-              <!-- Trading Pair -->
-              <td class="px-3 py-3">
-                <span class="text-gray-700">{{ item.trading_pair }}</span>
-              </td>
               <!-- Price -->
               <td class="px-3 py-3 text-right">
                 <span class="font-semibold text-gray-900">${{ formatPrice(item.price) }}</span>
@@ -90,8 +84,28 @@
                   {{ formatPriceChange(item.price_change_24h) }}
                 </span>
               </td>
+              <!-- Volume 24h -->
+              <td class="px-3 py-3 text-right">
+                <span class="font-medium text-gray-900">${{ formatLargeNumber(item.volume_24h) }}</span>
+              </td>
+              <!-- 24h High -->
+              <td class="px-3 py-3 text-right">
+                <span class="text-gray-700">${{ formatPrice(item.high_24h) }}</span>
+              </td>
+              <!-- 24h Low -->
+              <td class="px-3 py-3 text-right">
+                <span class="text-gray-700">${{ formatPrice(item.low_24h) }}</span>
+              </td>
 
-              <!-- ===== 合约专属列（重要数据前置） ===== -->
+              <!-- ===== 现货专属列 ===== -->
+              <!-- Net Inflow -->
+              <td v-if="activeTab === 'spot'" class="px-3 py-3 text-right">
+                <span :class="getNetInflowColor(item.net_inflow)" class="font-medium">
+                  {{ formatNetInflow(item.net_inflow) }}
+                </span>
+              </td>
+
+              <!-- ===== 合约专属列 ===== -->
               <!-- Funding Rate -->
               <td v-if="activeTab === 'futures'" class="px-3 py-3 text-right">
                 <span :class="getFundingRateColor(item.funding_rate)" class="font-medium">
@@ -122,28 +136,6 @@
                   </div>
                 </div>
                 <span v-else class="text-gray-400">-</span>
-              </td>
-
-              <!-- ===== 通用列 ===== -->
-              <!-- Volume 24h -->
-              <td class="px-3 py-3 text-right">
-                <span class="font-medium text-gray-900">${{ formatLargeNumber(item.volume_24h) }}</span>
-              </td>
-              <!-- 24h High -->
-              <td class="px-3 py-3 text-right">
-                <span class="text-gray-700">${{ formatPrice(item.high_24h) }}</span>
-              </td>
-              <!-- 24h Low -->
-              <td class="px-3 py-3 text-right">
-                <span class="text-gray-700">${{ formatPrice(item.low_24h) }}</span>
-              </td>
-
-              <!-- ===== 现货专属列 ===== -->
-              <!-- Net Inflow -->
-              <td v-if="activeTab === 'spot'" class="px-3 py-3 text-right">
-                <span :class="getNetInflowColor(item.net_inflow)" class="font-medium">
-                  {{ formatNetInflow(item.net_inflow) }}
-                </span>
               </td>
             </tr>
           </tbody>

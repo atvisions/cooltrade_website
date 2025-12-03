@@ -49,13 +49,11 @@
               <th class="px-3 py-3 text-right font-medium min-w-[110px]">24h成交额</th>
               <th class="px-3 py-3 text-right font-medium min-w-[100px]">24h最高</th>
               <th class="px-3 py-3 text-right font-medium min-w-[100px]">24h最低</th>
-              <!-- 现货专属列 -->
-              <th v-if="activeTab === 'spot'" class="px-3 py-3 text-right font-medium min-w-[110px]">净流入</th>
               <!-- 合约专属列 -->
               <th v-if="activeTab === 'futures'" class="px-3 py-3 text-right font-medium min-w-[100px]">资金费率</th>
               <th v-if="activeTab === 'futures'" class="px-3 py-3 text-right font-medium min-w-[110px]">持仓量</th>
               <th v-if="activeTab === 'futures'" class="px-3 py-3 text-right font-medium min-w-[100px]">多空比</th>
-              <th v-if="activeTab === 'futures'" class="px-3 py-3 text-right font-medium min-w-[130px]">24h爆仓</th>
+              <th v-if="activeTab === 'futures'" class="px-3 py-3 text-right font-medium min-w-[100px]">24h爆仓</th>
             </tr>
           </thead>
           <!-- Table Body -->
@@ -97,14 +95,6 @@
                 <span class="text-gray-700">${{ formatPrice(item.low_24h) }}</span>
               </td>
 
-              <!-- ===== 现货专属列 ===== -->
-              <!-- Net Inflow -->
-              <td v-if="activeTab === 'spot'" class="px-3 py-3 text-right">
-                <span :class="getNetInflowColor(item.net_inflow)" class="font-medium">
-                  {{ formatNetInflow(item.net_inflow) }}
-                </span>
-              </td>
-
               <!-- ===== 合约专属列 ===== -->
               <!-- Funding Rate -->
               <td v-if="activeTab === 'futures'" class="px-3 py-3 text-right">
@@ -125,16 +115,11 @@
                 </div>
                 <span v-else class="text-gray-400">-</span>
               </td>
-              <!-- 24h Liquidation -->
+              <!-- 24h Liquidation - 只显示总量 -->
               <td v-if="activeTab === 'futures'" class="px-3 py-3 text-right">
-                <div v-if="item.liquidation_24h_long || item.liquidation_24h_short" class="flex flex-col items-end">
-                  <span class="font-medium text-gray-900">${{ formatLargeNumber(getTotalLiquidation(item)) }}</span>
-                  <div class="flex items-center gap-1 text-xs mt-0.5">
-                    <span class="text-emerald-600">${{ formatLargeNumber(item.liquidation_24h_long) }}</span>
-                    <span class="text-gray-300">/</span>
-                    <span class="text-red-500">${{ formatLargeNumber(item.liquidation_24h_short) }}</span>
-                  </div>
-                </div>
+                <span v-if="item.liquidation_24h_long || item.liquidation_24h_short" class="font-medium text-gray-900">
+                  ${{ formatLargeNumber(getTotalLiquidation(item)) }}
+                </span>
                 <span v-else class="text-gray-400">-</span>
               </td>
             </tr>

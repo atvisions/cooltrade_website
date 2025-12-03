@@ -295,6 +295,9 @@
                   <path v-if="tab.value === 'derivatives'" stroke-linecap="round" stroke-linejoin="round" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
                   <!-- 现货：购物袋 -->
                   <path v-else-if="tab.value === 'spot'" stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                  <!-- 热门：火焰 -->
+                  <path v-else-if="tab.value === 'hot'" stroke-linecap="round" stroke-linejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path>
+                  <path v-else-if="tab.value === 'hot'" stroke-linecap="round" stroke-linejoin="round" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"></path>
                   <!-- 收藏：星星 -->
                   <path v-else-if="tab.value === 'favorites'" stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"></path>
                 </svg>
@@ -659,15 +662,15 @@
             <thead class="bg-gray-50 border-b border-gray-100">
               <tr>
                 <!-- 排名 -->
-                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500" style="width: 60px;">
+                <th class="px-2 py-3 text-left text-xs font-medium text-gray-500" style="width: 50px;">
                   #
                 </th>
                 <!-- 币种 -->
-                <th class="px-3 py-3 text-left text-xs font-medium text-gray-500" style="width: 200px;">
+                <th class="px-2 py-3 text-left text-xs font-medium text-gray-500" style="width: 160px;">
                   币种
                 </th>
                 <!-- 价格 -->
-                <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 120px;" @click="sortBy('current_price')">
+                <th class="px-2 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 110px;" @click="sortBy('current_price')">
                   <div class="flex items-center justify-end gap-1">
                     价格
                     <div class="flex flex-col -space-y-1.5">
@@ -683,10 +686,10 @@
 
                 <!-- 衍生品专属列 -->
                 <template v-if="selectedTab === 'derivatives'">
-                  <!-- 价格(24h%) -->
-                  <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 100px;" @click="sortBy('price_change_percentage_24h')">
+                  <!-- 24h% -->
+                  <th class="px-2 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 80px;" @click="sortBy('price_change_percentage_24h')">
                     <div class="flex items-center justify-end gap-1">
-                      价格(24h%)
+                      24h%
                       <div class="flex flex-col -space-y-1.5">
                         <svg class="w-3 h-3" :class="sortField === 'price_change_percentage_24h' && sortDirection === 'asc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
                           <polyline points="4,10 8,6 12,10" stroke-linecap="round" stroke-linejoin="round"/>
@@ -698,9 +701,9 @@
                     </div>
                   </th>
                   <!-- 资金费率 -->
-                  <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 100px;" @click="sortBy('avg_funding_rate')">
+                  <th class="px-2 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 85px;" @click="sortBy('avg_funding_rate')">
                     <div class="flex items-center justify-end gap-1">
-                      资金费率
+                      费率
                       <div class="flex flex-col -space-y-1.5">
                         <svg class="w-3 h-3" :class="sortField === 'avg_funding_rate' && sortDirection === 'asc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
                           <polyline points="4,10 8,6 12,10" stroke-linecap="round" stroke-linejoin="round"/>
@@ -712,9 +715,9 @@
                     </div>
                   </th>
                   <!-- 24h交易额 -->
-                  <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 120px;" @click="sortBy('total_volume')">
+                  <th class="px-2 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 100px;" @click="sortBy('total_volume')">
                     <div class="flex items-center justify-end gap-1">
-                      24h交易额
+                      交易额
                       <div class="flex flex-col -space-y-1.5">
                         <svg class="w-3 h-3" :class="sortField === 'total_volume' && sortDirection === 'asc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
                           <polyline points="4,10 8,6 12,10" stroke-linecap="round" stroke-linejoin="round"/>
@@ -726,7 +729,7 @@
                     </div>
                   </th>
                   <!-- 市值 -->
-                  <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 120px;" @click="sortBy('market_cap')">
+                  <th class="px-2 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 100px;" @click="sortBy('market_cap')">
                     <div class="flex items-center justify-end gap-1">
                       市值
                       <div class="flex flex-col -space-y-1.5">
@@ -740,7 +743,7 @@
                     </div>
                   </th>
                   <!-- 持仓 -->
-                  <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 120px;" @click="sortBy('total_open_interest')">
+                  <th class="px-2 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 100px;" @click="sortBy('total_open_interest')">
                     <div class="flex items-center justify-end gap-1">
                       持仓
                       <div class="flex flex-col -space-y-1.5">
@@ -753,8 +756,8 @@
                       </div>
                     </div>
                   </th>
-                  <!-- 多空比（合并为一列） -->
-                  <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 110px;" @click="sortBy('avg_long_short_ratio')">
+                  <!-- 多空比 -->
+                  <th class="px-2 py-3 text-center text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 95px;" @click="sortBy('avg_long_short_ratio')">
                     <div class="flex items-center justify-center gap-1">
                       多空比
                       <div class="flex flex-col -space-y-1.5">
@@ -762,20 +765,6 @@
                           <polyline points="4,10 8,6 12,10" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
                         <svg class="w-3 h-3" :class="sortField === 'avg_long_short_ratio' && sortDirection === 'desc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
-                          <polyline points="4,6 8,10 12,6" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                      </div>
-                    </div>
-                  </th>
-                  <!-- 24h爆仓 -->
-                  <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 100px;" @click="sortBy('liquidation_24h_total')">
-                    <div class="flex items-center justify-end gap-1">
-                      24h爆仓
-                      <div class="flex flex-col -space-y-1.5">
-                        <svg class="w-3 h-3" :class="sortField === 'liquidation_24h_total' && sortDirection === 'asc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
-                          <polyline points="4,10 8,6 12,10" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                        <svg class="w-3 h-3" :class="sortField === 'liquidation_24h_total' && sortDirection === 'desc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
                           <polyline points="4,6 8,10 12,6" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
                       </div>
@@ -843,6 +832,66 @@
                   </th>
                 </template>
 
+                <!-- 热门Tab的列 -->
+                <template v-else-if="selectedTab === 'hot'">
+                  <!-- 24h涨跌 -->
+                  <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 100px;" @click="sortBy('price_change_percentage_24h')">
+                    <div class="flex items-center justify-end gap-1">
+                      24h涨跌
+                      <div class="flex flex-col -space-y-1.5">
+                        <svg class="w-3 h-3" :class="sortField === 'price_change_percentage_24h' && sortDirection === 'asc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                          <polyline points="4,10 8,6 12,10" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <svg class="w-3 h-3" :class="sortField === 'price_change_percentage_24h' && sortDirection === 'desc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                          <polyline points="4,6 8,10 12,6" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </div>
+                    </div>
+                  </th>
+                  <!-- 24h成交量 -->
+                  <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 110px;" @click="sortBy('total_volume')">
+                    <div class="flex items-center justify-end gap-1">
+                      24h成交量
+                      <div class="flex flex-col -space-y-1.5">
+                        <svg class="w-3 h-3" :class="sortField === 'total_volume' && sortDirection === 'asc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                          <polyline points="4,10 8,6 12,10" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <svg class="w-3 h-3" :class="sortField === 'total_volume' && sortDirection === 'desc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                          <polyline points="4,6 8,10 12,6" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </div>
+                    </div>
+                  </th>
+                  <!-- 市值 -->
+                  <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 110px;" @click="sortBy('market_cap')">
+                    <div class="flex items-center justify-end gap-1">
+                      市值
+                      <div class="flex flex-col -space-y-1.5">
+                        <svg class="w-3 h-3" :class="sortField === 'market_cap' && sortDirection === 'asc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                          <polyline points="4,10 8,6 12,10" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <svg class="w-3 h-3" :class="sortField === 'market_cap' && sortDirection === 'desc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                          <polyline points="4,6 8,10 12,6" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </div>
+                    </div>
+                  </th>
+                  <!-- 热度 -->
+                  <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 120px;" @click="sortBy('hot_score')">
+                    <div class="flex items-center justify-end gap-1">
+                      热度
+                      <div class="flex flex-col -space-y-1.5">
+                        <svg class="w-3 h-3" :class="sortField === 'hot_score' && sortDirection === 'asc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                          <polyline points="4,10 8,6 12,10" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        <svg class="w-3 h-3" :class="sortField === 'hot_score' && sortDirection === 'desc' ? 'text-blue-600' : 'text-gray-400'" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16">
+                          <polyline points="4,6 8,10 12,6" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                      </div>
+                    </div>
+                  </th>
+                </template>
+
                 <!-- 收藏Tab的列（保持原有的列） -->
                 <template v-else-if="selectedTab === 'favorites'">
                   <th class="px-3 py-3 text-right text-xs font-medium text-gray-500 cursor-pointer hover:text-gray-700" style="width: 100px;" @click="sortBy('price_change_percentage_24h')">
@@ -886,12 +935,8 @@
                   </th>
                 </template>
 
-                <!-- 市场情绪（所有Tab都显示） -->
-                <th class="px-3 py-3 text-center text-xs font-medium text-gray-500" style="width: 100px;">
-                  市场情绪
-                </th>
                 <!-- 收藏（所有Tab都显示） -->
-                <th class="px-3 py-3 text-center text-xs font-medium text-gray-500" style="width: 80px;">
+                <th class="px-2 py-3 text-center text-xs font-medium text-gray-500" style="width: 60px;">
                   收藏
                 </th>
               </tr>
@@ -972,13 +1017,6 @@
                     </div>
                     <span v-else class="text-gray-400">-</span>
                   </td>
-                  <!-- 24h爆仓 -->
-                  <td class="px-4 py-3 text-right">
-                    <span v-if="token.liquidation_24h_formatted" class="text-sm text-gray-900 tabular-nums">
-                      {{ token.liquidation_24h_formatted }}
-                    </span>
-                    <span v-else class="text-gray-400">-</span>
-                  </td>
                 </template>
 
                 <!-- 现货专属列 -->
@@ -1006,6 +1044,31 @@
                   </td>
                 </template>
 
+                <!-- 热门Tab的列 -->
+                <template v-else-if="selectedTab === 'hot'">
+                  <!-- 24h涨跌 -->
+                  <td class="px-4 py-3 text-right text-sm font-medium">
+                    <span class="tabular-nums" :class="getChangeColor(parseFloat(token.price_change_percentage_24h))">
+                      {{ token.price_change_24h_formatted || '-' }}
+                    </span>
+                  </td>
+                  <!-- 24h成交量 -->
+                  <td class="px-4 py-3 text-right">
+                    <div class="text-sm text-gray-900 tabular-nums">{{ token.volume_formatted || '-' }}</div>
+                  </td>
+                  <!-- 市值 -->
+                  <td class="px-4 py-3 text-right">
+                    <div class="text-sm font-medium text-gray-900 tabular-nums">{{ token.market_cap_formatted || '-' }}</div>
+                  </td>
+                  <!-- 热度 -->
+                  <td class="px-4 py-3 text-right">
+                    <span class="inline-flex items-center gap-1 text-sm font-medium tabular-nums whitespace-nowrap" :class="getHotScoreColor(token.hot_score)">
+                      {{ getHotScoreIcon(token.hot_score) }}
+                      {{ token.hot_score_formatted || '-' }}
+                    </span>
+                  </td>
+                </template>
+
                 <!-- 收藏Tab的列 -->
                 <template v-else-if="selectedTab === 'favorites'">
                   <td class="px-4 py-3 text-right text-sm font-medium">
@@ -1020,12 +1083,6 @@
                     <div class="text-sm text-gray-900 tabular-nums">{{ token.volume_formatted || '-' }}</div>
                   </td>
                 </template>
-                <td class="px-4 py-3 text-center">
-                  <div v-if="token.avg_funding_rate !== null || token.avg_long_short_ratio !== null" class="inline-flex items-center justify-center px-2 py-1 rounded text-xs font-medium whitespace-nowrap" :class="getMarketSentimentStyle(token).class">
-                    {{ getMarketSentimentStyle(token).label }}
-                  </div>
-                  <span v-else class="text-gray-400 text-xs">-</span>
-                </td>
                 <td class="px-4 py-3 text-center">
                   <button
                     @click.stop="toggleFavorite(token)"
@@ -1325,6 +1382,7 @@ const tabs = computed(() => {
   const allTabs = [
     { label: '衍生品', value: 'derivatives' },
     { label: '现货', value: 'spot' },
+    { label: '热门', value: 'hot' },
     { label: '收藏', value: 'favorites' }
   ]
 
@@ -1587,6 +1645,22 @@ const getChangeColor = (value) => {
   return 'text-gray-600'
 }
 
+// 热度评分颜色
+const getHotScoreColor = (score) => {
+  if (score >= 1000) return 'text-red-600'
+  if (score >= 100) return 'text-orange-500'
+  if (score >= 10) return 'text-yellow-600'
+  return 'text-gray-500'
+}
+
+// 热度评分图标
+const getHotScoreIcon = (score) => {
+  if (score >= 1000) return '🔥🔥🔥'
+  if (score >= 100) return '🔥🔥'
+  if (score >= 10) return '🔥'
+  return '💧'
+}
+
 // 推荐分数颜色
 const getRecommendationScoreColor = (score) => {
   if (score >= 80) return 'text-green-600'
@@ -1815,7 +1889,7 @@ const loadMarketStats = async () => {
 
 // 判断是否使用"加载更多"模式
 const useLoadMoreMode = computed(() => {
-  return selectedTab.value === 'hot' || selectedTab.value === 'top100'
+  return selectedTab.value === 'top100'
 })
 
 // 加载代币列表
@@ -1829,6 +1903,8 @@ const loadTokensList = async (append = false) => {
     // 根据标签页选择不同的端点
     if (selectedTab.value === 'favorites') {
       endpoint = API_ENDPOINTS.MARKET_TOKENS_FAVORITES
+    } else if (selectedTab.value === 'hot') {
+      endpoint = API_ENDPOINTS.MARKET_TOKENS_HOT
     }
 
     // 使用25条每页（加载更多模式）或用户设置的pageSize
@@ -1984,8 +2060,11 @@ const switchTab = (tabValue) => {
     // 推荐 默认按市值排名升序
     sortField.value = 'market_cap_rank'
     sortDirection.value = 'asc'
+  } else if (tabValue === 'derivatives' || tabValue === 'spot' || tabValue === 'favorites') {
+    // 衍生品/现货/收藏 默认按市值排名升序
+    sortField.value = 'market_cap_rank'
+    sortDirection.value = 'asc'
   }
-  // 其他 Tab 保持当前排序不变
 
   // 保存到 localStorage
   localStorage.setItem('market_selected_tab', tabValue)

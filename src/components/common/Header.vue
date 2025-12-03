@@ -161,24 +161,20 @@
               leave-to-class="transform opacity-0 scale-95"
             >
               <div
-                v-if="showSearchResults && (searchResults.length > 0 || searching || loadingHotTokens)"
+                v-if="showSearchResults && (searchResults.length > 0 || searching)"
                 class="absolute top-full mt-2 w-96 bg-white rounded-xl shadow-lg border border-gray-200 max-h-96 overflow-y-auto z-50"
               >
                 <!-- 加载中 -->
-                <div v-if="searching || loadingHotTokens" class="p-4 text-center text-gray-500">
+                <div v-if="searching" class="p-4 text-center text-gray-500">
                   <svg class="animate-spin h-5 w-5 mx-auto text-blue-600" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  <p class="mt-2 text-sm">{{ searchQuery ? '搜索中...' : '加载热门代币...' }}</p>
+                  <p class="mt-2 text-sm">搜索中...</p>
                 </div>
 
                 <!-- 搜索结果 -->
                 <div v-else-if="searchResults.length > 0" class="py-2">
-                  <!-- 标题 -->
-                  <div v-if="!searchQuery" class="px-4 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    热门代币
-                  </div>
 
                   <div
                     v-for="token in searchResults"
@@ -514,11 +510,9 @@ const loadHotTokens = async () => {
 // 处理搜索框获得焦点
 const handleSearchFocus = () => {
   isFocused.value = true
-  showSearchResults.value = true
-
-  // 如果没有搜索内容，加载热门代币
-  if (!searchQuery.value.trim()) {
-    loadHotTokens()
+  // 只有在有搜索结果时才显示下拉
+  if (searchResults.value.length > 0) {
+    showSearchResults.value = true
   }
 }
 
@@ -531,14 +525,11 @@ const handleSearch = () => {
   const query = searchQuery.value.trim()
 
   if (query.length < 1) {
-    // 如果清空搜索，显示热门代币
+    // 如果清空搜索，清空结果并隐藏下拉
     isSearching.value = false
     searchResults.value = []
     searching.value = false
-    // 只有在搜索框有焦点时才加载热门代币
-    if (isFocused.value) {
-      loadHotTokens()
-    }
+    showSearchResults.value = false
     return
   }
 
@@ -555,10 +546,7 @@ const handleSearch = () => {
       if (currentQuery.length < 1) {
         isSearching.value = false
         searching.value = false
-        // 只有在搜索框有焦点时才加载热门代币
-        if (isFocused.value) {
-          loadHotTokens()
-        }
+        showSearchResults.value = false
         return
       }
 
@@ -599,8 +587,8 @@ const handleSearch = () => {
 // 清除搜索
 const clearSearch = () => {
   searchQuery.value = ''
-  // handleSearch 会被 @input 触发，它会自动加载热门代币
-  // 所以这里不需要手动调用 loadHotTokens()
+  searchResults.value = []
+  showSearchResults.value = false
 }
 
 // 处理图片加载错误

@@ -3546,7 +3546,10 @@ const inheritedTradingDirection = computed(() => {
   // 从信号机器人的 config.signal_output.direction_mode 获取
   const config = selectedSignalBot.value.config || {}
   const signalOutput = config.signal_output || {}
-  return signalOutput.direction_mode || 'auto'
+  const directionMode = signalOutput.direction_mode || 'auto'
+  // 后端只接受 both, long_only, short_only，auto 映射为 both
+  if (directionMode === 'auto') return 'both'
+  return directionMode
 })
 
 // 判断市场类型是否应该被禁用

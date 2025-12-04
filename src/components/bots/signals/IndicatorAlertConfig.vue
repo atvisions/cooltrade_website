@@ -383,15 +383,12 @@
               周期
               <span class="text-[10px] text-slate-500 block">计算窗口</span>
             </label>
-            <select
-              :value="indicatorsConfig.rsi?.params?.period || 14"
-              @change="updateIndicatorParam('rsi', 'period', Number($event.target.value))"
-              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option v-for="opt in periodOptions.rsi" :key="opt.value" :value="opt.value">
-                {{ opt.label }}
-              </option>
-            </select>
+            <Select
+              :model-value="indicatorsConfig.rsi?.params?.period || 14"
+              @update:model-value="updateIndicatorParam('rsi', 'period', $event)"
+              :options="periodOptions.rsi"
+              placeholder="选择周期"
+            />
           </div>
           <div>
             <label class="block text-xs font-medium text-slate-700 mb-1.5">
@@ -496,45 +493,36 @@
               快线周期
               <span class="text-[10px] text-slate-500 block">短期EMA</span>
             </label>
-            <select
-              :value="indicatorsConfig.macd?.params?.fast || 12"
-              @change="updateIndicatorParam('macd', 'fast', Number($event.target.value))"
-              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option v-for="opt in periodOptions.macd.fast" :key="opt.value" :value="opt.value">
-                {{ opt.label }}
-              </option>
-            </select>
+            <Select
+              :model-value="indicatorsConfig.macd?.params?.fast || 12"
+              @update:model-value="updateIndicatorParam('macd', 'fast', $event)"
+              :options="periodOptions.macd.fast"
+              placeholder="选择"
+            />
           </div>
           <div>
             <label class="block text-xs font-medium text-slate-700 mb-1.5">
               慢线周期
               <span class="text-[10px] text-slate-500 block">长期EMA</span>
             </label>
-            <select
-              :value="indicatorsConfig.macd?.params?.slow || 26"
-              @change="updateIndicatorParam('macd', 'slow', Number($event.target.value))"
-              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option v-for="opt in periodOptions.macd.slow" :key="opt.value" :value="opt.value">
-                {{ opt.label }}
-              </option>
-            </select>
+            <Select
+              :model-value="indicatorsConfig.macd?.params?.slow || 26"
+              @update:model-value="updateIndicatorParam('macd', 'slow', $event)"
+              :options="periodOptions.macd.slow"
+              placeholder="选择"
+            />
           </div>
           <div>
             <label class="block text-xs font-medium text-slate-700 mb-1.5">
               信号线周期
               <span class="text-[10px] text-slate-500 block">MACD平滑</span>
             </label>
-            <select
-              :value="indicatorsConfig.macd?.params?.signal || 9"
-              @change="updateIndicatorParam('macd', 'signal', Number($event.target.value))"
-              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option v-for="opt in periodOptions.macd.signal" :key="opt.value" :value="opt.value">
-                {{ opt.label }}
-              </option>
-            </select>
+            <Select
+              :model-value="indicatorsConfig.macd?.params?.signal || 9"
+              @update:model-value="updateIndicatorParam('macd', 'signal', $event)"
+              :options="periodOptions.macd.signal"
+              placeholder="选择"
+            />
           </div>
         </div>
 
@@ -631,30 +619,24 @@
               快线周期
               <span class="text-[10px] text-slate-500 block">短期均线</span>
             </label>
-            <select
-              :value="indicatorsConfig.ma_crossover?.params?.fast || 7"
-              @change="updateIndicatorParam('ma_crossover', 'fast', Number($event.target.value))"
-              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option v-for="opt in periodOptions.ma_crossover.fast" :key="opt.value" :value="opt.value">
-                {{ opt.label }}
-              </option>
-            </select>
+            <Select
+              :model-value="indicatorsConfig.ma_crossover?.params?.fast || 7"
+              @update:model-value="updateIndicatorParam('ma_crossover', 'fast', $event)"
+              :options="periodOptions.ma_crossover.fast"
+              placeholder="选择"
+            />
           </div>
           <div>
             <label class="block text-xs font-medium text-slate-700 mb-1.5">
               慢线周期
               <span class="text-[10px] text-slate-500 block">长期均线</span>
             </label>
-            <select
-              :value="indicatorsConfig.ma_crossover?.params?.slow || 25"
-              @change="updateIndicatorParam('ma_crossover', 'slow', Number($event.target.value))"
-              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option v-for="opt in periodOptions.ma_crossover.slow" :key="opt.value" :value="opt.value">
-                {{ opt.label }}
-              </option>
-            </select>
+            <Select
+              :model-value="indicatorsConfig.ma_crossover?.params?.slow || 25"
+              @update:model-value="updateIndicatorParam('ma_crossover', 'slow', $event)"
+              :options="periodOptions.ma_crossover.slow"
+              placeholder="选择"
+            />
           </div>
         </div>
 
@@ -751,30 +733,24 @@
               ATR 周期
               <span class="text-[10px] text-slate-500 block">计算窗口</span>
             </label>
-            <select
-              :value="indicatorsConfig.atr?.params?.period || 14"
-              @change="updateIndicatorParam('atr', 'period', Number($event.target.value))"
-              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option v-for="opt in periodOptions.atr" :key="opt.value" :value="opt.value">
-                {{ opt.label }}
-              </option>
-            </select>
+            <Select
+              :model-value="indicatorsConfig.atr?.params?.period || 14"
+              @update:model-value="updateIndicatorParam('atr', 'period', $event)"
+              :options="periodOptions.atr"
+              placeholder="选择"
+            />
           </div>
           <div>
             <label class="block text-xs font-medium text-slate-700 mb-1.5">
               波动阈值
               <span class="text-[10px] text-slate-500 block">变化倍数</span>
             </label>
-            <select
-              :value="indicatorsConfig.atr?.params?.threshold || 2.0"
-              @change="updateIndicatorParam('atr', 'threshold', Number($event.target.value))"
-              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option v-for="opt in thresholdOptions.atr" :key="opt.value" :value="opt.value">
-                {{ opt.label }}
-              </option>
-            </select>
+            <Select
+              :model-value="indicatorsConfig.atr?.params?.threshold || 2.0"
+              @update:model-value="updateIndicatorParam('atr', 'threshold', $event)"
+              :options="thresholdOptions.atr"
+              placeholder="选择"
+            />
           </div>
         </div>
       </div>
@@ -853,30 +829,24 @@
               成交量倍数
               <span class="text-[10px] text-slate-500 block">相对平均值</span>
             </label>
-            <select
-              :value="indicatorsConfig.volume?.params?.multiplier || 2.0"
-              @change="updateIndicatorParam('volume', 'multiplier', Number($event.target.value))"
-              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option v-for="opt in thresholdOptions.volume" :key="opt.value" :value="opt.value">
-                {{ opt.label }}
-              </option>
-            </select>
+            <Select
+              :model-value="indicatorsConfig.volume?.params?.multiplier || 2.0"
+              @update:model-value="updateIndicatorParam('volume', 'multiplier', $event)"
+              :options="thresholdOptions.volume"
+              placeholder="选择"
+            />
           </div>
           <div>
             <label class="block text-xs font-medium text-slate-700 mb-1.5">
               平均周期
               <span class="text-[10px] text-slate-500 block">K线数量</span>
             </label>
-            <select
-              :value="indicatorsConfig.volume?.params?.period || 20"
-              @change="updateIndicatorParam('volume', 'period', Number($event.target.value))"
-              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option v-for="opt in periodOptions.volume" :key="opt.value" :value="opt.value">
-                {{ opt.label }}
-              </option>
-            </select>
+            <Select
+              :model-value="indicatorsConfig.volume?.params?.period || 20"
+              @update:model-value="updateIndicatorParam('volume', 'period', $event)"
+              :options="periodOptions.volume"
+              placeholder="选择"
+            />
           </div>
         </div>
 
@@ -931,45 +901,36 @@
               周期
               <span class="text-[10px] text-slate-500 block">MA周期</span>
             </label>
-            <select
-              :value="indicatorsConfig.bollinger?.params?.period || 20"
-              @change="updateIndicatorParam('bollinger', 'period', Number($event.target.value))"
-              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option v-for="opt in periodOptions.bollinger" :key="opt.value" :value="opt.value">
-                {{ opt.label }}
-              </option>
-            </select>
+            <Select
+              :model-value="indicatorsConfig.bollinger?.params?.period || 20"
+              @update:model-value="updateIndicatorParam('bollinger', 'period', $event)"
+              :options="periodOptions.bollinger"
+              placeholder="选择"
+            />
           </div>
           <div>
             <label class="block text-xs font-medium text-slate-700 mb-1.5">
               标准差倍数
               <span class="text-[10px] text-slate-500 block">带宽</span>
             </label>
-            <select
-              :value="indicatorsConfig.bollinger?.params?.std || 2"
-              @change="updateIndicatorParam('bollinger', 'std', Number($event.target.value))"
-              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option v-for="opt in thresholdOptions.bollinger.std" :key="opt.value" :value="opt.value">
-                {{ opt.label }}
-              </option>
-            </select>
+            <Select
+              :model-value="indicatorsConfig.bollinger?.params?.std || 2"
+              @update:model-value="updateIndicatorParam('bollinger', 'std', $event)"
+              :options="thresholdOptions.bollinger.std"
+              placeholder="选择"
+            />
           </div>
           <div>
             <label class="block text-xs font-medium text-slate-700 mb-1.5">
               挤压阈值
               <span class="text-[10px] text-slate-500 block">带宽%</span>
             </label>
-            <select
-              :value="indicatorsConfig.bollinger?.params?.squeeze_threshold || 0.03"
-              @change="updateIndicatorParam('bollinger', 'squeeze_threshold', Number($event.target.value))"
-              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option v-for="opt in thresholdOptions.bollinger.squeeze" :key="opt.value" :value="opt.value">
-                {{ opt.label }}
-              </option>
-            </select>
+            <Select
+              :model-value="indicatorsConfig.bollinger?.params?.squeeze_threshold || 0.03"
+              @update:model-value="updateIndicatorParam('bollinger', 'squeeze_threshold', $event)"
+              :options="thresholdOptions.bollinger.squeeze"
+              placeholder="选择"
+            />
           </div>
         </div>
       </div>
@@ -1006,30 +967,24 @@
               左侧K线数
               <span class="text-[10px] text-slate-500 block">确认高低点</span>
             </label>
-            <select
-              :value="indicatorsConfig.pivot?.params?.pivot_left || 3"
-              @change="updateIndicatorParam('pivot', 'pivot_left', Number($event.target.value))"
-              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option v-for="opt in periodOptions.pivot" :key="opt.value" :value="opt.value">
-                {{ opt.label }}
-              </option>
-            </select>
+            <Select
+              :model-value="indicatorsConfig.pivot?.params?.pivot_left || 3"
+              @update:model-value="updateIndicatorParam('pivot', 'pivot_left', $event)"
+              :options="periodOptions.pivot"
+              placeholder="选择"
+            />
           </div>
           <div>
             <label class="block text-xs font-medium text-slate-700 mb-1.5">
               右侧K线数
               <span class="text-[10px] text-slate-500 block">确认高低点</span>
             </label>
-            <select
-              :value="indicatorsConfig.pivot?.params?.pivot_right || 3"
-              @change="updateIndicatorParam('pivot', 'pivot_right', Number($event.target.value))"
-              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option v-for="opt in periodOptions.pivot" :key="opt.value" :value="opt.value">
-                {{ opt.label }}
-              </option>
-            </select>
+            <Select
+              :model-value="indicatorsConfig.pivot?.params?.pivot_right || 3"
+              @update:model-value="updateIndicatorParam('pivot', 'pivot_right', $event)"
+              :options="periodOptions.pivot"
+              placeholder="选择"
+            />
           </div>
         </div>
       </div>
@@ -1143,15 +1098,12 @@
             回看周期
             <span class="text-[10px] text-slate-500 block">检测背离的K线数量</span>
           </label>
-          <select
-            :value="indicatorsConfig.divergence?.params?.divergence_lookback || 5"
-            @change="updateIndicatorParam('divergence', 'divergence_lookback', Number($event.target.value))"
-            class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          >
-            <option v-for="opt in periodOptions.divergence" :key="opt.value" :value="opt.value">
-              {{ opt.label }}
-            </option>
-          </select>
+          <Select
+            :model-value="indicatorsConfig.divergence?.params?.divergence_lookback || 5"
+            @update:model-value="updateIndicatorParam('divergence', 'divergence_lookback', $event)"
+            :options="periodOptions.divergence"
+            placeholder="选择"
+          />
         </div>
 
         <div class="grid grid-cols-2 gap-3">
@@ -1181,6 +1133,257 @@
           </div>
         </div>
       </div>
+
+      <!-- ========== 趋势过滤器 ========== -->
+
+      <!-- 趋势偏向 参数 -->
+      <div v-if="selectedIndicators.includes('trend_bias')" class="border-2 border-violet-200 rounded-lg p-4 bg-violet-50/30">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-violet-100 rounded-lg flex items-center justify-center">
+              <svg class="w-4 h-4 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+              </svg>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="text-sm font-semibold text-slate-900">趋势偏向（Trend Bias）</h3>
+                <span class="px-1.5 py-0.5 bg-violet-500 text-white text-[10px] font-medium rounded">过滤器</span>
+              </div>
+              <p class="text-xs text-slate-500">过滤逆势信号，只允许顺势交易</p>
+            </div>
+          </div>
+          <button v-if="selectedIndicators.length > 1" type="button" @click="removeIndicator('trend_bias')" class="text-slate-400 hover:text-red-500 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-700 mb-1.5">
+              快线周期
+              <span class="text-[10px] text-slate-500 block">短期趋势</span>
+            </label>
+            <Input
+              :model-value="indicatorsConfig.trend_bias?.params?.fast_ma || 50"
+              @update:model-value="updateIndicatorParam('trend_bias', 'fast_ma', $event)"
+              type="number"
+              placeholder="50"
+              class="text-sm"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-700 mb-1.5">
+              慢线周期
+              <span class="text-[10px] text-slate-500 block">长期趋势</span>
+            </label>
+            <Input
+              :model-value="indicatorsConfig.trend_bias?.params?.slow_ma || 200"
+              @update:model-value="updateIndicatorParam('trend_bias', 'slow_ma', $event)"
+              type="number"
+              placeholder="200"
+              class="text-sm"
+            />
+          </div>
+          <div class="flex items-center">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                :checked="indicatorsConfig.trend_bias?.params?.bias_filter !== false"
+                @change="updateIndicatorParam('trend_bias', 'bias_filter', $event.target.checked)"
+                class="w-4 h-4 text-violet-600 rounded focus:ring-violet-500"
+              />
+              <div>
+                <span class="text-xs font-medium text-slate-700">启用过滤</span>
+                <p class="text-[10px] text-slate-500">过滤逆势信号</p>
+              </div>
+            </label>
+          </div>
+        </div>
+        <div class="mt-3 p-2 bg-violet-100/50 rounded text-[10px] text-violet-700">
+          <strong>过滤规则：</strong>MA{{ indicatorsConfig.trend_bias?.params?.fast_ma || 50 }} > MA{{ indicatorsConfig.trend_bias?.params?.slow_ma || 200 }} → 只允许做多信号；MA{{ indicatorsConfig.trend_bias?.params?.fast_ma || 50 }} < MA{{ indicatorsConfig.trend_bias?.params?.slow_ma || 200 }} → 只允许做空信号
+        </div>
+      </div>
+
+      <!-- ========== 合约专用指标 ========== -->
+
+      <!-- 资金费率 参数 -->
+      <div v-if="selectedIndicators.includes('funding_rate')" class="border-2 border-orange-200 rounded-lg p-4 bg-orange-50/30">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+              <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="text-sm font-semibold text-slate-900">资金费率（Funding Rate）</h3>
+                <span class="px-1.5 py-0.5 bg-orange-500 text-white text-[10px] font-medium rounded">合约</span>
+              </div>
+              <p class="text-xs text-slate-500">检测资金费率异常，判断多空情绪</p>
+            </div>
+          </div>
+          <button v-if="selectedIndicators.length > 1" type="button" @click="removeIndicator('funding_rate')" class="text-slate-400 hover:text-red-500 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-700 mb-1.5">
+              极端多头阈值
+              <span class="text-[10px] text-slate-500 block">触发看跌信号</span>
+            </label>
+            <Input
+              :model-value="indicatorsConfig.funding_rate?.params?.positive_extreme || 0.01"
+              @update:model-value="updateIndicatorParam('funding_rate', 'positive_extreme', $event)"
+              type="number"
+              step="0.001"
+              placeholder="0.01"
+              class="text-sm"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-700 mb-1.5">
+              极端空头阈值
+              <span class="text-[10px] text-slate-500 block">触发看涨信号</span>
+            </label>
+            <Input
+              :model-value="indicatorsConfig.funding_rate?.params?.negative_extreme || -0.01"
+              @update:model-value="updateIndicatorParam('funding_rate', 'negative_extreme', $event)"
+              type="number"
+              step="0.001"
+              placeholder="-0.01"
+              class="text-sm"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-700 mb-1.5">
+              中性区间
+              <span class="text-[10px] text-slate-500 block">不触发信号</span>
+            </label>
+            <div class="text-xs text-slate-600 bg-slate-100 rounded px-2 py-1.5">
+              {{ (indicatorsConfig.funding_rate?.params?.neutral_zone || [-0.002, 0.002]).join(' ~ ') }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 持仓量 参数 -->
+      <div v-if="selectedIndicators.includes('open_interest')" class="border-2 border-orange-200 rounded-lg p-4 bg-orange-50/30">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+              <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="text-sm font-semibold text-slate-900">持仓量（Open Interest）</h3>
+                <span class="px-1.5 py-0.5 bg-orange-500 text-white text-[10px] font-medium rounded">合约</span>
+              </div>
+              <p class="text-xs text-slate-500">检测未平仓合约变化，判断趋势强度</p>
+            </div>
+          </div>
+          <button v-if="selectedIndicators.length > 1" type="button" @click="removeIndicator('open_interest')" class="text-slate-400 hover:text-red-500 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-700 mb-1.5">
+              趋势周期
+              <span class="text-[10px] text-slate-500 block">计算窗口</span>
+            </label>
+            <Input
+              :model-value="indicatorsConfig.open_interest?.params?.oi_trend_period || 20"
+              @update:model-value="updateIndicatorParam('open_interest', 'oi_trend_period', $event)"
+              type="number"
+              placeholder="20"
+              class="text-sm"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-700 mb-1.5">
+              增仓阈值 %
+              <span class="text-[10px] text-slate-500 block">看涨信号</span>
+            </label>
+            <Input
+              :model-value="indicatorsConfig.open_interest?.params?.oi_increase_threshold || 5"
+              @update:model-value="updateIndicatorParam('open_interest', 'oi_increase_threshold', $event)"
+              type="number"
+              placeholder="5"
+              class="text-sm"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-700 mb-1.5">
+              减仓阈值 %
+              <span class="text-[10px] text-slate-500 block">看跌信号</span>
+            </label>
+            <Input
+              :model-value="indicatorsConfig.open_interest?.params?.oi_decrease_threshold || -5"
+              @update:model-value="updateIndicatorParam('open_interest', 'oi_decrease_threshold', $event)"
+              type="number"
+              placeholder="-5"
+              class="text-sm"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- 多空比 参数 -->
+      <div v-if="selectedIndicators.includes('long_short_ratio')" class="border-2 border-orange-200 rounded-lg p-4 bg-orange-50/30">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+              <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+              </svg>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="text-sm font-semibold text-slate-900">多空比（Long/Short Ratio）</h3>
+                <span class="px-1.5 py-0.5 bg-orange-500 text-white text-[10px] font-medium rounded">合约</span>
+              </div>
+              <p class="text-xs text-slate-500">检测多空持仓比例，判断市场情绪极端</p>
+            </div>
+          </div>
+          <button v-if="selectedIndicators.length > 1" type="button" @click="removeIndicator('long_short_ratio')" class="text-slate-400 hover:text-red-500 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-700 mb-1.5">
+              极端多头比例
+              <span class="text-[10px] text-slate-500 block">触发看跌信号</span>
+            </label>
+            <Input
+              :model-value="indicatorsConfig.long_short_ratio?.params?.extreme_long || 2.0"
+              @update:model-value="updateIndicatorParam('long_short_ratio', 'extreme_long', $event)"
+              type="number"
+              step="0.1"
+              placeholder="2.0"
+              class="text-sm"
+            />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-700 mb-1.5">
+              极端空头比例
+              <span class="text-[10px] text-slate-500 block">触发看涨信号</span>
+            </label>
+            <Input
+              :model-value="indicatorsConfig.long_short_ratio?.params?.extreme_short || 0.5"
+              @update:model-value="updateIndicatorParam('long_short_ratio', 'extreme_short', $event)"
+              type="number"
+              step="0.1"
+              placeholder="0.5"
+              class="text-sm"
+            />
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- 时间周期配置 -->
@@ -1191,17 +1394,112 @@
         @toggle-confirm="$emit('toggle-confirm-timeframe', $event)"
         @update:require-all-confirm="$emit('update:timeframes-require-all', $event)"
         @update:min-confirm-count="$emit('update:timeframes-min-count', $event)"
+        @update:trigger="$emit('update:timeframes-trigger', $event)"
       />
+    </div>
+
+    <!-- 信号质量控制 -->
+    <div class="mt-6">
+      <SignalQualityConfig
+        :config="signalQualityConfig"
+        @update:config="$emit('update:signal-quality-config', $event)"
+      />
+    </div>
+
+    <!-- 信号输出配置 -->
+    <div class="mt-6 bg-white rounded-xl p-5 border border-slate-200">
+      <!-- 标题区域 -->
+      <div class="flex items-center gap-3 mb-5">
+        <div class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+          <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+          </svg>
+        </div>
+        <div>
+          <h3 class="text-sm font-semibold text-slate-900">信号输出设置</h3>
+          <p class="text-xs text-slate-500">配置信号方向和计分方式</p>
+        </div>
+      </div>
+
+      <!-- 信号方向选择 -->
+      <div class="mb-4">
+        <label class="block text-xs font-medium text-slate-700 mb-2">信号方向</label>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <label
+            v-for="option in directionModeOptions"
+            :key="option.value"
+            :class="[
+              'flex flex-col items-center p-3 border-2 rounded-lg cursor-pointer transition-all',
+              signalOutputConfig.direction_mode === option.value
+                ? 'border-indigo-500 bg-indigo-50'
+                : 'border-slate-200 bg-slate-50 hover:border-slate-300'
+            ]"
+          >
+            <input
+              type="radio"
+              :value="option.value"
+              :checked="signalOutputConfig.direction_mode === option.value"
+              @change="updateSignalOutputConfig('direction_mode', option.value)"
+              class="sr-only"
+            />
+            <!-- 自动判断图标 -->
+            <svg v-if="option.value === 'auto'" class="w-5 h-5 mb-1" :class="signalOutputConfig.direction_mode === option.value ? 'text-indigo-600' : 'text-slate-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+            </svg>
+            <!-- 做多图标 -->
+            <svg v-else-if="option.value === 'long_only'" class="w-5 h-5 mb-1" :class="signalOutputConfig.direction_mode === option.value ? 'text-indigo-600' : 'text-slate-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+            </svg>
+            <!-- 做空图标 -->
+            <svg v-else-if="option.value === 'short_only'" class="w-5 h-5 mb-1" :class="signalOutputConfig.direction_mode === option.value ? 'text-indigo-600' : 'text-slate-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6" />
+            </svg>
+            <!-- 双向图标 -->
+            <svg v-else class="w-5 h-5 mb-1" :class="signalOutputConfig.direction_mode === option.value ? 'text-indigo-600' : 'text-slate-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+            </svg>
+            <span class="text-xs font-medium text-center" :class="signalOutputConfig.direction_mode === option.value ? 'text-indigo-700' : 'text-slate-600'">{{ option.label }}</span>
+            <span class="text-[10px] text-center mt-0.5" :class="signalOutputConfig.direction_mode === option.value ? 'text-indigo-500' : 'text-slate-400'">{{ option.desc }}</span>
+          </label>
+        </div>
+        <p class="mt-2 text-[11px] text-slate-500 flex items-center gap-1">
+          <svg class="w-3 h-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          信号方向会被关联的趋势跟踪机器人继承
+        </p>
+      </div>
+
+      <!-- 加权分数开关 -->
+      <div class="pt-4 border-t border-slate-100">
+        <label class="flex items-center justify-between cursor-pointer">
+          <div>
+            <span class="text-xs font-medium text-slate-700">使用加权分数</span>
+            <p class="text-[11px] text-slate-500 mt-0.5">根据指标权重计算综合信号强度</p>
+          </div>
+          <div class="relative">
+            <input
+              type="checkbox"
+              :checked="signalOutputConfig.use_weighted_score"
+              @change="updateSignalOutputConfig('use_weighted_score', $event.target.checked)"
+              class="sr-only peer"
+            />
+            <div class="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+          </div>
+        </label>
+      </div>
     </div>
     </div><!-- 关闭 v-else -->
   </Card>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import Card from '../../common/ui/Card.vue'
 import Input from '../../common/ui/Input.vue'
+import Select from '../../common/ui/Select.vue'
 import TimeframesConfig from './TimeframesConfig.vue'
+import SignalQualityConfig from './SignalQualityConfig.vue'
 
 const props = defineProps({
   // 新的多指标配置格式
@@ -1225,6 +1523,28 @@ const props = defineProps({
       require_all_confirm: false,
       min_confirm_count: 1
     })
+  },
+  // 信号质量控制配置
+  signalQualityConfig: {
+    type: Object,
+    default: () => ({
+      signal_confirmation_bars: 1,
+      signal_expiration_hours: 24,
+      signal_strength_threshold: 60
+    })
+  },
+  // 信号输出配置
+  signalOutputConfig: {
+    type: Object,
+    default: () => ({
+      direction_mode: 'auto',
+      use_weighted_score: true
+    })
+  },
+  // 市场类型（用于判断信号方向选项）
+  marketType: {
+    type: String,
+    default: 'spot' // 'spot' 或 'futures'
   },
   // 保留旧的单指标格式（向后兼容）
   indicatorType: {
@@ -1279,6 +1599,9 @@ const emit = defineEmits([
   'toggle-confirm-timeframe',
   'update:timeframes-require-all',
   'update:timeframes-min-count',
+  'update:timeframes-trigger',  // 触发器配置
+  // 信号输出配置事件
+  'update:signalOutputConfig',
   // 保留旧的事件（向后兼容）
   'update:indicatorType',
   'update:rsiConfig',
@@ -1288,7 +1611,37 @@ const emit = defineEmits([
   'update:volumeConfig'
 ])
 
-const availableIndicators = [
+// 信号方向选项（根据市场类型动态计算）
+const directionModeOptions = computed(() => {
+  if (props.marketType === 'futures') {
+    // 合约市场：可以做多、做空、双向
+    return [
+      { value: 'auto', label: '自动判断', desc: '根据指标自动决定方向' },
+      { value: 'long_only', label: '只做多', desc: '只生成做多信号' },
+      { value: 'short_only', label: '只做空', desc: '只生成做空信号' },
+      { value: 'both', label: '双向', desc: '生成做多和做空信号' }
+    ]
+  } else {
+    // 现货市场：买入和卖出（卖出是平仓，不是做空）
+    return [
+      { value: 'auto', label: '自动判断', desc: '根据指标自动决定方向' },
+      { value: 'long_only', label: '只买入', desc: '只生成买入信号' },
+      { value: 'short_only', label: '只卖出', desc: '只生成卖出信号' },
+      { value: 'both', label: '双向', desc: '生成买入和卖出信号' }
+    ]
+  }
+})
+
+// 更新信号输出配置
+const updateSignalOutputConfig = (key, value) => {
+  emit('update:signalOutputConfig', {
+    ...props.signalOutputConfig,
+    [key]: value
+  })
+}
+
+// 通用指标（现货和合约都可用）
+const commonIndicators = [
   { label: 'RSI', value: 'rsi', description: '相对强弱指标，判断超买超卖' },
   { label: 'MACD', value: 'macd', description: '趋势动量指标，捕捉金叉死叉' },
   { label: 'MA交叉', value: 'ma_crossover', description: '均线交叉，判断趋势转折' },
@@ -1297,8 +1650,45 @@ const availableIndicators = [
   { label: '布林带', value: 'bollinger', description: '波动通道，检测挤压突破' },
   { label: '支点', value: 'pivot', description: '支撑阻力位，检测关键价位' },
   { label: 'K线形态', value: 'pattern', description: '锤子线、吞没等经典形态' },
-  { label: '背离', value: 'divergence', description: 'RSI/MACD背离，预测反转' }
+  { label: '背离', value: 'divergence', description: 'RSI/MACD背离，预测反转' },
+  { label: '趋势偏向', value: 'trend_bias', description: '趋势过滤，避免逆势交易' }
 ]
+
+// 合约专用指标
+const futuresOnlyIndicators = [
+  { label: '资金费率', value: 'funding_rate', description: '合约资金费率，判断多空情绪', futuresOnly: true },
+  { label: '持仓量', value: 'open_interest', description: '未平仓合约量，判断趋势强度', futuresOnly: true },
+  { label: '多空比', value: 'long_short_ratio', description: '多空持仓比例，判断市场情绪', futuresOnly: true }
+]
+
+// 合约专用指标的值列表
+const futuresOnlyIndicatorValues = futuresOnlyIndicators.map(i => i.value)
+
+// 根据市场类型动态计算可用指标
+const availableIndicators = computed(() => {
+  if (props.marketType === 'futures') {
+    return [...commonIndicators, ...futuresOnlyIndicators]
+  }
+  return commonIndicators
+})
+
+// 监听市场类型变化，自动移除不适用的指标
+watch(() => props.marketType, (newMarketType, oldMarketType) => {
+  if (oldMarketType === 'futures' && newMarketType === 'spot') {
+    // 从合约切换到现货，移除合约专用指标
+    const currentIndicators = props.selectedIndicators || []
+    const filteredIndicators = currentIndicators.filter(ind => !futuresOnlyIndicatorValues.includes(ind))
+    if (filteredIndicators.length !== currentIndicators.length) {
+      emit('update:selectedIndicators', filteredIndicators)
+      // 同时清理 indicatorsConfig 中的合约指标配置
+      const newConfig = { ...props.indicatorsConfig }
+      futuresOnlyIndicatorValues.forEach(ind => {
+        delete newConfig[ind]
+      })
+      emit('update:indicatorsConfig', newConfig)
+    }
+  }
+})
 
 // 周期选项 - 专业交易员常用参数
 const periodOptions = {
@@ -1421,21 +1811,48 @@ const activePresets = ref({
 
 // 获取指标标签
 const getIndicatorLabel = (value) => {
-  const indicator = availableIndicators.find(ind => ind.value === value)
+  const indicator = availableIndicators.value.find(ind => ind.value === value)
   return indicator ? indicator.label : value
 }
 
-// 格式化 JSON 配置
+// 指标默认参数配置
+const indicatorDefaults = {
+  rsi: { period: 14, overbought: 70, oversold: 30 },
+  macd: { fast: 12, slow: 26, signal: 9, below_zero_cross: false },
+  ma_crossover: { fast: 7, slow: 25, break_fast_ma: false },
+  atr: { period: 14, threshold: 2.0 },
+  volume: { multiplier: 2.0, period: 20, volume_surge: true },
+  bollinger: { period: 20, std: 2.0, squeeze_threshold: 0.03 },
+  pivot: { pivot_left: 3, pivot_right: 3 },
+  pattern: { pinbar: true, engulfing: true, double_top: true, double_bottom: true },
+  divergence: { divergence_lookback: 5, use_rsi: true, use_macd: true },
+  // 趋势过滤器
+  trend_bias: { fast_ma: 50, slow_ma: 200, bias_filter: true },
+  // 合约专用指标
+  funding_rate: { positive_extreme: 0.01, negative_extreme: -0.01, neutral_zone: [-0.002, 0.002] },
+  open_interest: { oi_trend_period: 20, oi_increase_threshold: 5, oi_decrease_threshold: -5 },
+  long_short_ratio: { extreme_long: 2.0, extreme_short: 0.5 }
+}
+
+// 格式化 JSON 配置（包含完整默认参数）
 const formattedJsonConfig = computed(() => {
   const config = {
+    // 市场类型
+    market_type: props.marketType,
     logic: props.logic,
     indicators: props.selectedIndicators.map(type => {
       const indicatorConfig = props.indicatorsConfig[type]
+      const defaults = indicatorDefaults[type] || {}
+      const userParams = indicatorConfig?.params || {}
+
+      // 合并默认参数和用户参数（用户参数优先）
+      const mergedParams = { ...defaults, ...userParams }
+
       return {
         type: type,
         enabled: indicatorConfig?.enabled !== false,
         weight: indicatorConfig?.weight || 1,
-        params: indicatorConfig?.params || {}
+        params: mergedParams
       }
     }),
     timeframes: {
@@ -1443,6 +1860,18 @@ const formattedJsonConfig = computed(() => {
       confirm: props.timeframesConfig.confirm,
       require_all_confirm: props.timeframesConfig.require_all_confirm,
       min_confirm_count: props.timeframesConfig.min_confirm_count
+    },
+    // 信号触发设置
+    trigger: props.timeframesConfig.trigger || {
+      require_close: true,
+      cooldown: 1800,
+      re_alert: 'once',
+      alert_interval: 300
+    },
+    // 信号输出决策（方向会被趋势跟踪机器人继承）
+    signal_output: {
+      direction_mode: props.signalOutputConfig.direction_mode,
+      use_weighted_score: props.signalOutputConfig.use_weighted_score
     }
   }
   return JSON.stringify(config, null, 2)
@@ -1787,10 +2216,35 @@ const applyJsonConfig = () => {
       }
     }
 
+    // 如果有触发器配置，也更新
+    if (config.trigger) {
+      emit('update:timeframes-trigger', {
+        require_close: config.trigger.require_close ?? true,
+        cooldown: config.trigger.cooldown ?? 1800,
+        re_alert: config.trigger.re_alert ?? 'once',
+        alert_interval: config.trigger.alert_interval ?? 300
+      })
+    }
+
+    // 如果有信号输出配置，也更新
+    if (config.signal_output) {
+      emit('update:signalOutputConfig', {
+        direction_mode: config.signal_output.direction_mode ?? 'auto',
+        use_weighted_score: config.signal_output.use_weighted_score ?? true
+      })
+    }
+
     // 关闭编辑模式
     isEditingJson.value = false
     editingJsonText.value = ''
     jsonError.value = ''
+
+    console.log('✅ JSON 配置已应用:', {
+      logic: normalizedLogic.toUpperCase(),
+      indicators: indicatorTypes,
+      trigger: config.trigger,
+      signal_output: config.signal_output
+    })
 
   } catch (err) {
     jsonError.value = `JSON 解析错误：${err.message}`
@@ -1844,7 +2298,17 @@ const getDefaultParams = (indicatorType) => {
     macd: { fast: 12, slow: 26, signal: 9 },
     ma_crossover: { fast: 7, slow: 25 },
     atr: { period: 14, threshold: 2.0 },
-    volume: { multiplier: 2.0, period: 20 }
+    volume: { multiplier: 2.0, period: 20 },
+    bollinger: { period: 20, std: 2, squeeze_threshold: 0.03 },
+    pivot: { pivot_left: 3, pivot_right: 3 },
+    pattern: { pinbar: true, engulfing: true, double_top: true, double_bottom: true },
+    divergence: { divergence_lookback: 5, use_rsi: true, use_macd: true },
+    // 趋势过滤器
+    trend_bias: { fast_ma: 50, slow_ma: 200, bias_filter: true },
+    // 合约专用指标
+    funding_rate: { positive_extreme: 0.01, negative_extreme: -0.01, neutral_zone: [-0.002, 0.002] },
+    open_interest: { oi_trend_period: 20, oi_increase_threshold: 5, oi_decrease_threshold: -5 },
+    long_short_ratio: { extreme_long: 2.0, extreme_short: 0.5 }
   }
   return defaults[indicatorType] || {}
 }
@@ -1968,64 +2432,77 @@ const setVolumePreset = (preset) => {
 // 应用策略模板
 const applyStrategyTemplate = (template) => {
   const templates = {
-    // 超短线抢帽子（5分钟-15分钟）
+    // 超短线抢帽子（5分钟-15分钟）- 快速进出，高频交易
     scalping: {
       logic: 'AND',
-      indicators: ['rsi', 'macd', 'volume'],
+      indicators: ['rsi', 'macd', 'bollinger', 'volume'],
       config: {
-        rsi: { type: 'rsi', enabled: true, weight: 1, params: { period: 14, overbought: 80, oversold: 20 } },
-        macd: { type: 'macd', enabled: true, weight: 1, params: { fast: 5, slow: 13, signal: 5 } },
-        volume: { type: 'volume', enabled: true, weight: 1, params: { multiplier: 1.5, period: 20 } }
-      }
+        rsi: { type: 'rsi', enabled: true, weight: 1, params: { period: 6, overbought: 80, oversold: 20 } },
+        macd: { type: 'macd', enabled: true, weight: 1, params: { fast: 5, slow: 13, signal: 5, below_zero_cross: false } },
+        bollinger: { type: 'bollinger', enabled: true, weight: 1, params: { period: 10, std: 2.0, squeeze_threshold: 0.02 } },
+        volume: { type: 'volume', enabled: true, weight: 1, params: { multiplier: 1.5, period: 10, volume_surge: true } }
+      },
+      timeframes: { primary: '5m', confirm: ['1m'], require_all_confirm: false, min_confirm_count: 1 }
     },
-    // 日内交易（15分钟-1小时）
+    // 日内交易（15分钟-1小时）- 平衡风险与收益
     day_trading: {
       logic: 'AND',
-      indicators: ['rsi', 'macd', 'volume'],
+      indicators: ['rsi', 'macd', 'ma_crossover', 'volume'],
       config: {
         rsi: { type: 'rsi', enabled: true, weight: 1, params: { period: 14, overbought: 70, oversold: 30 } },
-        macd: { type: 'macd', enabled: true, weight: 1, params: { fast: 12, slow: 26, signal: 9 } },
-        volume: { type: 'volume', enabled: true, weight: 1, params: { multiplier: 2.0, period: 20 } }
-      }
+        macd: { type: 'macd', enabled: true, weight: 1, params: { fast: 12, slow: 26, signal: 9, below_zero_cross: true } },
+        ma_crossover: { type: 'ma_crossover', enabled: true, weight: 1, params: { fast: 7, slow: 25, break_fast_ma: true } },
+        volume: { type: 'volume', enabled: true, weight: 1, params: { multiplier: 2.0, period: 20, volume_surge: true } }
+      },
+      timeframes: { primary: '1h', confirm: ['15m', '30m'], require_all_confirm: false, min_confirm_count: 1 }
     },
-    // 波段交易（4小时-1天）
+    // 波段交易（4小时-1天）- 捕捉中期趋势
     swing_trading: {
       logic: 'AND',
-      indicators: ['rsi', 'ma_crossover', 'volume'],
+      indicators: ['rsi', 'ma_crossover', 'bollinger', 'atr'],
       config: {
         rsi: { type: 'rsi', enabled: true, weight: 1, params: { period: 14, overbought: 65, oversold: 35 } },
-        ma_crossover: { type: 'ma_crossover', enabled: true, weight: 1, params: { fast: 20, slow: 50 } },
-        volume: { type: 'volume', enabled: true, weight: 1, params: { multiplier: 2.0, period: 20 } }
-      }
+        ma_crossover: { type: 'ma_crossover', enabled: true, weight: 1, params: { fast: 20, slow: 50, break_fast_ma: true } },
+        bollinger: { type: 'bollinger', enabled: true, weight: 1, params: { period: 20, std: 2.0, squeeze_threshold: 0.03 } },
+        atr: { type: 'atr', enabled: true, weight: 1, params: { period: 14, threshold: 1.5 } }
+      },
+      timeframes: { primary: '4h', confirm: ['1h'], require_all_confirm: true, min_confirm_count: 1 }
     },
-    // 趋势跟踪（1天-1周）
+    // 趋势跟踪（1天-1周）- 跟随大趋势
     trend_following: {
       logic: 'AND',
-      indicators: ['ma_crossover', 'macd'],
+      indicators: ['ma_crossover', 'macd', 'atr', 'volume'],
       config: {
-        ma_crossover: { type: 'ma_crossover', enabled: true, weight: 1, params: { fast: 50, slow: 200 } },
-        macd: { type: 'macd', enabled: true, weight: 1, params: { fast: 19, slow: 39, signal: 9 } }
-      }
+        ma_crossover: { type: 'ma_crossover', enabled: true, weight: 1, params: { fast: 50, slow: 200, break_fast_ma: false } },
+        macd: { type: 'macd', enabled: true, weight: 1, params: { fast: 19, slow: 39, signal: 9, below_zero_cross: false } },
+        atr: { type: 'atr', enabled: true, weight: 1, params: { period: 14, threshold: 1.0 } },
+        volume: { type: 'volume', enabled: true, weight: 1, params: { multiplier: 1.5, period: 20, volume_surge: true } }
+      },
+      timeframes: { primary: '1d', confirm: ['4h'], require_all_confirm: true, min_confirm_count: 1 }
     },
-    // 反转捕捉
+    // 反转捕捉 - 捕捉价格反转点
     reversal: {
       logic: 'AND',
-      indicators: ['rsi', 'macd', 'volume'],
+      indicators: ['rsi', 'divergence', 'pattern', 'volume'],
       config: {
         rsi: { type: 'rsi', enabled: true, weight: 1, params: { period: 14, overbought: 75, oversold: 25 } },
-        macd: { type: 'macd', enabled: true, weight: 1, params: { fast: 12, slow: 26, signal: 9 } },
-        volume: { type: 'volume', enabled: true, weight: 1, params: { multiplier: 2.5, period: 20 } }
-      }
+        divergence: { type: 'divergence', enabled: true, weight: 1, params: { divergence_lookback: 5, use_rsi: true, use_macd: true } },
+        pattern: { type: 'pattern', enabled: true, weight: 1, params: { pinbar: true, engulfing: true, double_top: true, double_bottom: true } },
+        volume: { type: 'volume', enabled: true, weight: 1, params: { multiplier: 2.5, period: 20, volume_surge: true } }
+      },
+      timeframes: { primary: '1h', confirm: ['15m', '4h'], require_all_confirm: false, min_confirm_count: 1 }
     },
-    // 突破策略
+    // 突破策略 - 捕捉关键位突破
     breakout: {
       logic: 'AND',
-      indicators: ['atr', 'volume', 'macd'],
+      indicators: ['bollinger', 'atr', 'pivot', 'volume'],
       config: {
+        bollinger: { type: 'bollinger', enabled: true, weight: 1, params: { period: 20, std: 2.0, squeeze_threshold: 0.02 } },
         atr: { type: 'atr', enabled: true, weight: 1, params: { period: 14, threshold: 2.0 } },
-        volume: { type: 'volume', enabled: true, weight: 1, params: { multiplier: 2.0, period: 20 } },
-        macd: { type: 'macd', enabled: true, weight: 1, params: { fast: 12, slow: 26, signal: 9 } }
-      }
+        pivot: { type: 'pivot', enabled: true, weight: 1, params: { pivot_left: 3, pivot_right: 3 } },
+        volume: { type: 'volume', enabled: true, weight: 1, params: { multiplier: 2.0, period: 20, volume_surge: true } }
+      },
+      timeframes: { primary: '1h', confirm: ['15m'], require_all_confirm: true, min_confirm_count: 1 }
     }
   }
 
@@ -2035,6 +2512,17 @@ const applyStrategyTemplate = (template) => {
     emit('update:selectedIndicators', templateConfig.indicators)
     emit('update:logic', templateConfig.logic)
     emit('update:indicatorsConfig', templateConfig.config)
+
+    // 应用时间周期配置
+    if (templateConfig.timeframes) {
+      emit('update:timeframes-primary', templateConfig.timeframes.primary)
+      emit('update:timeframes-require-all', templateConfig.timeframes.require_all_confirm)
+      emit('update:timeframes-min-count', templateConfig.timeframes.min_confirm_count)
+      // 更新确认周期
+      templateConfig.timeframes.confirm.forEach(tf => {
+        emit('toggle-confirm-timeframe', tf)
+      })
+    }
   }
 }
 

@@ -343,7 +343,17 @@ const getIndicatorLabel = (type) => {
     'macd': 'MACD',
     'ma_crossover': 'MA交叉',
     'atr': 'ATR',
-    'volume': '成交量'
+    'volume': '成交量',
+    'bollinger': '布林带',
+    'pattern': 'K线形态',
+    'pivot': '支撑阻力位',
+    'divergence': '背离',
+    // 趋势过滤器
+    'trend_bias': '趋势偏向',
+    // 合约专用指标
+    'funding_rate': '资金费率',
+    'open_interest': '持仓量',
+    'long_short_ratio': '多空比'
   }
   return labels[type] || type
 }
@@ -353,9 +363,30 @@ const getIndicatorWeight = (type) => {
   return props.indicatorsConfig?.[type]?.weight || 1
 }
 
-// 获取指标参数
+// 指标默认参数
+const indicatorDefaults = {
+  rsi: { period: 14, overbought: 70, oversold: 30 },
+  macd: { fast: 12, slow: 26, signal: 9 },
+  ma_crossover: { fast: 7, slow: 25 },
+  atr: { period: 14, threshold: 2.0 },
+  volume: { multiplier: 2.0, period: 20 },
+  bollinger: { period: 20, std: 2, squeeze_threshold: 0.03 },
+  pivot: { pivot_left: 3, pivot_right: 3 },
+  pattern: { pinbar: true, engulfing: true, double_top: true, double_bottom: true },
+  divergence: { divergence_lookback: 5, use_rsi: true, use_macd: true },
+  // 趋势过滤器
+  trend_bias: { fast_ma: 50, slow_ma: 200, bias_filter: true },
+  // 合约专用指标
+  funding_rate: { positive_extreme: 0.01, negative_extreme: -0.01, neutral_zone: [-0.002, 0.002] },
+  open_interest: { oi_trend_period: 20, oi_increase_threshold: 5, oi_decrease_threshold: -5 },
+  long_short_ratio: { extreme_long: 2.0, extreme_short: 0.5 }
+}
+
+// 获取指标参数（合并默认参数和用户配置）
 const getIndicatorParams = (type) => {
-  return props.indicatorsConfig?.[type]?.params || {}
+  const defaults = indicatorDefaults[type] || {}
+  const userParams = props.indicatorsConfig?.[type]?.params || {}
+  return { ...defaults, ...userParams }
 }
 
 // 获取参数标签
@@ -393,7 +424,46 @@ const getParamLabel = (key) => {
     'volume_surge': '成交量激增',
 
     // ATR 参数
-    'atr_surge': 'ATR激增'
+    'atr_surge': 'ATR激增',
+
+    // 布林带参数
+    'std': '标准差倍数',
+    'std_dev': '标准差倍数',
+    'squeeze_threshold': '挤压阈值',
+
+    // K线形态参数
+    'lookback': '回看周期',
+    'pin_bar': '锤子线',
+    'pinbar': '锤子线',
+    'engulfing': '吞没形态',
+    'double_top': '双顶',
+    'double_bottom': '双底',
+
+    // 支撑阻力位参数
+    'pivot_left': '左侧K线',
+    'pivot_right': '右侧K线',
+
+    // 背离参数
+    'divergence_lookback': '回看周期',
+    'use_rsi': 'RSI背离',
+    'use_macd': 'MACD背离',
+
+    // 合约专用指标参数
+    // 资金费率
+    'positive_extreme': '极端多头阈值',
+    'negative_extreme': '极端空头阈值',
+    'neutral_zone': '中性区间',
+    // 持仓量
+    'oi_trend_period': '趋势周期',
+    'oi_increase_threshold': '增仓阈值%',
+    'oi_decrease_threshold': '减仓阈值%',
+    // 多空比
+    'extreme_long': '极端多头比例',
+    'extreme_short': '极端空头比例',
+    // 趋势偏向
+    'fast_ma': '快线周期',
+    'slow_ma': '慢线周期',
+    'bias_filter': '启用过滤'
   }
   return labels[key] || key
 }

@@ -88,6 +88,9 @@
                 :logic="indicatorLogic"
                 :indicators-config="indicatorsConfig"
                 :timeframes-config="timeframesConfig"
+                :signal-quality-config="signalQualityConfig"
+                :signal-output-config="signalOutputConfig"
+                :market-type="formData.market_type"
                 @update:selected-indicators="selectedIndicators = $event"
                 @update:logic="indicatorLogic = $event"
                 @update:indicators-config="indicatorsConfig = $event"
@@ -95,6 +98,9 @@
                 @toggle-confirm-timeframe="toggleConfirmTimeframe($event)"
                 @update:timeframes-require-all="timeframesConfig.require_all_confirm = $event"
                 @update:timeframes-min-count="timeframesConfig.min_confirm_count = Number($event)"
+                @update:timeframes-trigger="timeframesConfig.trigger = $event"
+                @update:signal-quality-config="signalQualityConfig = $event"
+                @update:signal-output-config="signalOutputConfig = $event"
               />
 
               <!-- 波动性提醒配置 -->
@@ -136,9 +142,9 @@
             <CheckIntervalConfig v-model="formData.check_interval" />
           </Card>
 
-          <!-- 信号质量控制 -->
+          <!-- 信号质量控制（indicator_alert 类型的已整合到 IndicatorAlertConfig 内） -->
           <SignalQualityConfig
-            v-if="formData.signal_type && formData.signal_type !== 'price_alert'"
+            v-if="formData.signal_type && formData.signal_type !== 'price_alert' && formData.signal_type !== 'indicator_alert'"
             :config="signalQualityConfig"
             @update:config="signalQualityConfig = $event"
           />
@@ -381,7 +387,13 @@ const handleSubmit = async () => {
               primary: timeframesConfig.value.primary,
               confirm: timeframesConfig.value.confirm,
               require_all_confirm: timeframesConfig.value.require_all_confirm,
-              min_confirm_count: Number(timeframesConfig.value.min_confirm_count)
+              min_confirm_count: Number(timeframesConfig.value.min_confirm_count),
+              trigger: timeframesConfig.value.trigger
+            },
+            // 信号输出决策
+            signal_output: {
+              direction_mode: signalOutputConfig.value.direction_mode,
+              use_weighted_score: signalOutputConfig.value.use_weighted_score
             }
           }
         } else {
@@ -428,7 +440,8 @@ const handleSubmit = async () => {
               primary: timeframesConfig.value.primary,
               confirm: timeframesConfig.value.confirm,
               require_all_confirm: timeframesConfig.value.require_all_confirm,
-              min_confirm_count: Number(timeframesConfig.value.min_confirm_count)
+              min_confirm_count: Number(timeframesConfig.value.min_confirm_count),
+              trigger: timeframesConfig.value.trigger
             }
           }
         }
@@ -446,7 +459,8 @@ const handleSubmit = async () => {
             primary: timeframesConfig.value.primary,
             confirm: timeframesConfig.value.confirm,
             require_all_confirm: timeframesConfig.value.require_all_confirm,
-            min_confirm_count: Number(timeframesConfig.value.min_confirm_count)
+            min_confirm_count: Number(timeframesConfig.value.min_confirm_count),
+            trigger: timeframesConfig.value.trigger
           }
         }
         break
@@ -463,7 +477,8 @@ const handleSubmit = async () => {
             primary: timeframesConfig.value.primary,
             confirm: timeframesConfig.value.confirm,
             require_all_confirm: timeframesConfig.value.require_all_confirm,
-            min_confirm_count: Number(timeframesConfig.value.min_confirm_count)
+            min_confirm_count: Number(timeframesConfig.value.min_confirm_count),
+            trigger: timeframesConfig.value.trigger
           }
         }
         break
@@ -510,7 +525,7 @@ const handleSubmit = async () => {
             }
           }),
           trigger_threshold: Number(signalQualityConfig.value.signal_strength_threshold) || 70,
-          require_all: indicatorLogic.value === 'and'
+          require_all: indicatorLogic.value.toUpperCase() === 'AND'  // 统一转为大写比较
         }
       }),
       // 多时间周期配置（价格提醒不需要）
@@ -519,7 +534,8 @@ const handleSubmit = async () => {
           primary: timeframesConfig.value.primary,
           confirm: timeframesConfig.value.confirm,
           require_all_confirm: timeframesConfig.value.require_all_confirm,
-          min_confirm_count: Number(timeframesConfig.value.min_confirm_count)
+          min_confirm_count: Number(timeframesConfig.value.min_confirm_count),
+          trigger: timeframesConfig.value.trigger
         }
       })
     }
@@ -686,7 +702,10 @@ const loadAccountTokens = async () => {
     tokenSearching.value = true
 
     const snapshot = selectedExchangeAPI.value.balance_snapshot
-    if (!snapshot || typeof snapshot !== 'object') {
+    console.log('🔍 加载持仓代币 - balance_snapshot:', snapshot)
+
+    if (!snapshot || typeof snapshot !== 'object' || Object.keys(snapshot).length === 0) {
+      console.log('⚠️ 余额快照为空，请先同步余额')
       tokenSearchResults.value = []
       return
     }
@@ -895,14 +914,26 @@ const timeframesConfig = ref({
   primary: '1h',
   confirm: [],
   require_all_confirm: false,
-  min_confirm_count: 1
+  min_confirm_count: 1,
+  trigger: {
+    require_close: true,
+    cooldown: 1800,
+    re_alert: 'once',
+    alert_interval: 300
+  }
 })
 
 // 信号质量控制配置
 const signalQualityConfig = ref({
-  signal_confirmation_bars: 1,      // 默认：1根K线确认
+  signal_confirmation_bars: 1,      // 默认：1根K线确认（>=1 即隐含等待K线收盘）
   signal_expiration_hours: 24,      // 默认：24小时过期
   signal_strength_threshold: 60     // 默认：60分强度阈值
+})
+
+// 信号输出配置（方向和加权）
+const signalOutputConfig = ref({
+  direction_mode: 'auto',       // 方向模式：auto / long_only / short_only / both
+  use_weighted_score: true      // 使用加权分数
 })
 
 // 波动性配置
@@ -942,50 +973,14 @@ const autoGeneratedName = computed(() => {
   const marketTypeLabel = formData.value.market_type === 'spot' ? '现货' : '合约'
   parts.push(marketTypeLabel)
 
-  // 信号类型
-  if (formData.value.signal_type) {
-    // 如果是指标信号提醒
-    if (formData.value.signal_type === 'indicator_alert') {
-      // 优先使用多指标组合
-      if (selectedIndicators.value && selectedIndicators.value.length > 0) {
-        const indicatorLabels = {
-          'rsi': 'RSI',
-          'macd': 'MACD',
-          'ma_crossover': 'MA交叉',
-          'atr': 'ATR',
-          'volume': '成交量'
-        }
-
-        // 如果是多个指标，显示组合
-        if (selectedIndicators.value.length > 1) {
-          const indicatorNames = selectedIndicators.value.map(type => indicatorLabels[type] || type)
-          parts.push(`${indicatorNames.join('+')}组合`)
-        } else {
-          // 单个指标
-          parts.push(indicatorLabels[selectedIndicators.value[0]] || '指标')
-        }
-      } else if (indicatorAlertType.value) {
-        // 兼容旧的单指标格式
-        const indicatorLabels = {
-          'rsi': 'RSI',
-          'macd': 'MACD',
-          'ma_crossover': 'MA交叉',
-          'atr': 'ATR'
-        }
-        parts.push(indicatorLabels[indicatorAlertType.value] || '指标信号提醒')
-      } else {
-        parts.push('指标信号提醒')
-      }
-    } else {
-      const signalTypeLabels = {
-        price_alert: '价格提醒',
-        indicator_alert: '指标信号提醒',
-        volatility: '波动性提醒',
-        volume: '成交量/持仓提醒'
-      }
-      parts.push(signalTypeLabels[formData.value.signal_type] || formData.value.signal_type)
-    }
+  // 信号类型（简化显示）
+  const signalTypeLabels = {
+    price_alert: '价格提醒',
+    indicator_alert: '指标提醒',
+    volatility: '波动性提醒',
+    volume: '成交量提醒'
   }
+  parts.push(signalTypeLabels[formData.value.signal_type] || '信号提醒')
 
   return parts.length > 0 ? parts.join(' - ') : '未命名信号机器人'
 })
@@ -1244,7 +1239,8 @@ const loadBotData = async () => {
         primary: timeframesConf.primary || '1h',
         confirm: timeframesConf.confirm || [],
         require_all_confirm: timeframesConf.require_all_confirm || false,
-        min_confirm_count: timeframesConf.min_confirm_count || 1
+        min_confirm_count: timeframesConf.min_confirm_count || 1,
+        trigger: timeframesConf.trigger || { require_close: true, cooldown: 1800, re_alert: 'once', alert_interval: 300 }
       }
     } else if (formData.value.signal_type === 'volatility') {
       const volatilityAlert = config.volatility_alert || {}
@@ -1259,7 +1255,8 @@ const loadBotData = async () => {
         primary: timeframesConf.primary || '1h',
         confirm: timeframesConf.confirm || [],
         require_all_confirm: timeframesConf.require_all_confirm || false,
-        min_confirm_count: timeframesConf.min_confirm_count || 1
+        min_confirm_count: timeframesConf.min_confirm_count || 1,
+        trigger: timeframesConf.trigger || { require_close: true, cooldown: 1800, re_alert: 'once', alert_interval: 300 }
       }
     } else if (formData.value.signal_type === 'volume') {
       const volumeAlert = config.volume_alert || {}
@@ -1274,16 +1271,25 @@ const loadBotData = async () => {
         primary: timeframesConf.primary || '1h',
         confirm: timeframesConf.confirm || [],
         require_all_confirm: timeframesConf.require_all_confirm || false,
-        min_confirm_count: timeframesConf.min_confirm_count || 1
+        min_confirm_count: timeframesConf.min_confirm_count || 1,
+        trigger: timeframesConf.trigger || { require_close: true, cooldown: 1800, re_alert: 'once', alert_interval: 300 }
       }
     }
 
-    // 加载信号质量控制配置（从 signal_bot 对象中加载）
+    // 加载信号质量控制配置（从 signal_bot 对象和 config 中加载）
     if (bot.signal_bot) {
       signalQualityConfig.value = {
         signal_confirmation_bars: bot.signal_bot.signal_confirmation_bars || 1,
         signal_expiration_hours: bot.signal_bot.signal_expiration_hours || 24,
         signal_strength_threshold: bot.signal_bot.signal_strength_threshold || 60
+      }
+    }
+
+    // 加载信号输出决策配置
+    if (config.signal_output) {
+      signalOutputConfig.value = {
+        direction_mode: config.signal_output.direction_mode || 'auto',
+        use_weighted_score: config.signal_output.use_weighted_score !== false
       }
     }
 
@@ -1294,7 +1300,8 @@ const loadBotData = async () => {
         primary: timeframesConf.primary || '1h',
         confirm: timeframesConf.confirm || [],
         require_all_confirm: timeframesConf.require_all_confirm || false,
-        min_confirm_count: timeframesConf.min_confirm_count || 1
+        min_confirm_count: timeframesConf.min_confirm_count || 1,
+        trigger: timeframesConf.trigger || { require_close: true, cooldown: 1800, re_alert: 'once', alert_interval: 300 }
       }
     }
 

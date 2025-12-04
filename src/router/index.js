@@ -95,7 +95,7 @@ const routes = [
   {
     path: '/signal-bots/:id',
     name: 'SignalBotDetail',
-    component: () => import('../components/bots/pages/SignalBotDetailPage.vue'),
+    component: () => import('../components/bots/pages/SignalBotDetailPageV2.vue'),
     meta: { requiresAuth: true }
   },
   {

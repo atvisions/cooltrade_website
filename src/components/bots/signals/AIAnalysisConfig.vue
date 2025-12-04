@@ -1,37 +1,15 @@
 <template>
   <div class="mt-6 mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+    <!-- 标题行 -->
     <div class="flex items-center gap-3">
-      <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-        <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div class="w-8 h-8 bg-white rounded-lg flex items-center justify-center">
+        <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
         </svg>
       </div>
       <div class="flex-1">
-        <div class="flex items-center gap-2">
-          <h2 class="text-lg font-semibold text-amber-900">AI 分析模式</h2>
-          <div class="relative">
-            <button
-              @mouseenter="showTooltip = true"
-              @mouseleave="showTooltip = false"
-              class="p-1 text-amber-600 hover:text-amber-700 transition-colors"
-            >
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </button>
-            <div
-              v-if="showTooltip"
-              class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg z-50 pointer-events-none whitespace-nowrap"
-            >
-              <div>调用 AI 模型进行深度分析</div>
-              <div>提供详细的市场洞察和操作建议</div>
-              <div>包括：市场趋势、风险评估、入场建议等</div>
-              <div v-if="!hasAIAccess" class="text-amber-300 mt-1">⭐ 需要 Standard 或以上会员</div>
-              <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900"></div>
-            </div>
-          </div>
-        </div>
-        <p class="text-sm text-amber-700">使用 AI 深度分析市场</p>
+        <h2 class="text-sm font-semibold text-amber-900">AI 分析模式</h2>
+        <p class="text-xs text-amber-700">使用 AI 深度分析市场，强化信号质量</p>
       </div>
       <button
         @click="handleToggle"
@@ -47,17 +25,70 @@
       </button>
     </div>
 
-    <!-- 会员限制提示 -->
-    <div v-if="!hasAIAccess && enabled" class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-      <div class="flex items-start gap-2">
-        <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    <!-- AI 功能列表 - 竖向排列 -->
+    <div class="mt-3 grid grid-cols-2 md:grid-cols-3 gap-3">
+      <div class="flex items-start gap-2 bg-white/60 rounded-lg p-2.5">
+        <svg class="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
         </svg>
-        <div class="flex-1">
-          <p class="text-sm text-blue-900 font-medium">AI 分析功能需要会员权限</p>
-          <p class="text-xs text-blue-700 mt-1">升级到 Standard 或 Professional 会员即可使用 AI 深度分析功能</p>
+        <div>
+          <div class="text-xs font-medium text-amber-900">趋势分析</div>
+          <div class="text-[10px] text-amber-700">识别多空趋势和动量方向</div>
         </div>
       </div>
+      <div class="flex items-start gap-2 bg-white/60 rounded-lg p-2.5">
+        <svg class="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        </svg>
+        <div>
+          <div class="text-xs font-medium text-amber-900">风险评估</div>
+          <div class="text-[10px] text-amber-700">综合评估交易风险等级</div>
+        </div>
+      </div>
+      <div class="flex items-start gap-2 bg-white/60 rounded-lg p-2.5">
+        <svg class="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+        </svg>
+        <div>
+          <div class="text-xs font-medium text-amber-900">交易建议</div>
+          <div class="text-[10px] text-amber-700">给出买入/卖出方向建议</div>
+        </div>
+      </div>
+      <div class="flex items-start gap-2 bg-white/60 rounded-lg p-2.5">
+        <svg class="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+        <div>
+          <div class="text-xs font-medium text-amber-900">入场价格</div>
+          <div class="text-[10px] text-amber-700">推荐最佳入场价格区间</div>
+        </div>
+      </div>
+      <div class="flex items-start gap-2 bg-white/60 rounded-lg p-2.5">
+        <svg class="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+        <div>
+          <div class="text-xs font-medium text-amber-900">止盈止损</div>
+          <div class="text-[10px] text-amber-700">智能计算止盈止损价位</div>
+        </div>
+      </div>
+      <div class="flex items-start gap-2 bg-white/60 rounded-lg p-2.5">
+        <svg class="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9a2 2 0 00-2-2h-2m-4-3H9M7 16h6M7 8h6v4H7V8z" />
+        </svg>
+        <div>
+          <div class="text-xs font-medium text-amber-900">市场背景</div>
+          <div class="text-[10px] text-amber-700">分析相关新闻和事件影响</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 会员限制提示 -->
+    <div v-if="!hasAIAccess" class="mt-3 flex items-center gap-2 text-xs text-amber-700">
+      <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+      </svg>
+      <span>需要 Standard 或以上会员</span>
     </div>
   </div>
 </template>

@@ -1936,7 +1936,7 @@
             </div>
           </Card>
 
-          <!-- 多空方向控制（仅合约交易显示）-->
+          <!-- 多空方向控制（从信号机器人继承，只读显示）-->
           <Card v-if="formData.market_type === 'linear' || formData.market_type === 'inverse'" variant="default" class="mb-6">
             <div class="flex items-center gap-3 mb-6">
               <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
@@ -1946,49 +1946,47 @@
               </div>
               <div>
                 <h2 class="text-lg font-semibold text-slate-900">多空方向控制</h2>
-                <p class="text-sm text-slate-500">限制交易方向，适应不同市场环境（仅合约）</p>
+                <p class="text-sm text-slate-500">交易方向从关联的信号机器人继承</p>
               </div>
             </div>
 
             <div class="space-y-4">
               <div>
                 <label class="block text-sm font-medium text-slate-700 mb-3">
-                  交易方向 <span class="text-red-500">*</span>
+                  交易方向 <span class="text-xs text-blue-600 ml-2">（继承自信号机器人）</span>
                 </label>
                 <div class="grid grid-cols-3 gap-3">
-                  <button
+                  <div
                     v-for="direction in [
                       { value: 'both', label: '双向交易', icon: 'M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4', color: 'indigo' },
                       { value: 'long_only', label: '只做多', icon: 'M5 10l7-7m0 0l7 7m-7-7v18', color: 'green' },
                       { value: 'short_only', label: '只做空', icon: 'M19 14l-7 7m0 0l-7-7m7 7V3', color: 'red' }
                     ]"
                     :key="direction.value"
-                    type="button"
-                    @click="formData.trading_direction = direction.value"
                     :class="[
                       'relative flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all',
-                      formData.trading_direction === direction.value
+                      inheritedTradingDirection === direction.value
                         ? `border-${direction.color}-500 bg-${direction.color}-50`
-                        : 'border-slate-200 hover:border-slate-300 bg-white'
+                        : 'border-slate-200 bg-slate-50 opacity-50'
                     ]"
                   >
-                    <svg class="w-6 h-6 mb-2" :class="formData.trading_direction === direction.value ? `text-${direction.color}-600` : 'text-slate-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-6 h-6 mb-2" :class="inheritedTradingDirection === direction.value ? `text-${direction.color}-600` : 'text-slate-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="direction.icon" />
                     </svg>
-                    <span class="text-sm font-medium" :class="formData.trading_direction === direction.value ? `text-${direction.color}-900` : 'text-slate-700'">
+                    <span class="text-sm font-medium" :class="inheritedTradingDirection === direction.value ? `text-${direction.color}-900` : 'text-slate-500'">
                       {{ direction.label }}
                     </span>
-                    <div v-if="formData.trading_direction === direction.value" class="absolute top-2 right-2">
+                    <div v-if="inheritedTradingDirection === direction.value" class="absolute top-2 right-2">
                       <svg class="w-5 h-5" :class="`text-${direction.color}-600`" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                       </svg>
                     </div>
-                  </button>
+                  </div>
                 </div>
-                <p class="mt-2 text-xs text-slate-500">
-                  <span v-if="formData.trading_direction === 'both'">💡 双向交易：可以做多也可以做空，适合震荡市和趋势市</span>
-                  <span v-else-if="formData.trading_direction === 'long_only'">💡 只做多：只开多单，适合牛市或上涨趋势</span>
-                  <span v-else-if="formData.trading_direction === 'short_only'">💡 只做空：只开空单，适合熊市或下跌趋势</span>
+                <p class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs text-slate-600">
+                  <span class="font-medium text-blue-700">💡 提示：</span>
+                  交易方向由信号机器人决定，请在信号机器人的「信号输出配置」中修改。
+                  <span v-if="!formData.signal_bot" class="block mt-1 text-amber-600">请先选择关联的信号机器人。</span>
                 </p>
               </div>
             </div>
@@ -3542,6 +3540,15 @@ const selectedSignalBotLabel = computed(() => {
   return `${selectedSignalBot.value.name} (${selectedSignalBot.value.token_symbol})`
 })
 
+// 从信号机器人继承的交易方向
+const inheritedTradingDirection = computed(() => {
+  if (!selectedSignalBot.value) return 'both'  // 默认双向
+  // 从信号机器人的 config.signal_output.direction_mode 获取
+  const config = selectedSignalBot.value.config || {}
+  const signalOutput = config.signal_output || {}
+  return signalOutput.direction_mode || 'auto'
+})
+
 // 判断市场类型是否应该被禁用
 const isMarketTypeDisabled = (marketType) => {
   if (!selectedSignalBotData.value || !selectedSignalBotData.value.token) {
@@ -4944,8 +4951,8 @@ const handleSubmit = async () => {
       risk_per_trade: formData.value.risk_per_trade,
       kelly_fraction: formData.value.kelly_fraction,
 
-      // ============ 交易方向 ============
-      trading_direction: formData.value.trading_direction,  // 保留用户选择，不强制修改
+      // ============ 交易方向（从信号机器人继承）============
+      trading_direction: inheritedTradingDirection.value,  // 从信号机器人继承
 
       // ============ 信号执行策略（扁平字段）============
       signal_execution_mode: formData.value.signal_execution_mode,

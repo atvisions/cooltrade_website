@@ -8,6 +8,81 @@
     </div>
 
     <div class="space-y-6">
+      <!-- 信号触发设置 -->
+      <div class="p-4 bg-slate-50 rounded-lg space-y-4">
+        <div class="flex items-center gap-2 mb-2">
+          <svg class="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+          <span class="text-sm font-medium text-slate-700">信号触发设置</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- K线收盘确认 -->
+          <div class="bg-white rounded-lg p-3 border border-slate-200">
+            <div class="flex items-center justify-between mb-2">
+              <label class="text-xs font-medium text-slate-700">K线收盘确认</label>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  :checked="triggerConfig.require_close"
+                  @change="updateTrigger('require_close', $event.target.checked)"
+                  class="sr-only peer"
+                />
+                <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+            <p class="text-[10px] text-slate-500">{{ triggerConfig.require_close ? '等待K线收盘后确认' : '实时检测，立即触发' }}</p>
+          </div>
+
+          <!-- 信号冷却时间 -->
+          <div class="bg-white rounded-lg p-3 border border-slate-200">
+            <label class="text-xs font-medium text-slate-700 block mb-2">信号冷却时间</label>
+            <div class="flex items-center gap-2">
+              <select
+                :value="triggerConfig.cooldown"
+                @change="updateTrigger('cooldown', Number($event.target.value))"
+                class="flex-1 px-2 py-1.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option :value="0">无冷却</option>
+                <option :value="300">5 分钟</option>
+                <option :value="600">10 分钟</option>
+                <option :value="1800">30 分钟</option>
+                <option :value="3600">1 小时</option>
+                <option :value="7200">2 小时</option>
+                <option :value="14400">4 小时</option>
+              </select>
+            </div>
+            <p class="text-[10px] text-slate-500 mt-1">同一信号的最小间隔</p>
+          </div>
+
+          <!-- 重复提醒 -->
+          <div class="bg-white rounded-lg p-3 border border-slate-200">
+            <label class="text-xs font-medium text-slate-700 block mb-2">重复提醒</label>
+            <select
+              :value="triggerConfig.re_alert"
+              @change="updateTrigger('re_alert', $event.target.value)"
+              class="w-full px-2 py-1.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
+            >
+              <option value="once">仅提醒一次</option>
+              <option value="interval">间隔重复提醒</option>
+              <option value="none">不提醒</option>
+            </select>
+            <select
+              v-if="triggerConfig.re_alert === 'interval'"
+              :value="triggerConfig.alert_interval"
+              @change="updateTrigger('alert_interval', Number($event.target.value))"
+              class="w-full px-2 py-1.5 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option :value="60">每 1 分钟</option>
+              <option :value="300">每 5 分钟</option>
+              <option :value="600">每 10 分钟</option>
+              <option :value="1800">每 30 分钟</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
       <!-- 主时间周期 -->
       <div>
         <div class="flex items-baseline gap-2 mb-3">
@@ -163,21 +238,22 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import Card from '../../common/ui/Card.vue'
 
-defineProps({
+const props = defineProps({
   timeframesConfig: {
     type: Object,
     required: true
   }
 })
 
-defineEmits([
+const emit = defineEmits([
   'update:primary',
   'toggle-confirm',
   'update:require-all-confirm',
-  'update:min-confirm-count'
+  'update:min-confirm-count',
+  'update:trigger'
 ])
 
 const timeframes = [
@@ -192,5 +268,21 @@ const timeframes = [
 
 const showPrimaryTooltip = ref(false)
 const showConfirmTooltip = ref(false)
+
+// 触发配置（带默认值）
+const triggerConfig = computed(() => ({
+  require_close: props.timeframesConfig.trigger?.require_close ?? true,
+  cooldown: props.timeframesConfig.trigger?.cooldown ?? 1800,
+  re_alert: props.timeframesConfig.trigger?.re_alert ?? 'once',
+  alert_interval: props.timeframesConfig.trigger?.alert_interval ?? 300
+}))
+
+// 更新触发配置
+const updateTrigger = (key, value) => {
+  emit('update:trigger', {
+    ...triggerConfig.value,
+    [key]: value
+  })
+}
 </script>
 

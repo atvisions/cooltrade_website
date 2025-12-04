@@ -293,13 +293,18 @@
                   </svg>
                 </div>
                 <div class="text-slate-600 font-medium">
-                  {{ tokenSearchQuery.trim() ? '未找到相关代币' : '暂无持仓代币' }}
+                  {{ tokenSearchQuery.trim() ? '未找到相关代币' : (hasBalanceSnapshot ? '暂无持仓代币' : '余额未同步') }}
                 </div>
                 <div class="text-xs text-slate-500 mt-1">
-                  {{ tokenSearchQuery.trim()
-                    ? `${selectedExchange?.label} 不支持该代币`
-                    : '请输入代币名称或符号进行搜索'
-                  }}
+                  <template v-if="tokenSearchQuery.trim()">
+                    {{ `${selectedExchange?.label} 不支持该代币` }}
+                  </template>
+                  <template v-else-if="!hasBalanceSnapshot">
+                    请到"交易所管理"页面同步余额后再试
+                  </template>
+                  <template v-else>
+                    请输入代币名称或符号进行搜索
+                  </template>
                 </div>
               </div>
               <div v-else>
@@ -373,6 +378,7 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headlessui/vue'
 import { ChevronUpDownIcon } from '@heroicons/vue/20/solid'
 import Card from '../../common/ui/Card.vue'
@@ -451,6 +457,16 @@ const emit = defineEmits([
   'update:formData',
   'update:tokenSearchQuery'
 ])
+
+// 检查是否有余额快照
+const hasBalanceSnapshot = computed(() => {
+  if (!props.selectedExchangeAPI?.balance_snapshot) {
+    return false
+  }
+  const snapshot = props.selectedExchangeAPI.balance_snapshot
+  // 检查是否有实际数据
+  return snapshot && typeof snapshot === 'object' && Object.keys(snapshot).length > 0
+})
 
 // 方法代理 - 将事件转发给父组件
 const selectExchangeType = (exchangeType) => {

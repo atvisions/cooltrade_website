@@ -10,6 +10,10 @@
             {{ satisfiedCount }}/{{ conditionIndicators.length }} 满足
             <span class="ml-1 text-slate-400">({{ requireAll ? 'AND' : 'OR' }})</span>
           </span>
+          <!-- 显示当前时间周期 -->
+          <span v-if="indicatorValues?.timeframe" class="px-2 py-0.5 text-[10px] font-medium bg-blue-100 text-blue-700 rounded">
+            {{ getTimeframeLabel(indicatorValues.timeframe) }}
+          </span>
         </div>
         <div class="flex items-center gap-3">
           <span class="text-[10px] text-slate-400">{{ updatedAt ? formatDate(updatedAt) : '—' }}</span>
@@ -142,6 +146,21 @@ const formatDate = (dateStr) => {
   if (!dateStr) return ''
   const d = new Date(dateStr)
   return d.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+}
+
+// 时间周期标签
+const getTimeframeLabel = (tf) => {
+  const labels = {
+    '1m': '1分钟K线',
+    '5m': '5分钟K线',
+    '15m': '15分钟K线',
+    '30m': '30分钟K线',
+    '1h': '1小时K线',
+    '4h': '4小时K线',
+    '1d': '日线',
+    '1w': '周线'
+  }
+  return labels[tf] || tf
 }
 
 const indicatorLabels = {

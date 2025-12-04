@@ -256,8 +256,8 @@ const emit = defineEmits([
   'update:trigger'
 ])
 
+// 注意：1分钟(1m)周期暂未支持技术指标计算，建议最小使用5分钟
 const timeframes = [
-  { value: '1m', label: '1分钟' },
   { value: '5m', label: '5分钟' },
   { value: '15m', label: '15分钟' },
   { value: '30m', label: '30分钟' },

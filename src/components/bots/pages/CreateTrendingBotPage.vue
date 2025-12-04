@@ -129,7 +129,7 @@
             </div>
           </Card>
 
-          <!-- 第2步: 市场类型配置 -->
+          <!-- 第2步: 市场类型配置（从信号机器人继承） -->
           <Card variant="default" class="mb-6">
             <!-- 卡片标题 -->
             <div class="flex items-center gap-3 mb-6">
@@ -140,72 +140,51 @@
               </div>
               <div>
                 <div class="text-lg font-semibold text-slate-900">市场类型</div>
-                <div class="text-xs text-slate-500">选择交易市场类型（现货或合约）</div>
+                <div class="text-xs text-slate-500">从信号机器人自动继承</div>
               </div>
             </div>
 
             <div class="space-y-4">
-              <!-- 市场类型 -->
+              <!-- 市场类型（只读显示） -->
               <div>
                 <label class="block text-sm font-medium text-slate-700 mb-2">
-                  市场类型 <span class="text-red-500">*</span>
+                  市场类型
                 </label>
-                <div class="grid grid-cols-2 gap-3">
-                  <button
-                    v-for="type in [
-                      { value: 'spot', label: '现货', icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
-                      { value: 'linear', label: '合约-USDT', icon: 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6' }
-                    ]"
-                    :key="type.value"
-                    @click="selectMarketType(type.value)"
-                    :disabled="isMarketTypeDisabled(type.value)"
+                <!-- 显示继承的市场类型 -->
+                <div v-if="selectedSignalBotData" class="flex items-center gap-3">
+                  <div
                     :class="[
-                      'flex items-center justify-center gap-2 p-3 rounded-lg text-center transition-all border-2 text-sm font-medium',
-                      formData.market_type === type.value
+                      'flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 text-sm font-medium',
+                      formData.market_type === 'spot'
                         ? 'border-blue-500 bg-blue-50 text-blue-900'
-                        : isMarketTypeDisabled(type.value)
-                        ? 'border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed'
-                        : 'border-slate-200 bg-white text-slate-700 hover:border-blue-300'
+                        : 'border-purple-500 bg-purple-50 text-purple-900'
                     ]"
-                    type="button"
                   >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="type.icon" />
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        :d="formData.market_type === 'spot'
+                          ? 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+                          : 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6'"
+                      />
                     </svg>
-                    {{ type.label }}
-                  </button>
+                    {{ formData.market_type === 'spot' ? '现货' : '合约-USDT' }}
+                  </div>
+                  <span class="text-xs text-slate-500">
+                    <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    继承自信号机器人
+                  </span>
                 </div>
-                <p v-if="errors.market_type" class="mt-1 text-sm text-red-500">{{ errors.market_type }}</p>
-                <!-- 显示代币市场类型支持提示 -->
-                <p v-if="selectedSignalBotData && selectedSignalBotData.token" class="mt-2 text-xs text-slate-600">
-                  <template v-if="selectedSignalBotData.token.exchange_name && selectedSignalBotData.token.exchange_spot_available !== undefined">
-                    <!-- 显示交易所级别的支持情况 -->
-                    <span v-if="selectedSignalBotData.token.exchange_spot_available && selectedSignalBotData.token.exchange_futures_available">
-                      ✅ 代币 {{ selectedSignalBotData.token.symbol }} 在 {{ getExchangeDisplay(selectedSignalBotData.token.exchange_name) }} 支持现货和合约交易
-                    </span>
-                    <span v-else-if="selectedSignalBotData.token.exchange_spot_available && !selectedSignalBotData.token.exchange_futures_available" class="text-amber-600">
-                      ⚠️ 代币 {{ selectedSignalBotData.token.symbol }} 在 {{ getExchangeDisplay(selectedSignalBotData.token.exchange_name) }} 仅支持现货交易
-                    </span>
-                    <span v-else-if="!selectedSignalBotData.token.exchange_spot_available && selectedSignalBotData.token.exchange_futures_available" class="text-amber-600">
-                      ⚠️ 代币 {{ selectedSignalBotData.token.symbol }} 在 {{ getExchangeDisplay(selectedSignalBotData.token.exchange_name) }} 仅支持合约交易
-                    </span>
-                  </template>
-                  <template v-else>
-                    <!-- 降级到代币级别的支持情况 -->
-                    <span v-if="selectedSignalBotData.token.is_spot_available && selectedSignalBotData.token.is_futures_available">
-                      ✅ 代币 {{ selectedSignalBotData.token.symbol }} 支持现货和合约交易
-                    </span>
-                    <span v-else-if="selectedSignalBotData.token.is_spot_available && !selectedSignalBotData.token.is_futures_available" class="text-amber-600">
-                      ⚠️ 代币 {{ selectedSignalBotData.token.symbol }} 仅支持现货交易
-                    </span>
-                    <span v-else-if="!selectedSignalBotData.token.is_spot_available && selectedSignalBotData.token.is_futures_available" class="text-amber-600">
-                      ⚠️ 代币 {{ selectedSignalBotData.token.symbol }} 仅支持合约交易
-                    </span>
-                  </template>
-                </p>
-                <p v-else class="mt-2 text-xs text-slate-500">
-                  💡 提示：交易所账号、代币和计价币种将从关联的信号机器人自动继承
-                </p>
+                <!-- 未选择信号机器人时的提示 -->
+                <div v-else class="p-4 bg-slate-50 border border-slate-200 rounded-lg text-center">
+                  <p class="text-sm text-slate-500">
+                    💡 请先选择信号机器人，市场类型将自动继承
+                  </p>
+                </div>
               </div>
 
               <!-- 余额检查 -->
@@ -5367,27 +5346,13 @@ const handleSignalBotChange = () => {
       console.log('ℹ️ 信号机器人没有配置交易所API（可能使用公开数据）')
     }
 
-    // 🔧 根据代币支持的市场类型自动选择或验证当前市场类型
-    if (signalBot.token && typeof signalBot.token === 'object') {
-      const token = signalBot.token
-      const currentMarketType = formData.value.market_type
-
-      console.log('  - is_spot_available:', token.is_spot_available)
-      console.log('  - is_futures_available:', token.is_futures_available)
-      console.log('  - 当前选择的市场类型:', currentMarketType)
-
-      // 如果当前市场类型不支持，自动切换到支持的类型
-      if (currentMarketType === 'spot' && !token.is_spot_available) {
-        if (token.is_futures_available) {
-          formData.value.market_type = 'linear'
-          showError(`代币 ${token.symbol} 不支持现货交易，已自动切换到合约交易`)
-        }
-      } else if ((currentMarketType === 'linear' || currentMarketType === 'inverse') && !token.is_futures_available) {
-        if (token.is_spot_available) {
-          formData.value.market_type = 'spot'
-          showError(`代币 ${token.symbol} 不支持合约交易，已自动切换到现货交易`)
-        }
-      }
+    // 🔧 从信号机器人继承市场类型
+    // 信号机器人使用 'spot' 或 'futures'，趋势跟踪机器人使用 'spot' 或 'linear'
+    if (signalBot.market_type) {
+      // 映射：futures -> linear
+      const mappedMarketType = signalBot.market_type === 'futures' ? 'linear' : signalBot.market_type
+      formData.value.market_type = mappedMarketType
+      console.log('  - 继承市场类型:', signalBot.market_type, '->', mappedMarketType)
     }
 
     // 检查余额

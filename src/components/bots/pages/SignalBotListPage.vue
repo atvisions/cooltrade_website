@@ -220,6 +220,41 @@
                     </Listbox>
                   </div>
 
+                  <!-- 市场类型筛选 -->
+                  <div class="space-y-2 w-32">
+                    <label class="block text-sm font-medium text-slate-700">市场类型</label>
+                    <Listbox v-model="filters.marketType">
+                      <div class="relative">
+                        <ListboxButton class="relative w-full cursor-default rounded-xl bg-slate-50 py-3 pl-4 pr-10 text-left border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                          <span class="block truncate text-slate-700">
+                            {{ marketTypeOptionsWithAll.find(option => option.value === filters.marketType)?.label || '全部' }}
+                          </span>
+                          <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
+                            <ChevronUpDownIcon class="h-5 w-5 text-slate-400" aria-hidden="true" />
+                          </span>
+                        </ListboxButton>
+                        <transition leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
+                          <ListboxOptions class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                            <ListboxOption
+                              v-slot="{ active, selected }"
+                              v-for="option in marketTypeOptionsWithAll"
+                              :key="option.value"
+                              :value="option.value"
+                              as="template"
+                            >
+                              <li :class="[active ? 'bg-slate-100 text-slate-900' : 'text-slate-700', 'relative cursor-default select-none py-3 pl-4 pr-4']">
+                                <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">{{ option.label }}</span>
+                                <span v-if="selected" class="absolute inset-y-0 right-0 flex items-center pr-3 text-blue-600">
+                                  <CheckIcon class="h-5 w-5" aria-hidden="true" />
+                                </span>
+                              </li>
+                            </ListboxOption>
+                          </ListboxOptions>
+                        </transition>
+                      </div>
+                    </Listbox>
+                  </div>
+
                   <!-- 搜索框 -->
                   <div class="space-y-2 flex-1">
                     <label class="block text-sm font-medium text-slate-700">搜索</label>
@@ -263,12 +298,13 @@
                   <table class="w-full">
                     <thead>
                       <tr class="border-b border-slate-200 bg-slate-50">
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider w-64">机器人名称</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider w-32">交易对</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider w-24">状态</th>
-                        <th class="px-6 py-4 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider w-28">信号类型</th>
-                        <th class="px-6 py-4 text-center text-xs font-semibold text-slate-700 uppercase tracking-wider w-24">信号数</th>
-                        <th class="px-6 py-4 text-center text-xs font-semibold text-slate-700 uppercase tracking-wider w-40">操作</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">机器人名称</th>
+                        <th class="px-3 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider w-24">交易对</th>
+                        <th class="px-3 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider w-14">市场</th>
+                        <th class="px-3 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider w-16">状态</th>
+                        <th class="px-3 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider w-24">信号类型</th>
+                        <th class="px-3 py-3 text-center text-xs font-semibold text-slate-700 uppercase tracking-wider w-14 whitespace-nowrap">信号数</th>
+                        <th class="px-3 py-3 text-center text-xs font-semibold text-slate-700 uppercase tracking-wider w-28">操作</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -280,29 +316,29 @@
                           index % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'
                         ]"
                       >
-                        <td class="px-6 py-4 w-64">
+                        <td class="px-4 py-3">
                           <div class="flex items-center gap-3">
                             <!-- 代币 Logo + 交易所徽章 -->
-                            <div class="relative w-10 h-10 flex-shrink-0">
+                            <div class="relative w-9 h-9 flex-shrink-0">
                               <!-- 代币 Logo -->
                               <img
                                 v-if="bot.token_logo"
                                 :src="bot.token_logo"
                                 :alt="bot.token_symbol"
-                                class="w-10 h-10 object-contain rounded-lg"
+                                class="w-9 h-9 object-contain rounded-lg"
                                 @error="(e) => e.target.style.display = 'none'"
                               />
-                              <CpuChipIcon v-else class="w-10 h-10 text-slate-400" />
+                              <CpuChipIcon v-else class="w-9 h-9 text-slate-400" />
 
                               <!-- 交易所徽章（右下角） -->
                               <div
                                 v-if="getExchangeLogo(bot.exchange_name)"
-                                class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-white shadow-sm border border-slate-200 flex items-center justify-center overflow-hidden"
+                                class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-white shadow-sm border border-slate-200 flex items-center justify-center overflow-hidden"
                               >
                                 <img
                                   :src="getExchangeLogo(bot.exchange_name)"
                                   :alt="bot.exchange_display || bot.exchange_name"
-                                  class="w-4 h-4 object-contain"
+                                  class="w-3 h-3 object-contain"
                                   @error="(e) => e.target.parentElement.style.display = 'none'"
                                 />
                               </div>
@@ -317,15 +353,24 @@
                           </div>
                         </td>
                         <!-- 交易对 -->
-                        <td class="px-6 py-4 w-32">
-                          <span class="font-medium text-slate-900 whitespace-nowrap">
+                        <td class="px-3 py-3 w-24">
+                          <span class="font-medium text-slate-900 whitespace-nowrap text-sm">
                             {{ bot.token_symbol }}/{{ bot.trading_pair || 'USDT' }}
                           </span>
                         </td>
-                        <!-- 状态 -->
-                        <td class="px-6 py-4 w-24">
+                        <!-- 市场类型 -->
+                        <td class="px-3 py-3 w-14">
                           <span :class="[
-                            'inline-flex items-center px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap',
+                            'inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium whitespace-nowrap',
+                            bot.market_type === 'spot' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
+                          ]">
+                            {{ bot.market_type === 'spot' ? '现货' : '合约' }}
+                          </span>
+                        </td>
+                        <!-- 状态 -->
+                        <td class="px-3 py-3 w-16">
+                          <span :class="[
+                            'inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium whitespace-nowrap',
                             bot.status === 'running'
                               ? 'bg-green-100 text-green-700'
                               : bot.status === 'paused'
@@ -336,19 +381,19 @@
                           </span>
                         </td>
                         <!-- 信号类型 -->
-                        <td class="px-6 py-4 w-28">
-                          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-700 whitespace-nowrap">
+                        <td class="px-3 py-3 w-24">
+                          <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs bg-purple-100 text-purple-700 whitespace-nowrap">
                             {{ getSignalTypeLabel(bot.signal_type, bot.indicator_type) }}
                           </span>
                         </td>
                         <!-- 信号数 -->
-                        <td class="px-6 py-4 w-24 text-center">
-                          <span class="text-slate-900 font-medium">
+                        <td class="px-3 py-3 w-14 text-center">
+                          <span class="text-slate-900 font-medium whitespace-nowrap">
                             {{ bot.total_signals || 0 }}
                           </span>
                         </td>
                         <!-- 操作 -->
-                        <td class="px-6 py-4 w-40">
+                        <td class="px-3 py-3 w-28">
                           <div class="flex items-center justify-center gap-1">
                             <!-- 启动/停止按钮 -->
                             <div class="relative">
@@ -866,6 +911,7 @@ const filters = ref({
   bot_type: '',
   exchange: '',
   signalType: '',
+  marketType: '',
   search: ''
 })
 
@@ -891,6 +937,16 @@ const signalTypeOptions = [
 const signalTypeOptionsWithAll = [
   { label: '全部类型', value: '' },
   ...signalTypeOptions
+]
+
+const marketTypeOptions = [
+  { label: '现货', value: 'spot' },
+  { label: '合约', value: 'futures' }
+]
+
+const marketTypeOptionsWithAll = [
+  { label: '全部', value: '' },
+  ...marketTypeOptions
 ]
 
 const exchangeOptions = ref([])
@@ -944,6 +1000,10 @@ const filteredBots = computed(() => {
       // 如果选择的是 indicator_alert（不带子类型），显示所有指标信号提醒
       return bot.signal_type === filters.value.signalType
     })
+  }
+
+  if (filters.value.marketType && filters.value.marketType !== '') {
+    result = result.filter(bot => bot.market_type === filters.value.marketType)
   }
 
   if (filters.value.search.trim()) {
@@ -1026,7 +1086,7 @@ const updateStatistics = () => {
 }
 
 const resetFilters = () => {
-  filters.value = { status: '', bot_type: '', exchange: '', signalType: '', search: '' }
+  filters.value = { status: '', bot_type: '', exchange: '', signalType: '', marketType: '', search: '' }
 }
 
 const handleStartBot = async (botId) => {

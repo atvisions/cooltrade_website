@@ -383,13 +383,15 @@
               周期
               <span class="text-[10px] text-slate-500 block">计算窗口</span>
             </label>
-            <Input
-              :model-value="indicatorsConfig.rsi?.params?.period || 14"
-              @update:model-value="updateIndicatorParam('rsi', 'period', $event)"
-              type="number"
-              placeholder="14"
-              class="text-sm"
-            />
+            <select
+              :value="indicatorsConfig.rsi?.params?.period || 14"
+              @change="updateIndicatorParam('rsi', 'period', Number($event.target.value))"
+              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option v-for="opt in periodOptions.rsi" :key="opt.value" :value="opt.value">
+                {{ opt.label }}
+              </option>
+            </select>
           </div>
           <div>
             <label class="block text-xs font-medium text-slate-700 mb-1.5">
@@ -494,39 +496,45 @@
               快线周期
               <span class="text-[10px] text-slate-500 block">短期EMA</span>
             </label>
-            <Input
-              :model-value="indicatorsConfig.macd?.params?.fast || 12"
-              @update:model-value="updateIndicatorParam('macd', 'fast', $event)"
-              type="number"
-              placeholder="12"
-              class="text-sm"
-            />
+            <select
+              :value="indicatorsConfig.macd?.params?.fast || 12"
+              @change="updateIndicatorParam('macd', 'fast', Number($event.target.value))"
+              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option v-for="opt in periodOptions.macd.fast" :key="opt.value" :value="opt.value">
+                {{ opt.label }}
+              </option>
+            </select>
           </div>
           <div>
             <label class="block text-xs font-medium text-slate-700 mb-1.5">
               慢线周期
               <span class="text-[10px] text-slate-500 block">长期EMA</span>
             </label>
-            <Input
-              :model-value="indicatorsConfig.macd?.params?.slow || 26"
-              @update:model-value="updateIndicatorParam('macd', 'slow', $event)"
-              type="number"
-              placeholder="26"
-              class="text-sm"
-            />
+            <select
+              :value="indicatorsConfig.macd?.params?.slow || 26"
+              @change="updateIndicatorParam('macd', 'slow', Number($event.target.value))"
+              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option v-for="opt in periodOptions.macd.slow" :key="opt.value" :value="opt.value">
+                {{ opt.label }}
+              </option>
+            </select>
           </div>
           <div>
             <label class="block text-xs font-medium text-slate-700 mb-1.5">
               信号线周期
               <span class="text-[10px] text-slate-500 block">MACD平滑</span>
             </label>
-            <Input
-              :model-value="indicatorsConfig.macd?.params?.signal || 9"
-              @update:model-value="updateIndicatorParam('macd', 'signal', $event)"
-              type="number"
-              placeholder="9"
-              class="text-sm"
-            />
+            <select
+              :value="indicatorsConfig.macd?.params?.signal || 9"
+              @change="updateIndicatorParam('macd', 'signal', Number($event.target.value))"
+              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option v-for="opt in periodOptions.macd.signal" :key="opt.value" :value="opt.value">
+                {{ opt.label }}
+              </option>
+            </select>
           </div>
         </div>
 
@@ -623,26 +631,30 @@
               快线周期
               <span class="text-[10px] text-slate-500 block">短期均线</span>
             </label>
-            <Input
-              :model-value="indicatorsConfig.ma_crossover?.params?.fast || 7"
-              @update:model-value="updateIndicatorParam('ma_crossover', 'fast', $event)"
-              type="number"
-              placeholder="7"
-              class="text-sm"
-            />
+            <select
+              :value="indicatorsConfig.ma_crossover?.params?.fast || 7"
+              @change="updateIndicatorParam('ma_crossover', 'fast', Number($event.target.value))"
+              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option v-for="opt in periodOptions.ma_crossover.fast" :key="opt.value" :value="opt.value">
+                {{ opt.label }}
+              </option>
+            </select>
           </div>
           <div>
             <label class="block text-xs font-medium text-slate-700 mb-1.5">
               慢线周期
               <span class="text-[10px] text-slate-500 block">长期均线</span>
             </label>
-            <Input
-              :model-value="indicatorsConfig.ma_crossover?.params?.slow || 25"
-              @update:model-value="updateIndicatorParam('ma_crossover', 'slow', $event)"
-              type="number"
-              placeholder="25"
-              class="text-sm"
-            />
+            <select
+              :value="indicatorsConfig.ma_crossover?.params?.slow || 25"
+              @change="updateIndicatorParam('ma_crossover', 'slow', Number($event.target.value))"
+              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option v-for="opt in periodOptions.ma_crossover.slow" :key="opt.value" :value="opt.value">
+                {{ opt.label }}
+              </option>
+            </select>
           </div>
         </div>
 
@@ -739,27 +751,30 @@
               ATR 周期
               <span class="text-[10px] text-slate-500 block">计算窗口</span>
             </label>
-            <Input
-              :model-value="indicatorsConfig.atr?.params?.period || 14"
-              @update:model-value="updateIndicatorParam('atr', 'period', $event)"
-              type="number"
-              placeholder="14"
-              class="text-sm"
-            />
+            <select
+              :value="indicatorsConfig.atr?.params?.period || 14"
+              @change="updateIndicatorParam('atr', 'period', Number($event.target.value))"
+              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option v-for="opt in periodOptions.atr" :key="opt.value" :value="opt.value">
+                {{ opt.label }}
+              </option>
+            </select>
           </div>
           <div>
             <label class="block text-xs font-medium text-slate-700 mb-1.5">
               波动阈值
               <span class="text-[10px] text-slate-500 block">变化倍数</span>
             </label>
-            <Input
-              :model-value="indicatorsConfig.atr?.params?.threshold || 2.0"
-              @update:model-value="updateIndicatorParam('atr', 'threshold', $event)"
-              type="number"
-              step="0.1"
-              placeholder="2.0"
-              class="text-sm"
-            />
+            <select
+              :value="indicatorsConfig.atr?.params?.threshold || 2.0"
+              @change="updateIndicatorParam('atr', 'threshold', Number($event.target.value))"
+              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option v-for="opt in thresholdOptions.atr" :key="opt.value" :value="opt.value">
+                {{ opt.label }}
+              </option>
+            </select>
           </div>
         </div>
       </div>
@@ -838,27 +853,30 @@
               成交量倍数
               <span class="text-[10px] text-slate-500 block">相对平均值</span>
             </label>
-            <Input
-              :model-value="indicatorsConfig.volume?.params?.multiplier || 2.0"
-              @update:model-value="updateIndicatorParam('volume', 'multiplier', $event)"
-              type="number"
-              step="0.1"
-              placeholder="2.0"
-              class="text-sm"
-            />
+            <select
+              :value="indicatorsConfig.volume?.params?.multiplier || 2.0"
+              @change="updateIndicatorParam('volume', 'multiplier', Number($event.target.value))"
+              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option v-for="opt in thresholdOptions.volume" :key="opt.value" :value="opt.value">
+                {{ opt.label }}
+              </option>
+            </select>
           </div>
           <div>
             <label class="block text-xs font-medium text-slate-700 mb-1.5">
               平均周期
               <span class="text-[10px] text-slate-500 block">K线数量</span>
             </label>
-            <Input
-              :model-value="indicatorsConfig.volume?.params?.period || 20"
-              @update:model-value="updateIndicatorParam('volume', 'period', $event)"
-              type="number"
-              placeholder="20"
-              class="text-sm"
-            />
+            <select
+              :value="indicatorsConfig.volume?.params?.period || 20"
+              @change="updateIndicatorParam('volume', 'period', Number($event.target.value))"
+              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option v-for="opt in periodOptions.volume" :key="opt.value" :value="opt.value">
+                {{ opt.label }}
+              </option>
+            </select>
           </div>
         </div>
 
@@ -877,6 +895,289 @@
             <p class="text-[10px] text-slate-500 mt-0.5">
               当成交量超过平均值的设定倍数时触发信号
             </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- 布林带 参数 -->
+      <div v-if="selectedIndicators.includes('bollinger')" class="border-2 border-slate-200 rounded-lg p-4">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-indigo-100 rounded-lg flex items-center justify-center">
+              <svg class="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-sm font-semibold text-slate-900">布林带（Bollinger Bands）</h3>
+              <p class="text-xs text-slate-500">波动通道指标，检测挤压突破信号</p>
+            </div>
+          </div>
+          <button
+            v-if="selectedIndicators.length > 1"
+            type="button"
+            @click="removeIndicator('bollinger')"
+            class="text-slate-400 hover:text-red-500 transition-colors"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-700 mb-1.5">
+              周期
+              <span class="text-[10px] text-slate-500 block">MA周期</span>
+            </label>
+            <select
+              :value="indicatorsConfig.bollinger?.params?.period || 20"
+              @change="updateIndicatorParam('bollinger', 'period', Number($event.target.value))"
+              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option v-for="opt in periodOptions.bollinger" :key="opt.value" :value="opt.value">
+                {{ opt.label }}
+              </option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-700 mb-1.5">
+              标准差倍数
+              <span class="text-[10px] text-slate-500 block">带宽</span>
+            </label>
+            <select
+              :value="indicatorsConfig.bollinger?.params?.std || 2"
+              @change="updateIndicatorParam('bollinger', 'std', Number($event.target.value))"
+              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option v-for="opt in thresholdOptions.bollinger.std" :key="opt.value" :value="opt.value">
+                {{ opt.label }}
+              </option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-700 mb-1.5">
+              挤压阈值
+              <span class="text-[10px] text-slate-500 block">带宽%</span>
+            </label>
+            <select
+              :value="indicatorsConfig.bollinger?.params?.squeeze_threshold || 0.03"
+              @change="updateIndicatorParam('bollinger', 'squeeze_threshold', Number($event.target.value))"
+              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option v-for="opt in thresholdOptions.bollinger.squeeze" :key="opt.value" :value="opt.value">
+                {{ opt.label }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- 支点 参数 -->
+      <div v-if="selectedIndicators.includes('pivot')" class="border-2 border-slate-200 rounded-lg p-4">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-rose-100 rounded-lg flex items-center justify-center">
+              <svg class="w-4 h-4 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-sm font-semibold text-slate-900">支点（Pivot Points）</h3>
+              <p class="text-xs text-slate-500">检测支撑阻力位，判断关键价位</p>
+            </div>
+          </div>
+          <button
+            v-if="selectedIndicators.length > 1"
+            type="button"
+            @click="removeIndicator('pivot')"
+            class="text-slate-400 hover:text-red-500 transition-colors"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-700 mb-1.5">
+              左侧K线数
+              <span class="text-[10px] text-slate-500 block">确认高低点</span>
+            </label>
+            <select
+              :value="indicatorsConfig.pivot?.params?.pivot_left || 3"
+              @change="updateIndicatorParam('pivot', 'pivot_left', Number($event.target.value))"
+              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option v-for="opt in periodOptions.pivot" :key="opt.value" :value="opt.value">
+                {{ opt.label }}
+              </option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-700 mb-1.5">
+              右侧K线数
+              <span class="text-[10px] text-slate-500 block">确认高低点</span>
+            </label>
+            <select
+              :value="indicatorsConfig.pivot?.params?.pivot_right || 3"
+              @change="updateIndicatorParam('pivot', 'pivot_right', Number($event.target.value))"
+              class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option v-for="opt in periodOptions.pivot" :key="opt.value" :value="opt.value">
+                {{ opt.label }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- K线形态 参数 -->
+      <div v-if="selectedIndicators.includes('pattern')" class="border-2 border-slate-200 rounded-lg p-4">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-amber-100 rounded-lg flex items-center justify-center">
+              <svg class="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-sm font-semibold text-slate-900">K线形态（Candlestick Patterns）</h3>
+              <p class="text-xs text-slate-500">检测经典K线形态，预测价格反转</p>
+            </div>
+          </div>
+          <button
+            v-if="selectedIndicators.length > 1"
+            type="button"
+            @click="removeIndicator('pattern')"
+            class="text-slate-400 hover:text-red-500 transition-colors"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <input
+              type="checkbox"
+              :checked="indicatorsConfig.pattern?.params?.pinbar !== false"
+              @change="updateIndicatorParam('pattern', 'pinbar', $event.target.checked)"
+              class="w-4 h-4 text-amber-600 rounded focus:ring-amber-500"
+            />
+            <div class="flex-1">
+              <label class="text-xs font-medium text-slate-700 cursor-pointer">锤子线/倒锤子</label>
+              <p class="text-[10px] text-slate-500">Pin Bar形态</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <input
+              type="checkbox"
+              :checked="indicatorsConfig.pattern?.params?.engulfing !== false"
+              @change="updateIndicatorParam('pattern', 'engulfing', $event.target.checked)"
+              class="w-4 h-4 text-amber-600 rounded focus:ring-amber-500"
+            />
+            <div class="flex-1">
+              <label class="text-xs font-medium text-slate-700 cursor-pointer">吞没形态</label>
+              <p class="text-[10px] text-slate-500">Engulfing Pattern</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <input
+              type="checkbox"
+              :checked="indicatorsConfig.pattern?.params?.double_top !== false"
+              @change="updateIndicatorParam('pattern', 'double_top', $event.target.checked)"
+              class="w-4 h-4 text-amber-600 rounded focus:ring-amber-500"
+            />
+            <div class="flex-1">
+              <label class="text-xs font-medium text-slate-700 cursor-pointer">双顶</label>
+              <p class="text-[10px] text-slate-500">Double Top</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+            <input
+              type="checkbox"
+              :checked="indicatorsConfig.pattern?.params?.double_bottom !== false"
+              @change="updateIndicatorParam('pattern', 'double_bottom', $event.target.checked)"
+              class="w-4 h-4 text-amber-600 rounded focus:ring-amber-500"
+            />
+            <div class="flex-1">
+              <label class="text-xs font-medium text-slate-700 cursor-pointer">双底</label>
+              <p class="text-[10px] text-slate-500">Double Bottom</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 背离 参数 -->
+      <div v-if="selectedIndicators.includes('divergence')" class="border-2 border-slate-200 rounded-lg p-4">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-teal-100 rounded-lg flex items-center justify-center">
+              <svg class="w-4 h-4 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-sm font-semibold text-slate-900">背离（Divergence）</h3>
+              <p class="text-xs text-slate-500">检测价格与指标背离，预测趋势反转</p>
+            </div>
+          </div>
+          <button
+            v-if="selectedIndicators.length > 1"
+            type="button"
+            @click="removeIndicator('divergence')"
+            class="text-slate-400 hover:text-red-500 transition-colors"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="mb-3">
+          <label class="block text-xs font-medium text-slate-700 mb-1.5">
+            回看周期
+            <span class="text-[10px] text-slate-500 block">检测背离的K线数量</span>
+          </label>
+          <select
+            :value="indicatorsConfig.divergence?.params?.divergence_lookback || 5"
+            @change="updateIndicatorParam('divergence', 'divergence_lookback', Number($event.target.value))"
+            class="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          >
+            <option v-for="opt in periodOptions.divergence" :key="opt.value" :value="opt.value">
+              {{ opt.label }}
+            </option>
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div class="flex items-center gap-2 p-3 bg-teal-50 border border-teal-200 rounded-lg">
+            <input
+              type="checkbox"
+              :checked="indicatorsConfig.divergence?.params?.use_rsi !== false"
+              @change="updateIndicatorParam('divergence', 'use_rsi', $event.target.checked)"
+              class="w-4 h-4 text-teal-600 rounded focus:ring-teal-500"
+            />
+            <div class="flex-1">
+              <label class="text-xs font-medium text-slate-700 cursor-pointer">RSI背离</label>
+              <p class="text-[10px] text-slate-500">价格与RSI背离</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 p-3 bg-teal-50 border border-teal-200 rounded-lg">
+            <input
+              type="checkbox"
+              :checked="indicatorsConfig.divergence?.params?.use_macd !== false"
+              @change="updateIndicatorParam('divergence', 'use_macd', $event.target.checked)"
+              class="w-4 h-4 text-teal-600 rounded focus:ring-teal-500"
+            />
+            <div class="flex-1">
+              <label class="text-xs font-medium text-slate-700 cursor-pointer">MACD背离</label>
+              <p class="text-[10px] text-slate-500">价格与MACD背离</p>
+            </div>
           </div>
         </div>
       </div>
@@ -992,8 +1293,110 @@ const availableIndicators = [
   { label: 'MACD', value: 'macd', description: '趋势动量指标，捕捉金叉死叉' },
   { label: 'MA交叉', value: 'ma_crossover', description: '均线交叉，判断趋势转折' },
   { label: 'ATR', value: 'atr', description: '波动性指标，衡量市场活跃度' },
-  { label: '成交量', value: 'volume', description: '检测成交量异常放大' }
+  { label: '成交量', value: 'volume', description: '检测成交量异常放大' },
+  { label: '布林带', value: 'bollinger', description: '波动通道，检测挤压突破' },
+  { label: '支点', value: 'pivot', description: '支撑阻力位，检测关键价位' },
+  { label: 'K线形态', value: 'pattern', description: '锤子线、吞没等经典形态' },
+  { label: '背离', value: 'divergence', description: 'RSI/MACD背离，预测反转' }
 ]
+
+// 周期选项 - 专业交易员常用参数
+const periodOptions = {
+  rsi: [
+    { value: 6, label: '6 (超短线)' },
+    { value: 7, label: '7 (短线)' },
+    { value: 14, label: '14 (标准)' },
+    { value: 21, label: '21 (中线)' },
+    { value: 28, label: '28 (长线)' }
+  ],
+  macd: {
+    fast: [
+      { value: 8, label: '8 (快速)' },
+      { value: 12, label: '12 (标准)' },
+      { value: 17, label: '17 (慢速)' }
+    ],
+    slow: [
+      { value: 17, label: '17 (快速)' },
+      { value: 26, label: '26 (标准)' },
+      { value: 36, label: '36 (慢速)' }
+    ],
+    signal: [
+      { value: 7, label: '7 (快速)' },
+      { value: 9, label: '9 (标准)' },
+      { value: 12, label: '12 (慢速)' }
+    ]
+  },
+  ma_crossover: {
+    fast: [
+      { value: 5, label: '5 (超短)' },
+      { value: 7, label: '7 (短线)' },
+      { value: 10, label: '10 (日内)' },
+      { value: 20, label: '20 (波段)' }
+    ],
+    slow: [
+      { value: 20, label: '20 (短期)' },
+      { value: 25, label: '25 (中短)' },
+      { value: 50, label: '50 (中期)' },
+      { value: 100, label: '100 (长期)' },
+      { value: 200, label: '200 (超长)' }
+    ]
+  },
+  atr: [
+    { value: 7, label: '7 (短线)' },
+    { value: 14, label: '14 (标准)' },
+    { value: 21, label: '21 (长线)' }
+  ],
+  volume: [
+    { value: 10, label: '10 (短期)' },
+    { value: 20, label: '20 (标准)' },
+    { value: 50, label: '50 (长期)' }
+  ],
+  bollinger: [
+    { value: 10, label: '10 (短期)' },
+    { value: 20, label: '20 (标准)' },
+    { value: 50, label: '50 (长期)' }
+  ],
+  pivot: [
+    { value: 2, label: '2 (敏感)' },
+    { value: 3, label: '3 (标准)' },
+    { value: 5, label: '5 (稳定)' }
+  ],
+  divergence: [
+    { value: 3, label: '3 (短期)' },
+    { value: 5, label: '5 (标准)' },
+    { value: 10, label: '10 (长期)' }
+  ]
+}
+
+// 阈值选项
+const thresholdOptions = {
+  atr: [
+    { value: 1.0, label: '1.0x (低波动)' },
+    { value: 1.5, label: '1.5x (中低)' },
+    { value: 2.0, label: '2.0x (标准)' },
+    { value: 2.5, label: '2.5x (中高)' },
+    { value: 3.0, label: '3.0x (高波动)' }
+  ],
+  volume: [
+    { value: 1.5, label: '1.5x (低量)' },
+    { value: 2.0, label: '2.0x (标准)' },
+    { value: 2.5, label: '2.5x (放量)' },
+    { value: 3.0, label: '3.0x (巨量)' },
+    { value: 4.0, label: '4.0x (异常)' }
+  ],
+  bollinger: {
+    std: [
+      { value: 1.5, label: '1.5 (窄带)' },
+      { value: 2.0, label: '2.0 (标准)' },
+      { value: 2.5, label: '2.5 (宽带)' }
+    ],
+    squeeze: [
+      { value: 0.02, label: '2% (敏感)' },
+      { value: 0.03, label: '3% (标准)' },
+      { value: 0.05, label: '5% (宽松)' }
+    ]
+  }
+}
 
 const showIndicatorDropdown = ref(false)
 const showJsonConfig = ref(false)
@@ -1009,7 +1412,11 @@ const activePresets = ref({
   macd: null,
   ma_crossover: null,
   atr: null,
-  volume: null
+  volume: null,
+  bollinger: null,
+  pivot: null,
+  pattern: null,
+  divergence: null
 })
 
 // 获取指标标签
@@ -1319,45 +1726,13 @@ const applyJsonConfig = () => {
 
     // 6. 所有验证通过，应用配置
     // 规范化指标类型（处理别名）
-    // 前端使用 ma_crossover，后端使用 ma_cross，这里统一转换为前端格式
     const typeAliases = {
-      'ma_cross': 'ma_crossover',  // 后端 -> 前端
+      'ma_cross': 'ma_crossover',
     }
 
     const normalizedIndicators = config.indicators.map(ind => {
       const normalizedType = typeAliases[ind.type] || ind.type
-
-      // 规范化参数字段名
       const normalizedParams = { ...ind.params }
-
-      // RSI: oversold -> oversold_threshold
-      if (normalizedType === 'rsi') {
-        if (normalizedParams.oversold !== undefined && normalizedParams.oversold_threshold === undefined) {
-          normalizedParams.oversold_threshold = normalizedParams.oversold
-          delete normalizedParams.oversold
-        }
-        if (normalizedParams.overbought !== undefined && normalizedParams.overbought_threshold === undefined) {
-          normalizedParams.overbought_threshold = normalizedParams.overbought
-          delete normalizedParams.overbought
-        }
-      }
-
-      // MA交叉: fast/slow -> fast_period/slow_period（兼容两种类型名）
-      if (normalizedType === 'ma_crossover' || ind.type === 'ma_cross') {
-        if (normalizedParams.fast !== undefined && normalizedParams.fast_period === undefined) {
-          normalizedParams.fast_period = normalizedParams.fast
-          delete normalizedParams.fast
-        }
-        if (normalizedParams.slow !== undefined && normalizedParams.slow_period === undefined) {
-          normalizedParams.slow_period = normalizedParams.slow
-          delete normalizedParams.slow
-        }
-      }
-
-      // MACD: golden_cross -> signal_cross
-      if (normalizedType === 'macd' && normalizedParams.golden_cross === true) {
-        normalizedParams.signal_cross = 'bullish'
-      }
 
       // 规范化布尔值（将字符串 "true"/"false" 转换为布尔值）
       Object.keys(normalizedParams).forEach(key => {

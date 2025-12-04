@@ -1381,7 +1381,10 @@ const getIndicatorLabel = (type) => {
     'bollinger': '布林带',
     'kdj': 'KDJ 指标',
     'volume': '成交量',
-    'atr': 'ATR 波动率'
+    'atr': 'ATR 波动率',
+    'pivot': '支点（支撑阻力）',
+    'pattern': 'K线形态',
+    'divergence': '背离检测'
   }
   return labels[type] || type.toUpperCase()
 }
@@ -1394,7 +1397,6 @@ const getIndicatorConditions = (indicator) => {
 
   switch (indicator.type) {
     case 'rsi':
-      // 显示参数配置
       conditions.push({
         label: `RSI 周期`,
         currentValue: params.period || 14,
@@ -1403,29 +1405,25 @@ const getIndicatorConditions = (indicator) => {
         isConfig: true
       })
 
-      // 显示当前值和阈值
-      if (params.oversold || params.oversold_threshold) {
-        const threshold = params.oversold || params.oversold_threshold
+      if (params.oversold) {
         conditions.push({
           label: 'RSI 超卖',
           currentValue: currentValues.rsi?.toFixed(2) || '--',
           operator: '<',
-          threshold: threshold
+          threshold: params.oversold
         })
       }
-      if (params.overbought || params.overbought_threshold) {
-        const threshold = params.overbought || params.overbought_threshold
+      if (params.overbought) {
         conditions.push({
           label: 'RSI 超买',
           currentValue: currentValues.rsi?.toFixed(2) || '--',
           operator: '>',
-          threshold: threshold
+          threshold: params.overbought
         })
       }
       break
 
     case 'macd':
-      // 显示参数配置
       conditions.push({
         label: `MACD 参数`,
         currentValue: `(${params.fast || 12}, ${params.slow || 26}, ${params.signal || 9})`,
@@ -1434,7 +1432,6 @@ const getIndicatorConditions = (indicator) => {
         isConfig: true
       })
 
-      // 零轴下方金叉过滤 - 显示当前状态
       if (params.below_zero_cross) {
         const macd = currentValues.macd || 0
         let statusText = '--'
@@ -1460,14 +1457,12 @@ const getIndicatorConditions = (indicator) => {
         })
       }
 
-      // MACD 柱状图状态
       const macdHist = currentValues.macd_histogram
       let macdHistDisplay = '--'
       let macdStatus = ''
 
       if (macdHist !== undefined && macdHist !== null) {
         macdHistDisplay = formatPrice(macdHist)
-
         if (macdHist > 0) {
           macdStatus = '（金叉 ✓）'
         } else if (macdHist < 0) {
@@ -1486,19 +1481,16 @@ const getIndicatorConditions = (indicator) => {
       break
 
     case 'ma_crossover':
-    case 'ma_cross':
-      // 显示参数配置
       conditions.push({
         label: `MA 周期`,
-        currentValue: `快线 ${params.fast || params.fast_period || 7} / 慢线 ${params.slow || params.slow_period || 25}`,
+        currentValue: `快线 ${params.fast || 7} / 慢线 ${params.slow || 25}`,
         operator: '',
         threshold: '（配置）',
         isConfig: true
       })
 
-      // 价格突破快线过滤 - 显示当前状态
       if (params.break_fast_ma) {
-        const fastPeriod = params.fast || params.fast_period || 7
+        const fastPeriod = params.fast || 7
         const price = currentValues.price || 0
         const fastMA = currentValues[`ma_${fastPeriod}`] || 0
 
@@ -1525,9 +1517,8 @@ const getIndicatorConditions = (indicator) => {
         })
       }
 
-      // MA 交叉状态
-      const fastPeriod = params.fast || params.fast_period || 7
-      const slowPeriod = params.slow || params.slow_period || 25
+      const fastPeriod = params.fast || 7
+      const slowPeriod = params.slow || 25
       const fastMA = currentValues[`ma_${fastPeriod}`]
       const slowMA = currentValues[`ma_${slowPeriod}`]
 
@@ -1611,6 +1602,128 @@ const getIndicatorConditions = (indicator) => {
         threshold: (params.threshold || 2) + '%'
       })
       break
+
+    case 'bollinger':
+      conditions.push({
+        label: `布林带周期`,
+        currentValue: params.period || 20,
+        operator: '',
+        threshold: '（配置）',
+        isConfig: true
+      })
+      conditions.push({
+        label: `标准差倍数`,
+        currentValue: params.std || 2,
+        operator: '',
+        threshold: '（配置）',
+        isConfig: true
+      })
+      conditions.push({
+        label: `挤压阈值`,
+        currentValue: `${((params.squeeze_threshold || 0.03) * 100).toFixed(0)}%`,
+        operator: '',
+        threshold: '（配置）',
+        isConfig: true
+      })
+      // 布林带当前值
+      const bbUpper = currentValues.bollinger_upper || 0
+      const bbMiddle = currentValues.bollinger_middle || 0
+      const bbLower = currentValues.bollinger_lower || 0
+      const bbWidth = bbMiddle > 0 ? ((bbUpper - bbLower) / bbMiddle * 100).toFixed(2) : '--'
+      conditions.push({
+        label: '布林带宽度',
+        currentValue: bbWidth !== '--' ? bbWidth + '%' : '--',
+        operator: '<',
+        threshold: `${((params.squeeze_threshold || 0.03) * 100).toFixed(0)}%（挤压）`
+      })
+      break
+
+    case 'pivot':
+      conditions.push({
+        label: `左侧K线数`,
+        currentValue: params.pivot_left || 3,
+        operator: '',
+        threshold: '（配置）',
+        isConfig: true
+      })
+      conditions.push({
+        label: `右侧K线数`,
+        currentValue: params.pivot_right || 3,
+        operator: '',
+        threshold: '（配置）',
+        isConfig: true
+      })
+      // 支撑阻力位
+      const support = currentValues.support || 0
+      const resistance = currentValues.resistance || 0
+      if (support > 0) {
+        conditions.push({
+          label: '最近支撑位',
+          currentValue: formatPrice(support),
+          operator: '',
+          threshold: ''
+        })
+      }
+      if (resistance > 0) {
+        conditions.push({
+          label: '最近阻力位',
+          currentValue: formatPrice(resistance),
+          operator: '',
+          threshold: ''
+        })
+      }
+      break
+
+    case 'pattern':
+      const patterns = []
+      if (params.pinbar !== false) patterns.push('锤子线')
+      if (params.engulfing !== false) patterns.push('吞没')
+      if (params.double_top !== false) patterns.push('双顶')
+      if (params.double_bottom !== false) patterns.push('双底')
+      conditions.push({
+        label: `检测形态`,
+        currentValue: patterns.join('、') || '无',
+        operator: '',
+        threshold: '（配置）',
+        isConfig: true
+      })
+      // 当前检测到的形态
+      const detectedPattern = currentValues.pattern || '--'
+      conditions.push({
+        label: '当前形态',
+        currentValue: detectedPattern,
+        operator: '',
+        threshold: ''
+      })
+      break
+
+    case 'divergence':
+      conditions.push({
+        label: `回看周期`,
+        currentValue: params.divergence_lookback || 5,
+        operator: '',
+        threshold: '（配置）',
+        isConfig: true
+      })
+      const divTypes = []
+      if (params.use_rsi !== false) divTypes.push('RSI')
+      if (params.use_macd !== false) divTypes.push('MACD')
+      conditions.push({
+        label: `背离类型`,
+        currentValue: divTypes.join('、') || '无',
+        operator: '',
+        threshold: '（配置）',
+        isConfig: true
+      })
+      // 当前背离状态
+      const divergenceType = currentValues.divergence_type || '--'
+      conditions.push({
+        label: '当前背离',
+        currentValue: divergenceType,
+        operator: '',
+        threshold: ''
+      })
+      break
   }
 
   return conditions
@@ -1623,40 +1736,71 @@ const isConditionSatisfied = (indicator) => {
 
   switch (indicator.type) {
     case 'rsi':
-      if (params.oversold_threshold && currentValues.rsi) {
-        return currentValues.rsi < params.oversold_threshold
+      if (params.oversold && currentValues.rsi) {
+        if (currentValues.rsi < params.oversold) return true
       }
-      if (params.overbought_threshold && currentValues.rsi) {
-        return currentValues.rsi > params.overbought_threshold
+      if (params.overbought && currentValues.rsi) {
+        if (currentValues.rsi > params.overbought) return true
       }
       break
 
     case 'macd':
-      if (params.signal_cross && currentValues.macd_histogram !== undefined) {
-        if (params.signal_cross === 'bullish') {
-          return currentValues.macd_histogram > 0
-        } else {
-          return currentValues.macd_histogram < 0
+      if (currentValues.macd_histogram !== undefined) {
+        // 零轴下方金叉：MACD < 0 且柱状图 > 0
+        if (params.below_zero_cross) {
+          return currentValues.macd < 0 && currentValues.macd_histogram > 0
         }
+        // 默认：柱状图 > 0 表示看涨
+        return currentValues.macd_histogram > 0
       }
       break
 
-    case 'ma':
-    case 'ema':
-      if (params.price_cross && currentValues.price && currentValues[`${indicator.type}_${params.period}`]) {
-        if (params.price_cross === 'above') {
-          return currentValues.price > currentValues[`${indicator.type}_${params.period}`]
-        } else {
-          return currentValues.price < currentValues[`${indicator.type}_${params.period}`]
-        }
+    case 'ma_crossover':
+      const fastPeriod = params.fast || 7
+      const slowPeriod = params.slow || 25
+      const maFast = currentValues[`ma_${fastPeriod}`]
+      const maSlow = currentValues[`ma_${slowPeriod}`]
+      if (maFast && maSlow) {
+        return maFast > maSlow
       }
       break
 
     case 'volume':
-      if (params.volume_threshold && currentValues.volume) {
-        return currentValues.volume > params.volume_threshold
+      const multiplier = params.multiplier || 2.0
+      if (currentValues.volume && currentValues.volume_ma) {
+        return currentValues.volume > currentValues.volume_ma * multiplier
       }
       break
+
+    case 'atr':
+      if (params.threshold && currentValues.atr) {
+        return currentValues.atr > params.threshold
+      }
+      break
+
+    case 'bollinger':
+      // 布林带挤压检测
+      const bbUpper = currentValues.bollinger_upper || 0
+      const bbMiddle = currentValues.bollinger_middle || 0
+      const bbLower = currentValues.bollinger_lower || 0
+      if (bbMiddle > 0) {
+        const bbWidth = (bbUpper - bbLower) / bbMiddle
+        const squeezeThreshold = params.squeeze_threshold || 0.03
+        return bbWidth < squeezeThreshold
+      }
+      break
+
+    case 'pivot':
+      // 支点检测：价格接近支撑或阻力位
+      return currentValues.near_support || currentValues.near_resistance
+
+    case 'pattern':
+      // K线形态检测
+      return currentValues.pattern && currentValues.pattern !== '--'
+
+    case 'divergence':
+      // 背离检测
+      return currentValues.divergence_type && currentValues.divergence_type !== '--'
   }
 
   return false
@@ -1669,25 +1813,48 @@ const getDistanceToTrigger = (indicator) => {
 
   switch (indicator.type) {
     case 'rsi':
-      if (params.oversold_threshold && currentValues.rsi) {
-        const diff = currentValues.rsi - params.oversold_threshold
+      if (params.oversold && currentValues.rsi) {
+        const diff = currentValues.rsi - params.oversold
         if (diff > 0) {
-          return `还需下降 ${diff.toFixed(2)} 点`
+          return `RSI 还需下降 ${diff.toFixed(2)} 点触发超卖`
         }
       }
-      if (params.overbought_threshold && currentValues.rsi) {
-        const diff = params.overbought_threshold - currentValues.rsi
+      if (params.overbought && currentValues.rsi) {
+        const diff = params.overbought - currentValues.rsi
         if (diff > 0) {
-          return `还需上升 ${diff.toFixed(2)} 点`
+          return `RSI 还需上升 ${diff.toFixed(2)} 点触发超买`
         }
       }
       break
 
+    case 'macd':
+      if (params.below_zero_cross && currentValues.macd !== undefined) {
+        if (currentValues.macd >= 0) {
+          return `MACD 需回到零轴下方`
+        } else if (currentValues.macd_histogram <= 0) {
+          return `等待 MACD 柱状图转正（金叉）`
+        }
+      }
+      break
+
+    case 'ma_crossover':
+      const fastPeriod = params.fast || 7
+      const slowPeriod = params.slow || 25
+      const maFast = currentValues[`ma_${fastPeriod}`]
+      const maSlow = currentValues[`ma_${slowPeriod}`]
+      if (maFast && maSlow && maFast < maSlow) {
+        const diff = ((maSlow - maFast) / maSlow * 100).toFixed(2)
+        return `MA${fastPeriod} 距离 MA${slowPeriod} 还差 ${diff}%`
+      }
+      break
+
     case 'volume':
-      if (params.volume_threshold && currentValues.volume) {
-        const diff = params.volume_threshold - currentValues.volume
+      const multiplier = params.multiplier || 2.0
+      if (currentValues.volume && currentValues.volume_ma) {
+        const threshold = currentValues.volume_ma * multiplier
+        const diff = threshold - currentValues.volume
         if (diff > 0) {
-          return `还需增加 ${(diff / 1000000).toFixed(2)}M 成交量`
+          return `成交量还需增加 ${(diff / 1000000).toFixed(2)}M`
         }
       }
       break

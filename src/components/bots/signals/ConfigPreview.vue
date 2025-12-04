@@ -32,6 +32,17 @@
                 </span>
               </div>
               <div class="flex justify-between text-xs">
+                <span class="text-slate-500">市场类型</span>
+                <span class="font-medium text-slate-900">
+                  <span :class="[
+                    'inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium',
+                    formData.market_type === 'spot' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
+                  ]">
+                    {{ formData.market_type === 'spot' ? '现货' : '合约' }}
+                  </span>
+                </span>
+              </div>
+              <div class="flex justify-between text-xs">
                 <span class="text-slate-500">交易对</span>
                 <span class="font-medium text-slate-900">
                   {{ selectedToken?.symbol ? `${selectedToken.symbol}/${formData.trading_pair || 'USDT'}` : '-' }}

@@ -58,13 +58,14 @@
           <p v-if="errors.exchange_name" class="mt-1 text-sm text-red-500">{{ errors.exchange_name }}</p>
         </div>
 
-        <!-- 选择交易所API账号 -->
-        <div>
-          <div class="flex items-center justify-between mb-2">
-            <label class="block text-sm font-medium text-slate-700">
-              选择交易所API账号 <span class="text-red-500">*</span>
-              <span class="text-xs text-slate-500 ml-2">用于获取市场数据和执行交易</span>
-            </label>
+        <!-- 选择交易所API账号和市场类型 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- 选择交易所API账号 -->
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <label class="block text-sm font-medium text-slate-700">
+                选择交易所API账号 <span class="text-red-500">*</span>
+              </label>
             <button
               v-if="formData.exchange_name && filteredExchangeAPIs.length === 0"
               type="button"
@@ -180,6 +181,52 @@
           <p v-else-if="filteredExchangeAPIs.length === 0" class="mt-1 text-sm text-orange-500">
             该交易所暂无可用的API账号，请先在"交易所管理"中添加
           </p>
+          </div>
+
+          <!-- 市场类型选择 -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 mb-2">
+              市场类型 <span class="text-red-500">*</span>
+            </label>
+            <div class="grid grid-cols-2 gap-3">
+              <button
+                v-for="type in [
+                  { value: 'spot', label: '现货', icon: 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z' },
+                  { value: 'futures', label: '合约', icon: 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6' }
+                ]"
+                :key="type.value"
+                @click="selectMarketType(type.value)"
+                :disabled="isMarketTypeDisabled(type.value)"
+                :class="[
+                  'flex items-center justify-center gap-2 p-3 rounded-lg text-center transition-all border-2 text-sm font-medium',
+                  formData.market_type === type.value
+                    ? 'border-blue-500 bg-blue-50 text-blue-900'
+                    : isMarketTypeDisabled(type.value)
+                    ? 'border-slate-200 bg-slate-100 text-slate-400 cursor-not-allowed'
+                    : 'border-slate-200 bg-white text-slate-700 hover:border-blue-300'
+                ]"
+                type="button"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="type.icon" />
+                </svg>
+                {{ type.label }}
+              </button>
+            </div>
+            <p v-if="errors.market_type" class="mt-1 text-sm text-red-500">{{ errors.market_type }}</p>
+            <!-- 显示代币市场类型支持提示 -->
+            <p v-if="selectedToken" class="mt-2 text-xs text-slate-600">
+              <span v-if="selectedToken.is_spot_available && selectedToken.is_futures_available">
+                ✅ 代币 {{ selectedToken.symbol }} 支持现货和合约交易
+              </span>
+              <span v-else-if="selectedToken.is_spot_available && !selectedToken.is_futures_available" class="text-amber-600">
+                ⚠️ 代币 {{ selectedToken.symbol }} 仅支持现货交易
+              </span>
+              <span v-else-if="!selectedToken.is_spot_available && selectedToken.is_futures_available" class="text-amber-600">
+                ⚠️ 代币 {{ selectedToken.symbol }} 仅支持合约交易
+              </span>
+            </p>
+          </div>
         </div>
       </div>
 
@@ -394,6 +441,7 @@ const props = defineProps({
 // Emits - 向父组件发送事件
 const emit = defineEmits([
   'selectExchangeType',
+  'selectMarketType',
   'handleTokenSearch',
   'handleTokenInputFocus',
   'handleTokenInputBlur',
@@ -407,6 +455,28 @@ const emit = defineEmits([
 // 方法代理 - 将事件转发给父组件
 const selectExchangeType = (exchangeType) => {
   emit('selectExchangeType', exchangeType)
+}
+
+// 市场类型选择
+const selectMarketType = (marketType) => {
+  emit('selectMarketType', marketType)
+}
+
+// 判断市场类型是否应该被禁用
+const isMarketTypeDisabled = (marketType) => {
+  if (!props.selectedToken) {
+    return false // 如果没有选择代币，不禁用任何选项
+  }
+
+  const token = props.selectedToken
+
+  if (marketType === 'spot') {
+    return !token.is_spot_available // 如果代币不支持现货，禁用现货选项
+  } else if (marketType === 'futures') {
+    return !token.is_futures_available // 如果代币不支持合约，禁用合约选项
+  }
+
+  return false
 }
 
 const handleTokenInput = (event) => {

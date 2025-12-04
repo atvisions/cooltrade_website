@@ -7,12 +7,16 @@
         <div class="flex items-center gap-3">
           <h2 class="text-sm font-semibold text-slate-800">条件判断</h2>
           <span class="text-xs text-slate-500">
-            {{ satisfiedCount }}/{{ conditionIndicators.length }} 满足
+            {{ satisfiedCount }}/{{ conditionIndicators.length }} {{ triggerMode === 'current_state' ? '满足' : '当前状态' }}
             <span class="ml-1 text-slate-400">({{ requireAll ? 'AND' : 'OR' }})</span>
           </span>
           <!-- 显示当前时间周期 -->
           <span v-if="indicatorValues?.timeframe" class="px-2 py-0.5 text-[10px] font-medium bg-blue-100 text-blue-700 rounded">
             {{ getTimeframeLabel(indicatorValues.timeframe) }}
+          </span>
+          <!-- 🔥 显示触发模式 -->
+          <span :class="['px-2 py-0.5 text-[10px] font-medium rounded', triggerMode === 'current_state' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700']">
+            {{ triggerMode === 'current_state' ? '当前状态触发' : '状态变化触发' }}
           </span>
         </div>
         <div class="flex items-center gap-3">
@@ -55,8 +59,9 @@
                       <span class="text-[10px] text-slate-500 ml-1">{{ getIndicatorConfig(indicator) }}</span>
                       <span class="text-[10px] text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">权重 {{ getWeightPercent(indicator) }}%</span>
                     </div>
-                    <span :class="['px-2 py-0.5 rounded text-[10px] font-semibold', isIndicatorSatisfied(indicator) ? 'bg-green-500 text-white' : 'bg-slate-200 text-slate-600']">
-                      {{ isIndicatorSatisfied(indicator) ? '满足' : '未满足' }}
+                    <!-- 🔥 根据触发模式显示不同的状态文字 -->
+                    <span :class="['px-2 py-0.5 rounded text-[10px] font-semibold', getStatusClass(indicator)]">
+                      {{ getStatusText(indicator) }}
                     </span>
                   </div>
                 </td>
@@ -126,7 +131,9 @@ const props = defineProps({
   indicatorValues: { type: Object, default: () => ({}) },
   requireAll: { type: Boolean, default: true },
   loading: { type: Boolean, default: false },
-  updatedAt: { type: String, default: null }
+  updatedAt: { type: String, default: null },
+  // 🔥 触发模式：state_change（状态变化触发）或 current_state（当前状态触发）
+  triggerMode: { type: String, default: 'state_change' }
 })
 
 defineEmits(['refresh'])
@@ -257,7 +264,7 @@ const getWeightPercent = (indicator) => {
   return totalWeight > 0 ? Math.round((indicator.weight || 1) / totalWeight * 100) : 0
 }
 
-// 简化的条件判断
+// 简化的条件判断（检查当前状态是否满足）
 const isIndicatorSatisfied = (indicator) => {
   const values = props.indicatorValues[indicator.type] || {}
   const params = indicator.params || {}
@@ -278,6 +285,42 @@ const isIndicatorSatisfied = (indicator) => {
 
     default:
       return false
+  }
+}
+
+// 🔥 获取状态显示文字（根据触发模式）
+const getStatusText = (indicator) => {
+  const satisfied = isIndicatorSatisfied(indicator)
+
+  if (props.triggerMode === 'current_state') {
+    // 当前状态触发模式：满足就会触发
+    return satisfied ? '满足 ✓' : '未满足'
+  } else {
+    // 状态变化触发模式：需要等待状态变化
+    if (satisfied) {
+      // 当前状态满足，但需要等待状态变化才能触发
+      return '当前满足 (等待变化)'
+    } else {
+      return '未满足'
+    }
+  }
+}
+
+// 🔥 获取状态样式类（根据触发模式）
+const getStatusClass = (indicator) => {
+  const satisfied = isIndicatorSatisfied(indicator)
+
+  if (props.triggerMode === 'current_state') {
+    // 当前状态触发模式
+    return satisfied ? 'bg-green-500 text-white' : 'bg-slate-200 text-slate-600'
+  } else {
+    // 状态变化触发模式
+    if (satisfied) {
+      // 当前满足但等待变化 - 使用黄色
+      return 'bg-amber-100 text-amber-700'
+    } else {
+      return 'bg-slate-200 text-slate-600'
+    }
   }
 }
 

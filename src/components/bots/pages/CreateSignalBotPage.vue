@@ -86,6 +86,7 @@
                 v-else-if="formData.signal_type === 'indicator_alert'"
                 :selected-indicators="selectedIndicators"
                 :logic="indicatorLogic"
+                :trigger-mode="triggerMode"
                 :indicators-config="indicatorsConfig"
                 :timeframes-config="timeframesConfig"
                 :signal-quality-config="signalQualityConfig"
@@ -93,6 +94,7 @@
                 :market-type="formData.market_type"
                 @update:selected-indicators="selectedIndicators = $event"
                 @update:logic="indicatorLogic = $event"
+                @update:triggerMode="triggerMode = $event"
                 @update:indicators-config="indicatorsConfig = $event"
                 @update:timeframes-primary="timeframesConfig.primary = $event"
                 @toggle-confirm-timeframe="toggleConfirmTimeframe($event)"
@@ -525,7 +527,8 @@ const handleSubmit = async () => {
             }
           }),
           trigger_threshold: Number(signalQualityConfig.value.signal_strength_threshold) || 70,
-          require_all: indicatorLogic.value.toUpperCase() === 'AND'  // 统一转为大写比较
+          require_all: indicatorLogic.value.toUpperCase() === 'AND',  // 统一转为大写比较
+          trigger_mode: triggerMode.value  // 🔥 触发模式
         }
       }),
       // 多时间周期配置（价格提醒不需要）
@@ -878,6 +881,7 @@ const priceAlertConfig = ref({
 // 指标信号提醒配置（新的多指标格式）
 const selectedIndicators = ref([])
 const indicatorLogic = ref('AND')
+const triggerMode = ref('state_change')  // 🔥 触发模式：state_change 或 current_state
 const indicatorsConfig = ref({})
 
 // 保留旧的单指标配置（向后兼容）
@@ -1152,6 +1156,10 @@ const loadBotData = async () => {
       }
     } else if (formData.value.signal_type === 'indicator_alert') {
       const indicatorAlert = config.indicator_alert || {}
+
+      // 🔥 从 indicators_config 加载触发模式
+      const indicatorsConfigData = bot.signal_bot?.indicators_config || {}
+      triggerMode.value = indicatorsConfigData.trigger_mode || 'state_change'
 
       // 检查是否是新的多指标格式
       if (indicatorAlert.indicators && Array.isArray(indicatorAlert.indicators)) {

@@ -17,6 +17,39 @@
           <span class="text-sm font-medium text-slate-700">信号触发设置</span>
         </div>
 
+        <!-- 🔥 触发模式选择 -->
+        <div class="bg-white rounded-lg p-3 border border-slate-200">
+          <label class="text-xs font-medium text-slate-700 block mb-2">触发模式</label>
+          <div class="flex gap-2">
+            <button
+              type="button"
+              @click="$emit('update:triggerMode', 'state_change')"
+              :class="[
+                'flex-1 px-3 py-2 text-xs font-medium rounded-lg border-2 transition-all',
+                triggerMode === 'state_change'
+                  ? 'border-amber-500 bg-amber-50 text-amber-700'
+                  : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+              ]"
+            >
+              <div class="font-semibold">状态变化触发</div>
+              <div class="text-[10px] mt-0.5 opacity-75">金叉/死叉的瞬间</div>
+            </button>
+            <button
+              type="button"
+              @click="$emit('update:triggerMode', 'current_state')"
+              :class="[
+                'flex-1 px-3 py-2 text-xs font-medium rounded-lg border-2 transition-all',
+                triggerMode === 'current_state'
+                  ? 'border-green-500 bg-green-50 text-green-700'
+                  : 'border-slate-200 bg-white text-slate-600 hover:border-slate-300'
+              ]"
+            >
+              <div class="font-semibold">当前状态触发</div>
+              <div class="text-[10px] mt-0.5 opacity-75">满足条件即触发</div>
+            </button>
+          </div>
+        </div>
+
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <!-- K线收盘确认 -->
           <div class="bg-white rounded-lg p-3 border border-slate-200">
@@ -245,6 +278,11 @@ const props = defineProps({
   timeframesConfig: {
     type: Object,
     required: true
+  },
+  // 🔥 触发模式：state_change（状态变化触发）或 current_state（当前状态触发）
+  triggerMode: {
+    type: String,
+    default: 'state_change'
   }
 })
 
@@ -253,7 +291,8 @@ const emit = defineEmits([
   'toggle-confirm',
   'update:require-all-confirm',
   'update:min-confirm-count',
-  'update:trigger'
+  'update:trigger',
+  'update:triggerMode'  // 🔥 触发模式
 ])
 
 // 注意：1分钟(1m)周期暂未支持技术指标计算，建议最小使用5分钟

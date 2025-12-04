@@ -305,6 +305,7 @@
           </button>
         </div>
       </div>
+
     </div>
 
     <!-- 指标配置区域 -->
@@ -1390,11 +1391,13 @@
     <div class="mt-6">
       <TimeframesConfig
         :timeframes-config="timeframesConfig"
+        :trigger-mode="triggerMode"
         @update:primary="$emit('update:timeframes-primary', $event)"
         @toggle-confirm="$emit('toggle-confirm-timeframe', $event)"
         @update:require-all-confirm="$emit('update:timeframes-require-all', $event)"
         @update:min-confirm-count="$emit('update:timeframes-min-count', $event)"
         @update:trigger="$emit('update:timeframes-trigger', $event)"
+        @update:triggerMode="$emit('update:triggerMode', $event)"
       />
     </div>
 
@@ -1511,6 +1514,11 @@ const props = defineProps({
     type: String,
     default: 'AND'
   },
+  // 🔥 触发模式：state_change（状态变化触发）或 current_state（当前状态触发）
+  triggerMode: {
+    type: String,
+    default: 'state_change'
+  },
   indicatorsConfig: {
     type: Object,
     default: () => ({})
@@ -1593,6 +1601,7 @@ const props = defineProps({
 const emit = defineEmits([
   'update:selectedIndicators',
   'update:logic',
+  'update:triggerMode',  // 🔥 触发模式
   'update:indicatorsConfig',
   // 时间周期配置事件
   'update:timeframes-primary',

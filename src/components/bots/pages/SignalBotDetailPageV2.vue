@@ -196,6 +196,7 @@
             :indicators="bot.signal_bot?.indicators_config?.indicators || []"
             :indicatorValues="indicatorValues"
             :requireAll="bot.signal_bot?.indicators_config?.require_all"
+            :triggerMode="bot.signal_bot?.indicators_config?.trigger_mode || 'state_change'"
             :loading="loadingIndicators"
             :updatedAt="indicatorValuesUpdatedAt"
             @refresh="refreshIndicatorValues"

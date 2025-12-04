@@ -294,17 +294,17 @@
                 <div v-else-if="filteredBots.length === 0" class="text-center py-12">
                   <p class="text-slate-500">暂无机器人数据</p>
                 </div>
-                <div v-else class="overflow-x-auto">
+                <div v-else>
                   <table class="w-full">
                     <thead>
                       <tr class="border-b border-slate-200 bg-slate-50">
-                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider">机器人名称</th>
-                        <th class="px-3 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider w-24">交易对</th>
-                        <th class="px-3 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider w-14">市场</th>
-                        <th class="px-3 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider w-16">状态</th>
-                        <th class="px-3 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider w-24">信号类型</th>
-                        <th class="px-3 py-3 text-center text-xs font-semibold text-slate-700 uppercase tracking-wider w-14 whitespace-nowrap">信号数</th>
-                        <th class="px-3 py-3 text-center text-xs font-semibold text-slate-700 uppercase tracking-wider w-28">操作</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider" style="width: 400px">机器人名称</th>
+                        <th class="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider" style="width: 80px">交易对</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold text-slate-700 uppercase tracking-wider" style="width: 60px">市场</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold text-slate-700 uppercase tracking-wider" style="width: 60px">状态</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold text-slate-700 uppercase tracking-wider" style="width: 80px">信号类型</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold text-slate-700 uppercase tracking-wider" style="width: 60px">信号数</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold text-slate-700 uppercase tracking-wider" style="width: 140px">操作</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -353,24 +353,24 @@
                           </div>
                         </td>
                         <!-- 交易对 -->
-                        <td class="px-3 py-3 w-24">
+                        <td class="px-4 py-3" style="width: 100px">
                           <span class="font-medium text-slate-900 whitespace-nowrap text-sm">
                             {{ bot.token_symbol }}/{{ bot.trading_pair || 'USDT' }}
                           </span>
                         </td>
                         <!-- 市场类型 -->
-                        <td class="px-3 py-3 w-14">
+                        <td class="px-4 py-3 text-center" style="width: 70px">
                           <span :class="[
-                            'inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium whitespace-nowrap',
+                            'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap',
                             bot.market_type === 'spot' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'
                           ]">
                             {{ bot.market_type === 'spot' ? '现货' : '合约' }}
                           </span>
                         </td>
                         <!-- 状态 -->
-                        <td class="px-3 py-3 w-16">
+                        <td class="px-4 py-3 text-center" style="width: 70px">
                           <span :class="[
-                            'inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium whitespace-nowrap',
+                            'inline-flex items-center px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap',
                             bot.status === 'running'
                               ? 'bg-green-100 text-green-700'
                               : bot.status === 'paused'
@@ -381,20 +381,20 @@
                           </span>
                         </td>
                         <!-- 信号类型 -->
-                        <td class="px-3 py-3 w-24">
-                          <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs bg-purple-100 text-purple-700 whitespace-nowrap">
+                        <td class="px-4 py-3 text-center" style="width: 100px">
+                          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs bg-purple-100 text-purple-700 whitespace-nowrap">
                             {{ getSignalTypeLabel(bot.signal_type, bot.indicator_type) }}
                           </span>
                         </td>
                         <!-- 信号数 -->
-                        <td class="px-3 py-3 w-14 text-center">
+                        <td class="px-4 py-3 text-center" style="width: 70px">
                           <span class="text-slate-900 font-medium whitespace-nowrap">
                             {{ bot.total_signals || 0 }}
                           </span>
                         </td>
                         <!-- 操作 -->
-                        <td class="px-3 py-3 w-28">
-                          <div class="flex items-center justify-center gap-1">
+                        <td class="px-4 py-3 overflow-visible" style="width: 160px">
+                          <div class="flex items-center justify-center gap-1 overflow-visible">
                             <!-- 启动/停止按钮 -->
                             <div class="relative">
                               <button

@@ -136,6 +136,9 @@ const props = defineProps({
   triggerMode: { type: String, default: 'state_change' }
 })
 
+// 🔥 获取当前价格（从 indicatorValues 中）
+const currentPrice = computed(() => props.indicatorValues?.price || props.indicatorValues?.current_price || 0)
+
 defineEmits(['refresh'])
 
 // 条件判断型指标（有设定值，需要对比）
@@ -279,7 +282,14 @@ const isIndicatorSatisfied = (indicator) => {
     case 'ma_crossover':
       const fast = values[`ma_${params.fast || 7}`]
       const slow = values[`ma_${params.slow || 25}`]
-      return fast && slow && fast > slow
+      // 基础条件：金叉
+      const isGoldenCross = fast && slow && fast > slow
+      // 如果启用了价格突破快线，还需要检查价格
+      if (params.break_fast_ma && isGoldenCross) {
+        const price = values.current_price || currentPrice.value
+        return price && parseFloat(price) > parseFloat(fast)
+      }
+      return isGoldenCross
     case 'volume':
       return values.volume > (values.volume_ma || 0) * (params.multiplier || 1.5)
 
@@ -354,6 +364,16 @@ const getConditions = (indicator) => {
         slowVal: maSlow,
         detail: `MA${params.fast||7}: ${fmt(maFast)} / MA${params.slow||25}: ${fmt(maSlow)}`
       })
+      // 🔥 如果启用了价格突破快速均线条件
+      if (params.break_fast_ma) {
+        conditions.push({
+          label: '价格突破快线',
+          currentValue: fmt(values.current_price || currentPrice.value),
+          operator: '>',
+          threshold: fmt(maFast),
+          detail: `价格需高于 MA${params.fast||7}`
+        })
+      }
       break
     case 'volume':
       const volMa = values.volume_ma || 0

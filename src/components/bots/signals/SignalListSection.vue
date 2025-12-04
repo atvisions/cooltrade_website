@@ -24,11 +24,11 @@
               signal.signal_type === 'sell' ? 'bg-red-100 text-red-700' :
               'bg-yellow-100 text-yellow-700'
             ]">
-              {{ signal.signal_type_display || signal.signal_type }}
+              {{ signal.signal_type_display || getSignalTypeLabel(signal.signal_type) }}
             </span>
-            <span class="text-sm font-medium text-slate-800">{{ formatPrice(signal.trigger_price) }}</span>
-            <span v-if="signal.signal_strength" class="text-xs text-slate-500">
-              强度 {{ signal.signal_strength }}%
+            <span class="text-sm font-medium text-slate-800">{{ signal.title || formatPrice(signal.price) }}</span>
+            <span v-if="signal.strength" class="text-xs text-slate-500">
+              强度 {{ signal.strength }}%
             </span>
           </div>
           <div class="flex items-center gap-3">
@@ -122,6 +122,17 @@ const getStatusLabel = (status) => {
     cancelled: '已取消'
   }
   return labels[status] || status
+}
+
+const getSignalTypeLabel = (signalType) => {
+  const labels = {
+    buy: '买入信号',
+    sell: '卖出信号',
+    close: '平仓信号',
+    alert: '价格提醒',
+    neutral: '中性信号'
+  }
+  return labels[signalType] || signalType
 }
 </script>
 

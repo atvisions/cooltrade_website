@@ -95,7 +95,7 @@ const routes = [
   {
     path: '/signal-bots/:id',
     name: 'SignalBotDetail',
-    component: () => import('../components/bots/pages/SignalBotDetailPageV2.vue'),
+    component: () => import('../components/bots/pages/SignalBotDetailPage.vue'),
     meta: { requiresAuth: true }
   },
   {
@@ -107,7 +107,7 @@ const routes = [
   {
     path: '/bots/:id',
     name: 'BotDetail',
-    component: () => import('../components/bots/pages/BotDetailPage.vue'),
+    component: () => import('../components/bots/pages/TrendBotDetailPage.vue'),
     meta: { requiresAuth: true }
   },
   {

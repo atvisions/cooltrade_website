@@ -40,7 +40,7 @@
           <thead class="bg-slate-50 border-b border-slate-200">
             <tr>
               <th class="px-4 py-2.5 text-left text-xs font-semibold text-slate-600">指标 / 条件</th>
-              <th class="px-4 py-2.5 text-center text-xs font-semibold text-slate-600 w-28">设定值</th>
+              <th class="px-4 py-2.5 text-center text-xs font-semibold text-slate-600 w-40">设定值</th>
               <th class="px-4 py-2.5 text-center text-xs font-semibold text-slate-600 w-28">当前值</th>
               <th class="px-4 py-2.5 text-center text-xs font-semibold text-slate-600 w-16">状态</th>
             </tr>
@@ -87,35 +87,6 @@
       </div>
     </div>
 
-    <!-- 市场状态监测 -->
-    <div v-if="infoIndicators.length > 0" class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-      <div class="px-5 py-3 border-b border-slate-200 bg-slate-50">
-        <h2 class="text-sm font-semibold text-slate-800">市场状态监测</h2>
-      </div>
-      <div class="p-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div v-for="(indicator, idx) in infoIndicators" :key="idx"
-          :class="['border rounded-lg p-3', getSignalStyle(indicator).borderClass]">
-          <!-- 标题和信号状态 -->
-          <div class="flex items-center justify-between mb-2">
-            <div class="flex items-center gap-2">
-              <span class="text-sm font-semibold text-slate-800">{{ getIndicatorLabel(indicator.type) }}</span>
-              <span class="text-[10px] text-slate-400">{{ getIndicatorConfig(indicator) }}</span>
-            </div>
-            <span :class="['px-2 py-0.5 rounded text-[10px] font-semibold', getSignalStyle(indicator).badgeClass]">
-              {{ getSignalStyle(indicator).label }}
-            </span>
-          </div>
-          <!-- 数据详情 -->
-          <div class="space-y-1">
-            <div v-for="(info, iIdx) in getInfoData(indicator)" :key="iIdx" class="flex justify-between items-center text-xs">
-              <span class="text-slate-500">{{ info.label }}</span>
-              <span :class="['font-mono', info.highlight ? getSignalStyle(indicator).textClass : 'text-slate-700']">{{ info.value }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- 空状态 -->
     <div v-if="enabledIndicators.length === 0" class="bg-white rounded-xl border border-slate-200 py-8 text-center">
       <p class="text-sm text-slate-400">暂无启用的指标配置</p>
@@ -141,14 +112,11 @@ const currentPrice = computed(() => props.indicatorValues?.price || props.indica
 
 defineEmits(['refresh'])
 
-// 条件判断型指标（有设定值，需要对比）
-const conditionTypes = ['rsi', 'macd', 'ma_crossover', 'volume', 'trend_bias']
-// 信息展示型指标（只显示当前状态）
-const infoTypes = ['atr', 'bollinger', 'pivot', 'pattern', 'divergence', 'funding_rate', 'open_interest', 'long_short_ratio']
-
+// 所有指标类型都参与条件判断（后端逻辑是这样的）
+// 前端不再区分"条件型"和"信息型"，统一显示满足/不满足状态
 const enabledIndicators = computed(() => props.indicators.filter(i => i.enabled))
-const conditionIndicators = computed(() => enabledIndicators.value.filter(i => conditionTypes.includes(i.type)))
-const infoIndicators = computed(() => enabledIndicators.value.filter(i => infoTypes.includes(i.type)))
+// 所有启用的指标都作为条件指标显示
+const conditionIndicators = computed(() => enabledIndicators.value)
 const totalCount = computed(() => enabledIndicators.value.length)
 const satisfiedCount = computed(() => conditionIndicators.value.filter(i => isIndicatorSatisfied(i)).length)
 
@@ -271,6 +239,7 @@ const getWeightPercent = (indicator) => {
 const isIndicatorSatisfied = (indicator) => {
   const values = props.indicatorValues[indicator.type] || {}
   const params = indicator.params || {}
+  const price = props.indicatorValues.price
 
   switch (indicator.type) {
     case 'rsi':
@@ -286,12 +255,57 @@ const isIndicatorSatisfied = (indicator) => {
       const isGoldenCross = fast && slow && fast > slow
       // 如果启用了价格突破快线，还需要检查价格
       if (params.break_fast_ma && isGoldenCross) {
-        const price = values.current_price || currentPrice.value
-        return price && parseFloat(price) > parseFloat(fast)
+        const p = values.current_price || currentPrice.value
+        return p && parseFloat(p) > parseFloat(fast)
       }
       return isGoldenCross
     case 'volume':
       return values.volume > (values.volume_ma || 0) * (params.multiplier || 1.5)
+    case 'trend_bias':
+      const trendFast = values[`ma_${params.fast_ma || 50}`] || values.ma_50
+      const trendSlow = values[`ma_${params.slow_ma || 200}`] || values.ma_200
+      return trendFast && trendSlow && trendFast > trendSlow
+
+    // === 市场状态型指标的满足判断 ===
+    case 'bollinger':
+      // 价格触及上轨或下轨时满足
+      if (!price || !values.bollinger_upper || !values.bollinger_lower) return false
+      return price >= values.bollinger_upper || price <= values.bollinger_lower
+    case 'atr':
+      // ATR 高于均值时满足（高波动环境）
+      if (!values.atr || !values.atr_ma) return false
+      return values.atr > values.atr_ma * 1.2  // 高于均值 20%
+    case 'pivot':
+      // 价格突破支撑或阻力时满足
+      if (!price || !values.support || !values.resistance) return false
+      return price >= values.resistance || price <= values.support
+    case 'pattern':
+      // 识别到任何形态时满足
+      return !!values.pattern
+    case 'divergence':
+      // 检测到背离时满足
+      return !!values.divergence_type
+    case 'funding_rate':
+      // 资金费率极端时满足
+      const fr = values.funding_rate
+      if (fr === undefined || fr === null) return false
+      const posExtreme = params.positive_extreme || 0.01
+      const negExtreme = params.negative_extreme || -0.01
+      return fr >= posExtreme || fr <= negExtreme
+    case 'open_interest':
+      // 持仓量变化超过阈值时满足
+      const oiChange = values.oi_change
+      if (oiChange === undefined || oiChange === null) return false
+      const oiInc = params.oi_increase_threshold || 5
+      const oiDec = params.oi_decrease_threshold || -5
+      return oiChange >= oiInc || oiChange <= oiDec
+    case 'long_short_ratio':
+      // 多空比极端时满足
+      const lsr = values.long_short_ratio
+      if (lsr === undefined || lsr === null) return false
+      const extLong = params.extreme_long || 2.0
+      const extShort = params.extreme_short || 0.5
+      return lsr >= extLong || lsr <= extShort
 
     default:
       return false
@@ -399,6 +413,127 @@ const getConditions = (indicator) => {
         slowVal: trendSlowMa,
         detail: `MA${params.fast_ma||50}: ${fmt(trendFastMa)} / MA${params.slow_ma||200}: ${fmt(trendSlowMa)}`
       })
+      break
+
+    // === 市场状态型指标的条件显示 ===
+    case 'bollinger':
+      const bbPrice = props.indicatorValues.price
+      const bbUpper = values.bollinger_upper
+      const bbLower = values.bollinger_lower
+      const bbPos = bbPrice && bbUpper && bbLower
+        ? (bbPrice >= bbUpper ? '超买区 ↑' : bbPrice <= bbLower ? '超卖区 ↓' : '中间区域')
+        : '--'
+      conditions.push({
+        label: '价格位置',
+        currentValue: bbPos,
+        operator: '触及',
+        threshold: '上轨或下轨',
+        statusColor: bbPrice >= bbUpper ? 'text-red-600' : bbPrice <= bbLower ? 'text-green-600' : 'text-slate-600'
+      })
+      conditions.push({ label: '上轨', currentValue: fmt(bbUpper), operator: '', threshold: '--' })
+      conditions.push({ label: '下轨', currentValue: fmt(bbLower), operator: '', threshold: '--' })
+      break
+    case 'atr':
+      const atrVal = values.atr
+      const atrMa = values.atr_ma
+      const atrStatus = atrVal && atrMa
+        ? (atrVal > atrMa * 1.2 ? '高波动' : atrVal < atrMa * 0.8 ? '低波动' : '正常')
+        : '--'
+      conditions.push({
+        label: 'ATR 波动',
+        currentValue: atrStatus,
+        operator: '>',
+        threshold: '均值×1.2',
+        statusColor: atrStatus === '高波动' ? 'text-orange-600' : 'text-slate-600'
+      })
+      conditions.push({ label: 'ATR 值', currentValue: fmt(atrVal), operator: '', threshold: '--' })
+      conditions.push({ label: 'ATR 均值', currentValue: fmt(atrMa), operator: '', threshold: '--' })
+      break
+    case 'pivot':
+      const pivotPrice = props.indicatorValues.price
+      const support = values.support
+      const resistance = values.resistance
+      const pivotPos = pivotPrice && support && resistance
+        ? (pivotPrice >= resistance ? '突破阻力 ↑' : pivotPrice <= support ? '跌破支撑 ↓' : '区间内')
+        : '--'
+      conditions.push({
+        label: '价格位置',
+        currentValue: pivotPos,
+        operator: '突破',
+        threshold: '支撑或阻力',
+        statusColor: pivotPrice >= resistance ? 'text-green-600' : pivotPrice <= support ? 'text-red-600' : 'text-slate-600'
+      })
+      conditions.push({ label: '支撑位', currentValue: fmt(support), operator: '', threshold: '--' })
+      conditions.push({ label: '阻力位', currentValue: fmt(resistance), operator: '', threshold: '--' })
+      break
+    case 'pattern':
+      conditions.push({
+        label: '识别形态',
+        currentValue: values.pattern || '无',
+        operator: '检测到',
+        threshold: '任意形态',
+        statusColor: values.pattern ? 'text-purple-600 font-semibold' : 'text-slate-600'
+      })
+      break
+    case 'divergence':
+      conditions.push({
+        label: '背离信号',
+        currentValue: values.divergence_type || '无背离',
+        operator: '检测到',
+        threshold: '任意背离',
+        statusColor: values.divergence_type ? 'text-purple-600 font-semibold' : 'text-slate-600'
+      })
+      break
+    case 'funding_rate':
+      const fr = values.funding_rate
+      const frDisplay = fr !== undefined ? `${(fr * 100).toFixed(4)}%` : '--'
+      const frPosExtreme = params.positive_extreme || 0.01
+      const frNegExtreme = params.negative_extreme || -0.01
+      const frStatus = fr !== undefined
+        ? (fr >= frPosExtreme ? '极端多头' : fr <= frNegExtreme ? '极端空头' : '正常')
+        : '--'
+      conditions.push({
+        label: '费率状态',
+        currentValue: frStatus,
+        operator: '超过',
+        threshold: `±${(frPosExtreme * 100).toFixed(2)}%`,
+        statusColor: fr >= frPosExtreme || fr <= frNegExtreme ? 'text-orange-600 font-semibold' : 'text-slate-600'
+      })
+      conditions.push({ label: '当前费率', currentValue: frDisplay, operator: '', threshold: '--' })
+      break
+    case 'open_interest':
+      const oiChange = values.oi_change
+      const oiDisplay = oiChange !== undefined ? `${oiChange.toFixed(2)}%` : '--'
+      const oiIncThreshold = params.oi_increase_threshold || 5
+      const oiDecThreshold = params.oi_decrease_threshold || -5
+      const oiStatus = oiChange !== undefined
+        ? (oiChange >= oiIncThreshold ? '大幅增仓' : oiChange <= oiDecThreshold ? '大幅减仓' : '正常')
+        : '--'
+      conditions.push({
+        label: '持仓变化',
+        currentValue: oiStatus,
+        operator: '超过',
+        threshold: `${oiDecThreshold}%~${oiIncThreshold}%`,
+        statusColor: oiChange >= oiIncThreshold || oiChange <= oiDecThreshold ? 'text-orange-600 font-semibold' : 'text-slate-600'
+      })
+      conditions.push({ label: '变化率', currentValue: oiDisplay, operator: '', threshold: '--' })
+      break
+    case 'long_short_ratio':
+      const lsr = values.long_short_ratio
+      const lsrDisplay = lsr !== undefined ? lsr.toFixed(2) : '--'
+      const lsrExtLong = params.extreme_long || 2.0
+      const lsrExtShort = params.extreme_short || 0.5
+      const lsrStatus = lsr !== undefined
+        ? (lsr >= lsrExtLong ? '极端偏多' : lsr <= lsrExtShort ? '极端偏空' : '正常')
+        : '--'
+      conditions.push({
+        label: '多空状态',
+        currentValue: lsrStatus,
+        operator: '超过',
+        threshold: `${lsrExtShort}~${lsrExtLong}`,
+        statusColor: lsr >= lsrExtLong || lsr <= lsrExtShort ? 'text-orange-600 font-semibold' : 'text-slate-600'
+      })
+      conditions.push({ label: '当前比例', currentValue: lsrDisplay, operator: '', threshold: '--' })
       break
   }
   return conditions

@@ -129,7 +129,7 @@
             </div>
           </Card>
 
-          <!-- 第2步: 市场类型配置（从信号机器人继承） -->
+          <!-- 第2步: 继承配置（从信号机器人继承） -->
           <Card variant="default" class="mb-6">
             <!-- 卡片标题 -->
             <div class="flex items-center gap-3 mb-6">
@@ -139,52 +139,125 @@
                 </svg>
               </div>
               <div>
-                <div class="text-lg font-semibold text-slate-900">市场类型</div>
-                <div class="text-xs text-slate-500">从信号机器人自动继承</div>
+                <div class="text-lg font-semibold text-slate-900">继承配置</div>
+                <div class="text-xs text-slate-500">以下配置从信号机器人自动继承，无需重复设置</div>
               </div>
             </div>
 
             <div class="space-y-4">
-              <!-- 市场类型（只读显示） -->
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-2">
-                  市场类型
-                </label>
-                <!-- 显示继承的市场类型 -->
-                <div v-if="selectedSignalBotData" class="flex items-center gap-3">
-                  <div
-                    :class="[
-                      'flex items-center justify-center gap-2 px-4 py-3 rounded-lg border-2 text-sm font-medium',
-                      formData.market_type === 'spot'
-                        ? 'border-blue-500 bg-blue-50 text-blue-900'
-                        : 'border-purple-500 bg-purple-50 text-purple-900'
-                    ]"
-                  >
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        :d="formData.market_type === 'spot'
-                          ? 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
-                          : 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6'"
+              <!-- 继承的配置信息 -->
+              <div v-if="selectedSignalBotData">
+                <!-- 继承信息网格 -->
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                  <!-- 交易代币 -->
+                  <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                    <div class="text-xs text-slate-500 mb-1">交易代币</div>
+                    <div class="flex items-center gap-2">
+                      <img
+                        :src="selectedSignalBotData.token_logo || '/default-token.png'"
+                        :alt="selectedSignalBotData.token_symbol"
+                        class="w-5 h-5 rounded-full"
+                        @error="$event.target.src='/default-token.png'"
                       />
-                    </svg>
-                    {{ formData.market_type === 'spot' ? '现货' : '合约-USDT' }}
+                      <span class="font-medium text-slate-900">{{ selectedSignalBotData.token_symbol }}</span>
+                      <span class="text-xs text-slate-500">/ {{ selectedSignalBotData.trading_pair || 'USDT' }}</span>
+                    </div>
                   </div>
-                  <span class="text-xs text-slate-500">
-                    <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+
+                  <!-- 交易所 -->
+                  <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                    <div class="text-xs text-slate-500 mb-1">交易所</div>
+                    <div class="flex items-center gap-2">
+                      <span class="font-medium text-slate-900">{{ getExchangeDisplay(selectedSignalBotData.exchange_name) }}</span>
+                      <span v-if="selectedSignalBotData.exchange_api" class="text-xs text-green-600 bg-green-50 px-1.5 py-0.5 rounded">已绑定API</span>
+                      <span v-else class="text-xs text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">公开数据</span>
+                    </div>
+                  </div>
+
+                  <!-- 市场类型 -->
+                  <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                    <div class="text-xs text-slate-500 mb-1">市场类型</div>
+                    <div class="flex items-center gap-2">
+                      <span
+                        :class="[
+                          'inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium',
+                          formData.market_type === 'spot'
+                            ? 'bg-blue-100 text-blue-700'
+                            : 'bg-purple-100 text-purple-700'
+                        ]"
+                      >
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            :d="formData.market_type === 'spot'
+                              ? 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+                              : 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6'"
+                          />
+                        </svg>
+                        {{ formData.market_type === 'spot' ? '现货' : '合约-USDT' }}
+                      </span>
+                    </div>
+                  </div>
+
+                  <!-- 时间周期 -->
+                  <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
+                    <div class="text-xs text-slate-500 mb-1">时间周期</div>
+                    <div class="flex items-center gap-2">
+                      <span class="font-medium text-slate-900">{{ getTimeframeLabel(selectedSignalBotData.timeframe) }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 信号配置摘要 -->
+                <div v-if="selectedSignalBotData.signal_bot" class="p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                  <div class="flex items-center gap-2 mb-2">
+                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                     </svg>
-                    继承自信号机器人
-                  </span>
+                    <span class="text-xs font-medium text-blue-700">信号配置</span>
+                  </div>
+                  <div class="flex flex-wrap gap-2 text-xs">
+                    <!-- 信号强度阈值 -->
+                    <span class="inline-flex items-center gap-1 px-2 py-1 bg-white rounded border border-blue-100 text-slate-600">
+                      <span class="text-blue-500">📊</span>
+                      强度阈值: {{ selectedSignalBotData.signal_bot.signal_strength_threshold || 60 }}%
+                    </span>
+                    <!-- 信号过期时间 -->
+                    <span class="inline-flex items-center gap-1 px-2 py-1 bg-white rounded border border-blue-100 text-slate-600">
+                      <span class="text-amber-500">⏰</span>
+                      过期: {{ selectedSignalBotData.signal_bot.signal_expiration_hours || 24 }}小时
+                    </span>
+                    <!-- 确认K线数 -->
+                    <span class="inline-flex items-center gap-1 px-2 py-1 bg-white rounded border border-blue-100 text-slate-600">
+                      <span class="text-green-500">📈</span>
+                      确认: {{ selectedSignalBotData.signal_bot.signal_confirmation_bars || 1 }}根K线
+                    </span>
+                    <!-- 通知方式 -->
+                    <span v-if="selectedSignalBotData.signal_bot.notify_email || selectedSignalBotData.signal_bot.notify_app" class="inline-flex items-center gap-1 px-2 py-1 bg-white rounded border border-blue-100 text-slate-600">
+                      <span class="text-purple-500">🔔</span>
+                      <span v-if="selectedSignalBotData.signal_bot.notify_email && selectedSignalBotData.signal_bot.notify_app">邮件+应用</span>
+                      <span v-else-if="selectedSignalBotData.signal_bot.notify_email">邮件通知</span>
+                      <span v-else>应用通知</span>
+                    </span>
+                  </div>
                 </div>
-                <!-- 未选择信号机器人时的提示 -->
-                <div v-else class="p-4 bg-slate-50 border border-slate-200 rounded-lg text-center">
-                  <p class="text-sm text-slate-500">
-                    💡 请先选择信号机器人，市场类型将自动继承
-                  </p>
+
+                <!-- 继承提示 -->
+                <div class="mt-3 text-xs text-slate-500 flex items-center gap-1">
+                  <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  以上配置自动继承自信号机器人「{{ selectedSignalBotData.name }}」，确保信号与执行的一致性
                 </div>
+              </div>
+
+              <!-- 未选择信号机器人时的提示 -->
+              <div v-else class="p-4 bg-slate-50 border border-slate-200 rounded-lg text-center">
+                <p class="text-sm text-slate-500">
+                  💡 请先选择信号机器人，配置将自动继承
+                </p>
               </div>
 
               <!-- 余额检查 -->
@@ -3614,6 +3687,21 @@ const getExchangeDisplay = (exchangeName) => {
     'bybit': 'Bybit'
   }
   return exchangeDisplayMap[exchangeName] || exchangeName
+}
+
+// 时间周期标签映射
+const getTimeframeLabel = (timeframe) => {
+  const timeframeLabelMap = {
+    '1m': '1分钟',
+    '5m': '5分钟',
+    '15m': '15分钟',
+    '30m': '30分钟',
+    '1h': '1小时',
+    '4h': '4小时',
+    '1d': '1天',
+    '1w': '1周'
+  }
+  return timeframeLabelMap[timeframe] || timeframe
 }
 
 // 信号类型标签映射（简化：只保留 indicator_alert）

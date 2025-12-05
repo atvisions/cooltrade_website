@@ -24,16 +24,21 @@ export function getCryptoCompareLogo(symbol) {
 
 /**
  * 获取代币 Logo URL
- * 使用 CryptoCompare 作为主要来源（国内可访问）
+ * 优先使用后端返回的 logo URL，如果没有则使用 CoinMarketCap
  * @param {Object} token - 代币对象
  * @returns {string} Logo URL
  */
 export function getTokenLogo(token) {
   if (!token) return DEFAULT_TOKEN_LOGO
 
-  // 使用代币符号从 CryptoCompare 获取 logo
-  if (token.symbol) {
-    return getCryptoCompareLogo(token.symbol)
+  // 优先使用后端返回的 logo URL（来自 CoinMarketCap）
+  if (token.logo) {
+    return token.logo
+  }
+
+  // 如果有 coinmarketcap_id，使用 CoinMarketCap 静态资源
+  if (token.coinmarketcap_id) {
+    return `https://s2.coinmarketcap.com/static/img/coins/64x64/${token.coinmarketcap_id}.png`
   }
 
   return DEFAULT_TOKEN_LOGO
@@ -47,9 +52,14 @@ export function getTokenLogo(token) {
 export function getBotTokenLogo(bot) {
   if (!bot) return DEFAULT_TOKEN_LOGO
 
-  // 使用代币符号从 CryptoCompare 获取 logo
-  if (bot.token_symbol) {
-    return getCryptoCompareLogo(bot.token_symbol)
+  // 优先使用后端返回的 token_logo
+  if (bot.token_logo) {
+    return bot.token_logo
+  }
+
+  // 如果有 token_coinmarketcap_id，使用 CoinMarketCap 静态资源
+  if (bot.token_coinmarketcap_id) {
+    return `https://s2.coinmarketcap.com/static/img/coins/64x64/${bot.token_coinmarketcap_id}.png`
   }
 
   return DEFAULT_TOKEN_LOGO

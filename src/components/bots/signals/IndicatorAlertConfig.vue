@@ -32,107 +32,60 @@
     </div>
 
     <!-- 策略快捷模板 -->
-    <div class="mb-6 bg-blue-50 rounded-xl p-5 border border-blue-100">
-      <label class="block text-sm font-medium text-slate-700 mb-3">
-        <div class="flex items-center gap-2">
-          <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
-          <span>策略模板</span>
-        </div>
-        <span class="text-xs text-slate-500 block mt-1 ml-6">一键应用经典策略配置</span>
-      </label>
+    <div class="mb-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-5 border border-blue-100">
+      <div class="flex items-center gap-2 mb-2">
+        <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/>
+        </svg>
+        <span class="text-sm font-medium text-slate-700">策略模板</span>
+      </div>
+      <p class="text-xs text-slate-500 mb-3">一键应用经典策略配置</p>
       <div class="flex flex-wrap gap-2">
-        <button
-          type="button"
-          @click="applyStrategyTemplate('scalping')"
-          :class="[
-            'flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border transition-all',
-            selectedTemplate === 'scalping'
-              ? 'bg-blue-500 text-white border-blue-500 shadow-md'
-              : 'text-slate-700 bg-white border-slate-300 hover:bg-slate-50 hover:border-blue-400 hover:shadow-sm'
-          ]"
-        >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        <button type="button" @click="applyStrategyTemplate('dip_buying')" :class="getTemplateButtonClass('dip_buying')">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/>
           </svg>
-          超短线抢帽子
+          <span>超短线抢帽子</span>
         </button>
-        <button
-          type="button"
-          @click="applyStrategyTemplate('day_trading')"
-          :class="[
-            'flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border transition-all',
-            selectedTemplate === 'day_trading'
-              ? 'bg-blue-500 text-white border-blue-500 shadow-md'
-              : 'text-slate-700 bg-white border-slate-300 hover:bg-slate-50 hover:border-blue-400 hover:shadow-sm'
-          ]"
-        >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+        <button type="button" @click="applyStrategyTemplate('trend_breakout')" :class="getTemplateButtonClass('trend_breakout')">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/>
           </svg>
-          日内交易
+          <span>日内交易</span>
         </button>
-        <button
-          type="button"
-          @click="applyStrategyTemplate('swing_trading')"
-          :class="[
-            'flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border transition-all',
-            selectedTemplate === 'swing_trading'
-              ? 'bg-blue-500 text-white border-blue-500 shadow-md'
-              : 'text-slate-700 bg-white border-slate-300 hover:bg-slate-50 hover:border-blue-400 hover:shadow-sm'
-          ]"
-        >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+        <button type="button" @click="applyStrategyTemplate('swing_reversal')" :class="getTemplateButtonClass('swing_reversal')">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 14.25v2.25m3-4.5v4.5m3-6.75v6.75m3-9v9M6 20.25h12A2.25 2.25 0 0020.25 18V6A2.25 2.25 0 0018 3.75H6A2.25 2.25 0 003.75 6v12A2.25 2.25 0 006 20.25z"/>
           </svg>
-          波段交易
+          <span>波段交易</span>
         </button>
-        <button
-          type="button"
-          @click="applyStrategyTemplate('trend_following')"
-          :class="[
-            'flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border transition-all',
-            selectedTemplate === 'trend_following'
-              ? 'bg-blue-500 text-white border-blue-500 shadow-md'
-              : 'text-slate-700 bg-white border-slate-300 hover:bg-slate-50 hover:border-blue-400 hover:shadow-sm'
-          ]"
-        >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+        <button type="button" @click="applyStrategyTemplate('trend_following')" :class="getTemplateButtonClass('trend_following')">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941"/>
           </svg>
-          趋势跟踪
+          <span>趋势跟踪</span>
         </button>
-        <button
-          type="button"
-          @click="applyStrategyTemplate('reversal')"
-          :class="[
-            'flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border transition-all',
-            selectedTemplate === 'reversal'
-              ? 'bg-blue-500 text-white border-blue-500 shadow-md'
-              : 'text-slate-700 bg-white border-slate-300 hover:bg-slate-50 hover:border-blue-400 hover:shadow-sm'
-          ]"
-        >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+        <button type="button" @click="applyStrategyTemplate('mean_reversion')" :class="getTemplateButtonClass('mean_reversion')">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"/>
           </svg>
-          反转捕捉
+          <span>反转捕捉</span>
         </button>
-        <button
-          type="button"
-          @click="applyStrategyTemplate('breakout')"
-          :class="[
-            'flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border transition-all',
-            selectedTemplate === 'breakout'
-              ? 'bg-blue-500 text-white border-blue-500 shadow-md'
-              : 'text-slate-700 bg-white border-slate-300 hover:bg-slate-50 hover:border-blue-400 hover:shadow-sm'
-          ]"
-        >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+        <button type="button" @click="applyStrategyTemplate('momentum')" :class="getTemplateButtonClass('momentum')">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"/>
           </svg>
-          突破策略
+          <span>突破策略</span>
         </button>
+        <!-- 合约专用 -->
+        <template v-if="marketType === 'futures'">
+          <button type="button" @click="applyStrategyTemplate('funding_arbitrage')" :class="getTemplateButtonClass('funding_arbitrage')">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span>费率套利</span>
+          </button>
+        </template>
       </div>
     </div>
 
@@ -2466,12 +2419,67 @@ const setVolumePreset = (preset) => {
   activePresets.value.volume = preset
 }
 
+// 获取模板按钮样式
+const getTemplateButtonClass = (templateName) => {
+  return [
+    'inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border transition-all',
+    selectedTemplate.value === templateName
+      ? 'bg-blue-50 text-blue-700 border-blue-300'
+      : 'text-slate-600 bg-white border-slate-200 hover:bg-slate-50 hover:border-slate-300'
+  ]
+}
+
 // 应用策略模板
 const applyStrategyTemplate = (template) => {
   const templates = {
-    // 超短线抢帽子（5分钟-15分钟）- 快速进出，高频交易
+    // ========== 经典策略 ==========
+    // 🎯 短线抄底 - RSI超卖 + 背离确认 + 放量
+    dip_buying: {
+      logic: 'AND',
+      description: '适合抓住短期超跌反弹机会',
+      indicators: ['rsi', 'divergence', 'volume', 'bollinger'],
+      config: {
+        rsi: { type: 'rsi', enabled: true, weight: 2, params: { period: 14, overbought: 70, oversold: 25 } },
+        divergence: { type: 'divergence', enabled: true, weight: 2, params: { divergence_lookback: 5, use_rsi: true, use_macd: true } },
+        volume: { type: 'volume', enabled: true, weight: 1, params: { multiplier: 2.0, period: 20, volume_surge: true } },
+        bollinger: { type: 'bollinger', enabled: true, weight: 1, params: { period: 20, std: 2.0, squeeze_threshold: 0.03 } }
+      },
+      timeframes: { primary: '1h', confirm: ['4h'], require_all_confirm: false, min_confirm_count: 1 }
+    },
+
+    // 🚀 趋势突破 - MA金叉 + 布林突破 + 放量确认
+    trend_breakout: {
+      logic: 'AND',
+      description: '捕捉趋势启动的突破点',
+      indicators: ['ma_crossover', 'bollinger', 'volume', 'atr'],
+      config: {
+        ma_crossover: { type: 'ma_crossover', enabled: true, weight: 2, params: { fast: 7, slow: 25, break_fast_ma: true } },
+        bollinger: { type: 'bollinger', enabled: true, weight: 2, params: { period: 20, std: 2.0, squeeze_threshold: 0.02 } },
+        volume: { type: 'volume', enabled: true, weight: 1, params: { multiplier: 2.5, period: 20, volume_surge: true } },
+        atr: { type: 'atr', enabled: true, weight: 1, params: { period: 14, threshold: 1.5 } }
+      },
+      timeframes: { primary: '1h', confirm: ['4h'], require_all_confirm: false, min_confirm_count: 1 }
+    },
+
+    // 🔄 波段反转 - 形态 + 背离 + 支撑阻力
+    swing_reversal: {
+      logic: 'AND',
+      description: '在关键位置捕捉趋势反转',
+      indicators: ['pattern', 'divergence', 'pivot', 'rsi'],
+      config: {
+        pattern: { type: 'pattern', enabled: true, weight: 2, params: { pinbar: true, engulfing: true, double_top: true, double_bottom: true } },
+        divergence: { type: 'divergence', enabled: true, weight: 2, params: { divergence_lookback: 5, use_rsi: true, use_macd: true } },
+        pivot: { type: 'pivot', enabled: true, weight: 1, params: { pivot_left: 5, pivot_right: 5 } },
+        rsi: { type: 'rsi', enabled: true, weight: 1, params: { period: 14, overbought: 70, oversold: 30 } }
+      },
+      timeframes: { primary: '4h', confirm: ['1d'], require_all_confirm: false, min_confirm_count: 1 }
+    },
+
+    // ========== 进阶策略 ==========
+    // ⚡ 超短线 - 快速RSI + 快速MACD + 布林 + 放量
     scalping: {
       logic: 'AND',
+      description: '5分钟级别快进快出',
       indicators: ['rsi', 'macd', 'bollinger', 'volume'],
       config: {
         rsi: { type: 'rsi', enabled: true, weight: 1, params: { period: 6, overbought: 80, oversold: 20 } },
@@ -2479,67 +2487,94 @@ const applyStrategyTemplate = (template) => {
         bollinger: { type: 'bollinger', enabled: true, weight: 1, params: { period: 10, std: 2.0, squeeze_threshold: 0.02 } },
         volume: { type: 'volume', enabled: true, weight: 1, params: { multiplier: 1.5, period: 10, volume_surge: true } }
       },
-      timeframes: { primary: '5m', confirm: ['1m'], require_all_confirm: false, min_confirm_count: 1 }
+      timeframes: { primary: '5m', confirm: ['15m'], require_all_confirm: false, min_confirm_count: 1 }
     },
-    // 日内交易（15分钟-1小时）- 平衡风险与收益
-    day_trading: {
+
+    // 💨 动量追踪 - MACD + 趋势偏向 + ATR + 放量
+    momentum: {
       logic: 'AND',
-      indicators: ['rsi', 'macd', 'ma_crossover', 'volume'],
+      description: '追踪强势动量行情',
+      indicators: ['macd', 'trend_bias', 'atr', 'volume'],
       config: {
-        rsi: { type: 'rsi', enabled: true, weight: 1, params: { period: 14, overbought: 70, oversold: 30 } },
-        macd: { type: 'macd', enabled: true, weight: 1, params: { fast: 12, slow: 26, signal: 9, below_zero_cross: true } },
-        ma_crossover: { type: 'ma_crossover', enabled: true, weight: 1, params: { fast: 7, slow: 25, break_fast_ma: true } },
+        macd: { type: 'macd', enabled: true, weight: 2, params: { fast: 12, slow: 26, signal: 9, below_zero_cross: true } },
+        trend_bias: { type: 'trend_bias', enabled: true, weight: 2, params: { fast_ma: 50, slow_ma: 200, bias_filter: true } },
+        atr: { type: 'atr', enabled: true, weight: 1, params: { period: 14, threshold: 1.5 } },
         volume: { type: 'volume', enabled: true, weight: 1, params: { multiplier: 2.0, period: 20, volume_surge: true } }
       },
-      timeframes: { primary: '1h', confirm: ['15m', '30m'], require_all_confirm: false, min_confirm_count: 1 }
+      timeframes: { primary: '1h', confirm: ['4h'], require_all_confirm: true, min_confirm_count: 1 }
     },
-    // 波段交易（4小时-1天）- 捕捉中期趋势
-    swing_trading: {
+
+    // 📉 均值回归 - 布林超卖 + RSI极值 + 放量
+    mean_reversion: {
       logic: 'AND',
-      indicators: ['rsi', 'ma_crossover', 'bollinger', 'atr'],
+      description: '价格偏离均值后回归',
+      indicators: ['bollinger', 'rsi', 'volume', 'atr'],
       config: {
-        rsi: { type: 'rsi', enabled: true, weight: 1, params: { period: 14, overbought: 65, oversold: 35 } },
-        ma_crossover: { type: 'ma_crossover', enabled: true, weight: 1, params: { fast: 20, slow: 50, break_fast_ma: true } },
-        bollinger: { type: 'bollinger', enabled: true, weight: 1, params: { period: 20, std: 2.0, squeeze_threshold: 0.03 } },
-        atr: { type: 'atr', enabled: true, weight: 1, params: { period: 14, threshold: 1.5 } }
+        bollinger: { type: 'bollinger', enabled: true, weight: 2, params: { period: 20, std: 2.5, squeeze_threshold: 0.03 } },
+        rsi: { type: 'rsi', enabled: true, weight: 2, params: { period: 14, overbought: 75, oversold: 25 } },
+        volume: { type: 'volume', enabled: true, weight: 1, params: { multiplier: 2.0, period: 20, volume_surge: true } },
+        atr: { type: 'atr', enabled: true, weight: 1, params: { period: 14, threshold: 2.0 } }
       },
-      timeframes: { primary: '4h', confirm: ['1h'], require_all_confirm: true, min_confirm_count: 1 }
+      timeframes: { primary: '1h', confirm: ['4h'], require_all_confirm: false, min_confirm_count: 1 }
     },
-    // 趋势跟踪（1天-1周）- 跟随大趋势
+
+    // ========== 合约专用策略 ==========
+    // 💰 费率套利 - 极端费率 + 多空比失衡
+    funding_arbitrage: {
+      logic: 'AND',
+      description: '利用极端费率进行反向交易',
+      indicators: ['funding_rate', 'long_short_ratio', 'rsi', 'volume'],
+      config: {
+        funding_rate: { type: 'funding_rate', enabled: true, weight: 3, params: { positive_extreme: 0.01, negative_extreme: -0.01, neutral_zone: [-0.002, 0.002] } },
+        long_short_ratio: { type: 'long_short_ratio', enabled: true, weight: 2, params: { extreme_long: 2.5, extreme_short: 0.4 } },
+        rsi: { type: 'rsi', enabled: true, weight: 1, params: { period: 14, overbought: 75, oversold: 25 } },
+        volume: { type: 'volume', enabled: true, weight: 1, params: { multiplier: 2.0, period: 20, volume_surge: true } }
+      },
+      timeframes: { primary: '1h', confirm: ['4h'], require_all_confirm: false, min_confirm_count: 1 }
+    },
+
+    // 🎪 爆仓猎手 - 持仓量异动 + 费率 + 高波动
+    liquidation_hunt: {
+      logic: 'AND',
+      description: '捕捉大规模爆仓后的反转',
+      indicators: ['open_interest', 'funding_rate', 'atr', 'rsi'],
+      config: {
+        open_interest: { type: 'open_interest', enabled: true, weight: 2, params: { oi_trend_period: 20, oi_increase_threshold: 10, oi_decrease_threshold: -15 } },
+        funding_rate: { type: 'funding_rate', enabled: true, weight: 2, params: { positive_extreme: 0.015, negative_extreme: -0.015, neutral_zone: [-0.003, 0.003] } },
+        atr: { type: 'atr', enabled: true, weight: 1, params: { period: 14, threshold: 2.5 } },
+        rsi: { type: 'rsi', enabled: true, weight: 1, params: { period: 14, overbought: 80, oversold: 20 } }
+      },
+      timeframes: { primary: '1h', confirm: ['15m'], require_all_confirm: false, min_confirm_count: 1 }
+    },
+
+    // ========== 稳健策略 ==========
+    // 🛡️ 保守稳健 - 多重确认
+    conservative: {
+      logic: 'AND',
+      description: '多重指标确认，信号少但质量高',
+      indicators: ['ma_crossover', 'macd', 'rsi', 'volume', 'trend_bias'],
+      config: {
+        ma_crossover: { type: 'ma_crossover', enabled: true, weight: 1, params: { fast: 20, slow: 50, break_fast_ma: true } },
+        macd: { type: 'macd', enabled: true, weight: 1, params: { fast: 12, slow: 26, signal: 9, below_zero_cross: true } },
+        rsi: { type: 'rsi', enabled: true, weight: 1, params: { period: 14, overbought: 65, oversold: 35 } },
+        volume: { type: 'volume', enabled: true, weight: 1, params: { multiplier: 1.5, period: 20, volume_surge: true } },
+        trend_bias: { type: 'trend_bias', enabled: true, weight: 1, params: { fast_ma: 50, slow_ma: 200, bias_filter: true } }
+      },
+      timeframes: { primary: '4h', confirm: ['1d'], require_all_confirm: true, min_confirm_count: 1 }
+    },
+
+    // 📈 趋势跟踪 - MA50/200 + MACD
     trend_following: {
       logic: 'AND',
-      indicators: ['ma_crossover', 'macd', 'atr', 'volume'],
+      description: '跟随大趋势，适合中长线',
+      indicators: ['ma_crossover', 'trend_bias', 'macd', 'volume'],
       config: {
-        ma_crossover: { type: 'ma_crossover', enabled: true, weight: 1, params: { fast: 50, slow: 200, break_fast_ma: false } },
+        ma_crossover: { type: 'ma_crossover', enabled: true, weight: 2, params: { fast: 50, slow: 200, break_fast_ma: false } },
+        trend_bias: { type: 'trend_bias', enabled: true, weight: 2, params: { fast_ma: 50, slow_ma: 200, bias_filter: true } },
         macd: { type: 'macd', enabled: true, weight: 1, params: { fast: 19, slow: 39, signal: 9, below_zero_cross: false } },
-        atr: { type: 'atr', enabled: true, weight: 1, params: { period: 14, threshold: 1.0 } },
         volume: { type: 'volume', enabled: true, weight: 1, params: { multiplier: 1.5, period: 20, volume_surge: true } }
       },
       timeframes: { primary: '1d', confirm: ['4h'], require_all_confirm: true, min_confirm_count: 1 }
-    },
-    // 反转捕捉 - 捕捉价格反转点
-    reversal: {
-      logic: 'AND',
-      indicators: ['rsi', 'divergence', 'pattern', 'volume'],
-      config: {
-        rsi: { type: 'rsi', enabled: true, weight: 1, params: { period: 14, overbought: 75, oversold: 25 } },
-        divergence: { type: 'divergence', enabled: true, weight: 1, params: { divergence_lookback: 5, use_rsi: true, use_macd: true } },
-        pattern: { type: 'pattern', enabled: true, weight: 1, params: { pinbar: true, engulfing: true, double_top: true, double_bottom: true } },
-        volume: { type: 'volume', enabled: true, weight: 1, params: { multiplier: 2.5, period: 20, volume_surge: true } }
-      },
-      timeframes: { primary: '1h', confirm: ['15m', '4h'], require_all_confirm: false, min_confirm_count: 1 }
-    },
-    // 突破策略 - 捕捉关键位突破
-    breakout: {
-      logic: 'AND',
-      indicators: ['bollinger', 'atr', 'pivot', 'volume'],
-      config: {
-        bollinger: { type: 'bollinger', enabled: true, weight: 1, params: { period: 20, std: 2.0, squeeze_threshold: 0.02 } },
-        atr: { type: 'atr', enabled: true, weight: 1, params: { period: 14, threshold: 2.0 } },
-        pivot: { type: 'pivot', enabled: true, weight: 1, params: { pivot_left: 3, pivot_right: 3 } },
-        volume: { type: 'volume', enabled: true, weight: 1, params: { multiplier: 2.0, period: 20, volume_surge: true } }
-      },
-      timeframes: { primary: '1h', confirm: ['15m'], require_all_confirm: true, min_confirm_count: 1 }
     }
   }
 

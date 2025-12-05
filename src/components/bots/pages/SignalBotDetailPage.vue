@@ -70,7 +70,8 @@
                 <div v-show="activeTab === 'market'">
                   <MarketStatusPanel
                     :indicatorValues="indicatorValues"
-                    :indicators="bot.signal_bot?.indicators_config?.indicators || []"
+                    :marketType="bot.signal_bot?.market_type || 'spot'"
+                    :timeframe="indicatorValues.timeframe || bot.signal_bot?.timeframes_config?.primary || '1h'"
                     :loading="loadingIndicators"
                   />
                 </div>

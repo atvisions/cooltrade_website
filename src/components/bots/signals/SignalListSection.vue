@@ -1,7 +1,5 @@
 <template>
   <div class="space-y-3">
-    <h2 class="text-sm font-semibold text-slate-800">最近信号</h2>
-
     <!-- 加载状态 -->
     <div v-if="loading" class="text-center py-8 bg-white rounded-xl border border-slate-200">
       <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-slate-300"></div>
@@ -81,11 +79,12 @@
     </div>
 
     <!-- 空状态 -->
-    <div v-else class="bg-white rounded-xl border border-slate-200 px-6 py-8 text-center">
-      <svg class="mx-auto h-8 w-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+    <div v-else class="py-10 text-center">
+      <svg class="w-10 h-10 mx-auto text-slate-300 mb-3" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/>
       </svg>
-      <p class="text-sm text-slate-500 mt-2">暂无信号记录</p>
+      <p class="text-sm text-slate-500 mb-1">暂无信号</p>
+      <p class="text-xs text-slate-400">满足条件时将自动生成信号</p>
     </div>
   </div>
 </template>

@@ -182,21 +182,14 @@
                     @click="selectToken(token)"
                     class="px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors flex items-center space-x-3"
                   >
-                    <!-- 代币Logo或首字母 -->
+                    <!-- 代币Logo -->
                     <div class="w-8 h-8 rounded-full flex-shrink-0 overflow-hidden">
                       <img
-                        v-if="token.logo"
-                        :src="token.logo"
+                        :src="getTokenLogoUrl(token)"
                         :alt="token.symbol"
                         class="w-full h-full object-cover"
-                        @error="handleImageError($event, token)"
+                        @error="handleImageError"
                       />
-                      <div
-                        v-else
-                        class="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm"
-                      >
-                        {{ token.symbol ? token.symbol.charAt(0).toUpperCase() : '?' }}
-                      </div>
                     </div>
                     <div class="flex-1 min-w-0">
                       <div class="flex items-center space-x-2">
@@ -428,6 +421,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { apiRequest, API_ENDPOINTS } from '../../utils/api.js'
 import { useUserStore } from '../../utils/userStore.js'
+import { getTokenLogo, handleImageError } from '../../utils/tokenUtils.js'
 
 const router = useRouter()
 
@@ -591,22 +585,9 @@ const clearSearch = () => {
   showSearchResults.value = false
 }
 
-// 处理图片加载错误
-const handleImageError = (event, token) => {
-  // 隐藏失败的图片
-  event.target.style.display = 'none'
-
-  // 在图片的父容器中显示首字母
-  const parent = event.target.parentElement
-  if (parent && !parent.querySelector('.token-initial')) {
-    const initial = document.createElement('div')
-    initial.className = 'token-initial w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-500 to-purple-600 text-white font-bold text-sm'
-    initial.textContent = token.symbol ? token.symbol.charAt(0).toUpperCase() : '?'
-    parent.appendChild(initial)
-  }
-
-  // 清空 logo 字段，防止再次尝试加载
-  token.logo = null
+// 获取代币 Logo URL（包装函数）
+const getTokenLogoUrl = (token) => {
+  return getTokenLogo(token)
 }
 
 // 选择代币

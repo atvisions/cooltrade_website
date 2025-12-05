@@ -13,18 +13,8 @@ export const DEFAULT_TOKEN_LOGO = 'data:image/svg+xml,' + encodeURIComponent('<s
 export const USDT_LOGO = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><circle cx="20" cy="20" r="20" fill="#26A17B"/><path d="M22.5 21.5v4.5h-5v-4.5h-6v-3h6v-4h-4v-3h13v3h-4v4h6v3h-6z" fill="white"/></svg>')
 
 /**
- * 使用 CryptoCompare 的 logo（国内可访问）
- * @param {string} symbol - 代币符号，如 BTC, ETH
- * @returns {string} Logo URL
- */
-export function getCryptoCompareLogo(symbol) {
-  if (!symbol) return DEFAULT_TOKEN_LOGO
-  return `https://www.cryptocompare.com/media/37746251/${symbol.toLowerCase()}.png`
-}
-
-/**
  * 获取代币 Logo URL
- * 优先使用后端返回的 logo URL，如果没有则使用 CoinMarketCap
+ * 优先使用后端返回的 logo URL（CoinMarketCap）
  * @param {Object} token - 代币对象
  * @returns {string} Logo URL
  */

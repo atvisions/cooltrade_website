@@ -955,10 +955,12 @@
                 <!-- 币种 -->
                 <td class="px-4 py-3">
                   <div class="flex items-center gap-3 min-w-0">
-                    <img v-if="token.logo" :src="token.logo" :alt="token.name" class="w-6 h-6 rounded-full flex-shrink-0" />
-                    <div v-else class="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center flex-shrink-0">
-                      <span class="text-xs font-bold text-gray-500">{{ token.symbol.substring(0, 1) }}</span>
-                    </div>
+                    <img
+                      :src="getTokenLogoUrl(token)"
+                      :alt="token.name"
+                      class="w-6 h-6 rounded-full flex-shrink-0"
+                      @error="handleImageError"
+                    />
                     <div class="flex flex-col gap-1 min-w-0 flex-1">
                       <div class="flex items-center gap-2 min-w-0">
                         <span class="text-sm font-semibold text-gray-900 truncate">{{ token.name }}</span>
@@ -1305,6 +1307,7 @@ import { getChainConfig, getExchangeConfig } from '../../utils/chainConfig.js'
 import { showFavoriteSuccess, showUnfavoriteSuccess, showLoginRequired, showError } from '../../utils/notification.js'
 import { useUserStore } from '../../utils/userStore.js'
 import wsManager from '../../utils/websocket.js'
+import { getTokenLogo, handleImageError } from '../../utils/tokenUtils.js'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -1686,6 +1689,11 @@ const getCategoryLabel = (category) => {
 const getExchangeLogo = (exchangeName) => {
   const config = getExchangeConfig(exchangeName)
   return config.logo || null
+}
+
+// 获取代币 Logo URL（包装函数）
+const getTokenLogoUrl = (token) => {
+  return getTokenLogo(token)
 }
 
 // 计算市场情绪

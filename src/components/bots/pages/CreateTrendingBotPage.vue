@@ -4942,7 +4942,7 @@ const handleSubmit = async () => {
       // ============ 仓位管理（优化后：4个字段）============
       position_sizing_method: formData.value.position_sizing_method,
       position_size_value: formData.value.position_size_value,
-      position_size_unit: formData.value.position_size_unit || 'usdt',  // 仓位单位：contracts(张) 或 usdt
+      position_size_unit: formData.value.position_size_unit || 'contracts',  // 仓位单位：contracts(张) 或 usdt
       risk_per_trade: formData.value.risk_per_trade,
       kelly_fraction: formData.value.kelly_fraction,
 
@@ -5072,37 +5072,63 @@ const handleSubmit = async () => {
     router.push(`/bots?type=trend_following&refresh=${Date.now()}`)
   } catch (error) {
     console.error(isEditMode.value ? '更新失败:' : '创建失败:', error)
-    if (error.data && typeof error.data === 'object') {
-      errors.value = error.data
-      // 提取具体的错误信息显示给用户
-      const errorMessages = []
-      const fieldNameMap = {
-        'position_size_value': '仓位大小',
-        'leverage': '杠杆倍数',
-        'stop_loss_percentage': '止损百分比',
-        'take_profit_percentage': '止盈百分比',
-        'signal_bot': '信号机器人',
-        'market_type': '市场类型',
-        'name': '机器人名称',
-        'exchange_api': '交易所API',
-        'max_daily_trades': '每日最大交易次数',
-        'max_open_positions': '最大持仓数',
-      }
-      for (const [field, messages] of Object.entries(error.data)) {
+
+    // 字段名映射表
+    const fieldNameMap = {
+      'position_size_value': '仓位大小',
+      'leverage': '杠杆倍数',
+      'stop_loss_percentage': '止损百分比',
+      'take_profit_percentage': '止盈百分比',
+      'signal_bot': '信号机器人',
+      'market_type': '市场类型',
+      'name': '机器人名称',
+      'exchange_api': '交易所API',
+      'max_daily_trades': '每日最大交易次数',
+      'max_open_positions': '最大持仓数',
+      'non_field_errors': '验证错误',
+    }
+
+    // 解析错误数据
+    const parseErrorData = (data) => {
+      const messages = []
+      if (!data || typeof data !== 'object') return messages
+
+      for (const [field, value] of Object.entries(data)) {
+        // 跳过非错误字段
+        if (field === 'success' || field === 'status') continue
+
         const fieldName = fieldNameMap[field] || field
-        if (Array.isArray(messages)) {
-          errorMessages.push(`${fieldName}: ${messages.join(', ')}`)
-        } else if (typeof messages === 'string') {
-          errorMessages.push(`${fieldName}: ${messages}`)
+        if (Array.isArray(value)) {
+          messages.push(`${fieldName}: ${value.join(', ')}`)
+        } else if (typeof value === 'string') {
+          messages.push(`${fieldName}: ${value}`)
+        } else if (typeof value === 'object') {
+          // 嵌套对象
+          const nested = parseErrorData(value)
+          if (nested.length > 0) {
+            messages.push(`${fieldName}: ${nested.join('; ')}`)
+          }
         }
       }
-      if (errorMessages.length > 0) {
-        showError(errorMessages.join('\n'))
-      } else {
-        showError('请检查表单填写是否正确')
-      }
+      return messages
+    }
+
+    // 尝试从不同来源提取错误信息
+    let errorMessages = []
+
+    if (error.data && typeof error.data === 'object') {
+      errors.value = error.data
+      errorMessages = parseErrorData(error.data)
+    }
+
+    // 如果提取到了具体错误信息，显示它们
+    if (errorMessages.length > 0) {
+      showError(errorMessages.join('\n'))
+    } else if (error.message && error.message !== 'Failed to fetch') {
+      // 使用错误消息（可能已经包含了详细信息）
+      showError(error.message)
     } else {
-      showError(error.message || (isEditMode.value ? '更新失败' : '创建失败'))
+      showError(isEditMode.value ? '更新失败，请稍后重试' : '创建失败，请稍后重试')
     }
   } finally {
     submitting.value = false

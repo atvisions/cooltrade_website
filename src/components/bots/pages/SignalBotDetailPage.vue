@@ -341,9 +341,10 @@ const refreshIndicatorValues = async () => {
   loadingIndicators.value = true
   try {
     const response = await botAPI.getBotIndicatorValues(bot.value.id)
-    const data = response.data || response
-    indicatorValues.value = data.values || data || {}
-    indicatorValuesUpdatedAt.value = data.updated_at || new Date().toISOString()
+    // 后端返回格式: { success: true, data: { price_change_24h: ..., ... } }
+    const rawData = response.data || response
+    indicatorValues.value = rawData.data || rawData.values || rawData || {}
+    indicatorValuesUpdatedAt.value = rawData.updated_at || indicatorValues.value._metadata?.price_updated_at || new Date().toISOString()
   } catch (err) {
     console.error('获取指标值失败:', err)
   } finally {

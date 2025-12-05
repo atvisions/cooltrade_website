@@ -243,7 +243,7 @@
             <!-- 代币 Logo（选中时显示） -->
             <img
               v-if="selectedToken"
-              :src="selectedToken.logo"
+              :src="getTokenLogo(selectedToken)"
               :alt="selectedToken.symbol"
               class="absolute left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded-full object-contain pointer-events-none z-10"
               @error="handleImageError"
@@ -316,7 +316,7 @@
                   class="w-full flex items-center p-3 hover:bg-slate-50 transition-colors text-left border-b border-slate-100 last:border-b-0"
                 >
                   <img
-                    :src="token.logo"
+                    :src="getTokenLogo(token)"
                     :alt="token.symbol"
                     class="w-8 h-8 rounded-full mr-3 object-contain flex-shrink-0"
                     @error="handleImageError"
@@ -383,6 +383,7 @@ import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headless
 import { ChevronUpDownIcon } from '@heroicons/vue/20/solid'
 import Card from '../../common/ui/Card.vue'
 import Select from '../../common/ui/Select.vue'
+import { getTokenLogo, handleImageError } from '../../../utils/tokenUtils.js'
 
 // Props - 从父组件接收数据
 const props = defineProps({
@@ -525,9 +526,7 @@ const quickSelectToken = (symbol) => {
   emit('quickSelectToken', symbol)
 }
 
-const handleImageError = (e) => {
-  e.target.src = 'https://via.placeholder.com/40?text=Logo'
-}
+
 
 const getExchangeLogo = (exchange) => {
   const exchangeObj = props.availableExchanges.find(ex => ex.value === exchange)

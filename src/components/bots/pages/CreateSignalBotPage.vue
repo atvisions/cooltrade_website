@@ -51,84 +51,29 @@
             @quick-select-token="quickSelectToken"
           />
 
-          <!-- 信号配置 -->
-          <Card variant="default" class="mb-6">
-            <div class="flex items-center gap-3 mb-6">
-              <div class="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center">
-                <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
-              </div>
-              <div>
-                <h2 class="text-lg font-semibold text-slate-900">信号配置</h2>
-                <p class="text-sm text-slate-500">设置触发信号的条件和参数</p>
-              </div>
-            </div>
-
-            <div class="space-y-6">
-              <!-- 信号类型选择器 -->
-              <SignalTypeSelector
-                :signal-type="formData.signal_type"
-                :error="errors.signal_type"
-                @update:signal-type="formData.signal_type = $event"
-              />
-
-              <!-- 根据信号类型显示对应的配置 -->
-              <!-- 价格提醒配置 -->
-              <PriceAlertConfig
-                v-if="formData.signal_type === 'price_alert'"
-                v-model="priceAlertConfig"
-                :current-price="selectedToken?.current_price || null"
-              />
-
-              <!-- 指标信号提醒配置 -->
-              <IndicatorAlertConfig
-                v-else-if="formData.signal_type === 'indicator_alert'"
-                :selected-indicators="selectedIndicators"
-                :logic="indicatorLogic"
-                :trigger-mode="triggerMode"
-                :indicators-config="indicatorsConfig"
-                :timeframes-config="timeframesConfig"
-                :signal-quality-config="signalQualityConfig"
-                :signal-output-config="signalOutputConfig"
-                :market-type="formData.market_type"
-                @update:selected-indicators="selectedIndicators = $event"
-                @update:logic="indicatorLogic = $event"
-                @update:triggerMode="triggerMode = $event"
-                @update:indicators-config="indicatorsConfig = $event"
-                @update:timeframes-primary="timeframesConfig.primary = $event"
-                @toggle-confirm-timeframe="toggleConfirmTimeframe($event)"
-                @update:timeframes-require-all="timeframesConfig.require_all_confirm = $event"
-                @update:timeframes-min-count="timeframesConfig.min_confirm_count = Number($event)"
-                @update:timeframes-trigger="timeframesConfig.trigger = $event"
-                @update:signal-quality-config="signalQualityConfig = $event"
-                @update:signal-output-config="signalOutputConfig = $event"
-              />
-
-              <!-- 波动性提醒配置 -->
-              <VolatilitySignalConfig
-                v-else-if="formData.signal_type === 'volatility'"
-                v-model="volatilityConfig"
-                :timeframes-config="timeframesConfig"
-                @update:timeframes-config="timeframesConfig = $event"
-              />
-
-              <!-- 成交量/持仓提醒配置 -->
-              <VolumeSignalConfig
-                v-else-if="formData.signal_type === 'volume'"
-                v-model="volumeAlertConfig"
-                :timeframes-config="timeframesConfig"
-                @update:timeframes-config="timeframesConfig = $event"
-              />
-
-              <!-- 其他信号类型配置待添加 -->
-              <div v-else-if="formData.signal_type && formData.signal_type !== 'price_alert' && formData.signal_type !== 'indicator_alert' && formData.signal_type !== 'volatility' && formData.signal_type !== 'volume'" class="p-6 bg-slate-50 rounded-lg border border-slate-200">
-                <div class="text-center text-slate-500">
-                  <p class="text-sm">{{ formData.signal_type }} 配置待添加</p>
-                </div>
-              </div>
-            </div>
-          </Card>
+          <!-- 指标信号提醒配置（简化：只支持指标信号类型） -->
+          <IndicatorAlertConfig
+            :selected-indicators="selectedIndicators"
+            :logic="indicatorLogic"
+            :trigger-mode="triggerMode"
+            :indicators-config="indicatorsConfig"
+            :timeframes-config="timeframesConfig"
+            :signal-quality-config="signalQualityConfig"
+            :signal-output-config="signalOutputConfig"
+            :market-type="formData.market_type"
+            @update:selected-indicators="selectedIndicators = $event"
+            @update:logic="indicatorLogic = $event"
+            @update:triggerMode="triggerMode = $event"
+            @update:indicators-config="indicatorsConfig = $event"
+            @update:timeframes-primary="timeframesConfig.primary = $event"
+            @toggle-confirm-timeframe="toggleConfirmTimeframe($event)"
+            @update:timeframes-require-all="timeframesConfig.require_all_confirm = $event"
+            @update:timeframes-min-count="timeframesConfig.min_confirm_count = Number($event)"
+            @update:timeframes-trigger="timeframesConfig.trigger = $event"
+            @update:signal-quality-config="signalQualityConfig = $event"
+            @update:signal-output-config="signalOutputConfig = $event"
+            class="mb-6"
+          />
 
           <!-- 检查间隔配置 -->
           <Card variant="default" class="mb-6">
@@ -144,12 +89,7 @@
             <CheckIntervalConfig v-model="formData.check_interval" />
           </Card>
 
-          <!-- 信号质量控制（indicator_alert 类型的已整合到 IndicatorAlertConfig 内） -->
-          <SignalQualityConfig
-            v-if="formData.signal_type && formData.signal_type !== 'price_alert' && formData.signal_type !== 'indicator_alert'"
-            :config="signalQualityConfig"
-            @update:config="signalQualityConfig = $event"
-          />
+          <!-- 信号质量控制已整合到 IndicatorAlertConfig 内，无需单独显示 -->
 
           <!-- AI 分析配置 -->
           <AIAnalysisConfig
@@ -220,18 +160,15 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import Header from '../../common/Header.vue'
 import Card from '../../common/ui/Card.vue'
 import MonitorConfig from '../signals/MonitorConfig.vue'
-import SignalTypeSelector from '../signals/SignalTypeSelector.vue'
-import PriceAlertConfig from '../signals/PriceAlertConfig.vue'
+// 简化：移除 SignalTypeSelector、PriceAlertConfig、VolatilitySignalConfig、VolumeSignalConfig
+// 只保留 indicator_alert 类型
 import IndicatorAlertConfig from '../signals/IndicatorAlertConfig.vue'
-import VolatilitySignalConfig from '../signals/VolatilitySignalConfig.vue'
-import VolumeSignalConfig from '../signals/VolumeSignalConfig.vue'
 import CheckIntervalConfig from '../signals/CheckIntervalConfig.vue'
-import SignalQualityConfig from '../signals/SignalQualityConfig.vue'
 import AIAnalysisConfig from '../signals/AIAnalysisConfig.vue'
 import NotificationConfig from '../signals/NotificationConfig.vue'
 import BasicInfoConfig from '../signals/BasicInfoConfig.vue'
@@ -346,150 +283,88 @@ const handleSubmit = async () => {
       cooldown_minutes: Number(alertConfig.value.cooldown_minutes)  // 确保是数字类型
     }
 
-    switch (formData.value.signal_type) {
-      case 'price_alert':
-        if (!priceAlertConfig.value.target_price) {
-          showError('请输入目标价格')
-          submitting.value = false
-          return
+    // 简化：只支持 indicator_alert 类型
+    // 检查是否使用新的多指标格式
+    if (selectedIndicators.value.length > 0) {
+      // 新的多指标格式
+      const indicators = selectedIndicators.value.map(type => {
+        const indicatorConfig = indicatorsConfig.value[type]
+        return {
+          type: type,
+          enabled: indicatorConfig?.enabled !== false,
+          weight: indicatorConfig?.weight || 1,
+          params: indicatorConfig?.params || {}
         }
+      })
 
-        config = {
-          ...config,
-          signal_type: 'price_alert',
-          price_alert: {
-            condition: priceAlertConfig.value.condition,
-            target_price: Number(priceAlertConfig.value.target_price)  // 使用 Number() 而不是 parseFloat()
-          }
+      config = {
+        ...config,
+        signal_type: 'indicator_alert',
+        indicator_alert: {
+          logic: indicatorLogic.value,
+          indicators: indicators
+        },
+        timeframes_config: {
+          primary: timeframesConfig.value.primary,
+          confirm: timeframesConfig.value.confirm,
+          require_all_confirm: timeframesConfig.value.require_all_confirm,
+          min_confirm_count: Number(timeframesConfig.value.min_confirm_count),
+          trigger: timeframesConfig.value.trigger
+        },
+        // 信号输出决策
+        signal_output: {
+          direction_mode: signalOutputConfig.value.direction_mode,
+          use_weighted_score: signalOutputConfig.value.use_weighted_score
         }
-        break
-
-      case 'indicator_alert':
-        // 检查是否使用新的多指标格式
-        if (selectedIndicators.value.length > 0) {
-          // 新的多指标格式
-          const indicators = selectedIndicators.value.map(type => {
-            const indicatorConfig = indicatorsConfig.value[type]
-            return {
-              type: type,
-              enabled: indicatorConfig?.enabled !== false,
-              weight: indicatorConfig?.weight || 1,
-              params: indicatorConfig?.params || {}
-            }
-          })
-
-          config = {
-            ...config,
-            signal_type: 'indicator_alert',
-            indicator_alert: {
-              logic: indicatorLogic.value,
-              indicators: indicators
-            },
-            timeframes_config: {
-              primary: timeframesConfig.value.primary,
-              confirm: timeframesConfig.value.confirm,
-              require_all_confirm: timeframesConfig.value.require_all_confirm,
-              min_confirm_count: Number(timeframesConfig.value.min_confirm_count),
-              trigger: timeframesConfig.value.trigger
-            },
-            // 信号输出决策
-            signal_output: {
-              direction_mode: signalOutputConfig.value.direction_mode,
-              use_weighted_score: signalOutputConfig.value.use_weighted_score
-            }
-          }
-        } else {
-          // 旧的单指标格式（向后兼容）
-          let indicatorConfig = {}
-          if (indicatorAlertType.value === 'rsi') {
-            indicatorConfig = {
-              indicator_type: 'rsi',
-              period: Number(rsiConfig.value.period),
-              overbought: Number(rsiConfig.value.overbought),
-              oversold: Number(rsiConfig.value.oversold)
-            }
-          } else if (indicatorAlertType.value === 'macd') {
-            indicatorConfig = {
-              indicator_type: 'macd',
-              fast: Number(macdConfig.value.fast),
-              slow: Number(macdConfig.value.slow),
-              signal: Number(macdConfig.value.signal)
-            }
-          } else if (indicatorAlertType.value === 'ma_crossover') {
-            indicatorConfig = {
-              indicator_type: 'ma_crossover',
-              fast: Number(maCrossConfig.value.fast),
-              slow: Number(maCrossConfig.value.slow)
-            }
-          } else if (indicatorAlertType.value === 'atr') {
-            indicatorConfig = {
-              indicator_type: 'atr',
-              period: Number(atrConfig.value.period),
-              multiplier: Number(atrConfig.value.multiplier)
-            }
-          } else if (indicatorAlertType.value === 'volume') {
-            indicatorConfig = {
-              indicator_type: 'volume',
-              multiplier: Number(volumeConfig.value.multiplier),
-              period: Number(volumeConfig.value.period)
-            }
-          }
-          config = {
-            ...config,
-            signal_type: 'indicator_alert',
-            indicator_alert: indicatorConfig,
-            timeframes_config: {
-              primary: timeframesConfig.value.primary,
-              confirm: timeframesConfig.value.confirm,
-              require_all_confirm: timeframesConfig.value.require_all_confirm,
-              min_confirm_count: Number(timeframesConfig.value.min_confirm_count),
-              trigger: timeframesConfig.value.trigger
-            }
-          }
+      }
+    } else {
+      // 旧的单指标格式（向后兼容）
+      let indicatorConfig = {}
+      if (indicatorAlertType.value === 'rsi') {
+        indicatorConfig = {
+          indicator_type: 'rsi',
+          period: Number(rsiConfig.value.period),
+          overbought: Number(rsiConfig.value.overbought),
+          oversold: Number(rsiConfig.value.oversold)
         }
-        break
-
-      case 'volatility':
-        config = {
-          ...config,
-          signal_type: 'volatility',
-          volatility_alert: {
-            volatility_threshold: Number(volatilityConfig.value.volatility_threshold),
-            volatility_period: Number(volatilityConfig.value.volatility_period)
-          },
-          timeframes_config: {
-            primary: timeframesConfig.value.primary,
-            confirm: timeframesConfig.value.confirm,
-            require_all_confirm: timeframesConfig.value.require_all_confirm,
-            min_confirm_count: Number(timeframesConfig.value.min_confirm_count),
-            trigger: timeframesConfig.value.trigger
-          }
+      } else if (indicatorAlertType.value === 'macd') {
+        indicatorConfig = {
+          indicator_type: 'macd',
+          fast: Number(macdConfig.value.fast),
+          slow: Number(macdConfig.value.slow),
+          signal: Number(macdConfig.value.signal)
         }
-        break
-
-      case 'volume':
-        config = {
-          ...config,
-          signal_type: 'volume',
-          volume_alert: {
-            volume_multiplier: Number(volumeAlertConfig.value.volume_multiplier),
-            volume_period: Number(volumeAlertConfig.value.volume_period)
-          },
-          timeframes_config: {
-            primary: timeframesConfig.value.primary,
-            confirm: timeframesConfig.value.confirm,
-            require_all_confirm: timeframesConfig.value.require_all_confirm,
-            min_confirm_count: Number(timeframesConfig.value.min_confirm_count),
-            trigger: timeframesConfig.value.trigger
-          }
+      } else if (indicatorAlertType.value === 'ma_crossover') {
+        indicatorConfig = {
+          indicator_type: 'ma_crossover',
+          fast: Number(maCrossConfig.value.fast),
+          slow: Number(maCrossConfig.value.slow)
         }
-        break
-
-      // 其他信号类型待添加
-      default:
-        showError('暂不支持此信号类型')
-        submitting.value = false
-        return
+      } else if (indicatorAlertType.value === 'atr') {
+        indicatorConfig = {
+          indicator_type: 'atr',
+          period: Number(atrConfig.value.period),
+          multiplier: Number(atrConfig.value.multiplier)
+        }
+      } else if (indicatorAlertType.value === 'volume') {
+        indicatorConfig = {
+          indicator_type: 'volume',
+          multiplier: Number(volumeConfig.value.multiplier),
+          period: Number(volumeConfig.value.period)
+        }
+      }
+      config = {
+        ...config,
+        signal_type: 'indicator_alert',
+        indicator_alert: indicatorConfig,
+        timeframes_config: {
+          primary: timeframesConfig.value.primary,
+          confirm: timeframesConfig.value.confirm,
+          require_all_confirm: timeframesConfig.value.require_all_confirm,
+          min_confirm_count: Number(timeframesConfig.value.min_confirm_count),
+          trigger: timeframesConfig.value.trigger
+        }
+      }
     }
 
     // 准备提交数据
@@ -502,20 +377,18 @@ const handleSubmit = async () => {
       trading_pair: formData.value.trading_pair,
       timeframe: formData.value.timeframe,
       market_type: formData.value.market_type,  // 市场类型
-      signal_type: formData.value.signal_type,
+      signal_type: 'indicator_alert',  // 简化：固定为 indicator_alert
       notify_email: formData.value.notify_email,
       notify_app: formData.value.notify_app,
       check_interval: formData.value.check_interval,
       config: config,
       bot_type: 'signal',
-      // 信号质量控制参数（价格提醒不需要）
-      ...(formData.value.signal_type !== 'price_alert' && {
-        signal_confirmation_bars: Number(signalQualityConfig.value.signal_confirmation_bars),
-        signal_expiration_hours: Number(signalQualityConfig.value.signal_expiration_hours),
-        signal_strength_threshold: Number(signalQualityConfig.value.signal_strength_threshold)
-      }),
-      // 多指标配置（价格提醒不需要）
-      ...(formData.value.signal_type !== 'price_alert' && selectedIndicators.value.length > 0 && {
+      // 信号质量控制参数
+      signal_confirmation_bars: Number(signalQualityConfig.value.signal_confirmation_bars),
+      signal_expiration_hours: Number(signalQualityConfig.value.signal_expiration_hours),
+      signal_strength_threshold: Number(signalQualityConfig.value.signal_strength_threshold),
+      // 多指标配置
+      ...(selectedIndicators.value.length > 0 && {
         indicators_config: {
           indicators: selectedIndicators.value.map(type => {
             const indicatorConfig = indicatorsConfig.value[type]
@@ -531,16 +404,14 @@ const handleSubmit = async () => {
           trigger_mode: triggerMode.value  // 🔥 触发模式
         }
       }),
-      // 多时间周期配置（价格提醒不需要）
-      ...(formData.value.signal_type !== 'price_alert' && {
-        timeframes_config: {
-          primary: timeframesConfig.value.primary,
-          confirm: timeframesConfig.value.confirm,
-          require_all_confirm: timeframesConfig.value.require_all_confirm,
-          min_confirm_count: Number(timeframesConfig.value.min_confirm_count),
-          trigger: timeframesConfig.value.trigger
-        }
-      })
+      // 多时间周期配置
+      timeframes_config: {
+        primary: timeframesConfig.value.primary,
+        confirm: timeframesConfig.value.confirm,
+        require_all_confirm: timeframesConfig.value.require_all_confirm,
+        min_confirm_count: Number(timeframesConfig.value.min_confirm_count),
+        trigger: timeframesConfig.value.trigger
+      }
     }
 
     console.log('提交数据:', submitData)
@@ -872,12 +743,6 @@ const alertConfig = ref({
   cooldown_minutes: 30   // 默认：30分钟冷却
 })
 
-// 价格提醒配置
-const priceAlertConfig = ref({
-  condition: 'above',
-  target_price: ''
-})
-
 // 指标信号提醒配置（新的多指标格式）
 const selectedIndicators = ref([])
 const indicatorLogic = ref('AND')
@@ -940,18 +805,6 @@ const signalOutputConfig = ref({
   use_weighted_score: true      // 使用加权分数
 })
 
-// 波动性配置
-const volatilityConfig = ref({
-  volatility_threshold: 5.0,
-  volatility_period: 20
-})
-
-// 成交量提醒配置（独立的成交量提醒类型，不是指标）
-const volumeAlertConfig = ref({
-  volume_multiplier: 2.0,
-  volume_period: 20
-})
-
 // 切换确认时间周期
 const toggleConfirmTimeframe = (value) => {
   const confirm = [...timeframesConfig.value.confirm]
@@ -977,14 +830,8 @@ const autoGeneratedName = computed(() => {
   const marketTypeLabel = formData.value.market_type === 'spot' ? '现货' : '合约'
   parts.push(marketTypeLabel)
 
-  // 信号类型（简化显示）
-  const signalTypeLabels = {
-    price_alert: '价格提醒',
-    indicator_alert: '指标提醒',
-    volatility: '波动性提醒',
-    volume: '成交量提醒'
-  }
-  parts.push(signalTypeLabels[formData.value.signal_type] || '信号提醒')
+  // 信号类型（简化：只保留 indicator_alert）
+  parts.push('指标提醒')
 
   return parts.length > 0 ? parts.join(' - ') : '未命名信号机器人'
 })
@@ -1038,13 +885,6 @@ const autoGeneratedDescription = computed(() => {
       }
       parts.push(`使用 ${indicatorLabels[indicatorAlertType.value] || indicatorAlertType.value} 指标`)
     }
-  } else if (formData.value.signal_type) {
-    const signalTypeLabels = {
-      'price_alert': '价格提醒',
-      'volatility': '波动性提醒',
-      'volume': '成交量/持仓提醒'
-    }
-    parts.push(signalTypeLabels[formData.value.signal_type] || formData.value.signal_type)
   }
 
   // 检查间隔
@@ -1079,12 +919,7 @@ const handleAIUpgradeRequired = () => {
   }
 }
 
-// 监听信号类型变化，价格提醒时自动关闭AI分析
-watch(() => formData.value.signal_type, (newType) => {
-  if (newType === 'price_alert') {
-    formData.value.use_advanced_analysis = false
-  }
-})
+// 简化：移除 price_alert 相关的 watch（所有信号都是 indicator_alert）
 
 // 加载机器人数据（编辑模式）
 const loadBotData = async () => {
@@ -1120,7 +955,7 @@ const loadBotData = async () => {
     formData.value.timeframe = bot.timeframe || '1h'
     // 加载市场类型（优先从 signal_bot 获取，兼容 API 返回格式）
     formData.value.market_type = bot.signal_bot?.market_type || bot.market_type || 'spot'
-    formData.value.signal_type = bot.signal_bot?.signal_type || bot.signal_type || 'price_alert'
+    formData.value.signal_type = bot.signal_bot?.signal_type || bot.signal_type || 'indicator_alert'
     formData.value.notify_email = bot.signal_bot?.notify_email ?? true
     formData.value.notify_app = bot.signal_bot?.notify_app ?? true
     formData.value.check_interval = bot.signal_bot?.check_interval || '5m'
@@ -1147,141 +982,101 @@ const loadBotData = async () => {
     alertConfig.value.mode = config.alert_mode || 'one_shot'
     alertConfig.value.cooldown_minutes = config.cooldown_minutes || 30
 
-    // 根据信号类型加载配置
-    if (formData.value.signal_type === 'price_alert') {
-      const priceAlert = config.price_alert || {}
-      priceAlertConfig.value = {
-        condition: priceAlert.condition || 'above',
-        target_price: priceAlert.target_price ? String(priceAlert.target_price) : ''
-      }
-    } else if (formData.value.signal_type === 'indicator_alert') {
-      const indicatorAlert = config.indicator_alert || {}
+    // 简化：只加载 indicator_alert 类型的配置
+    const indicatorAlert = config.indicator_alert || {}
 
-      // 🔥 从 indicators_config 加载触发模式
-      const indicatorsConfigData = bot.signal_bot?.indicators_config || {}
-      triggerMode.value = indicatorsConfigData.trigger_mode || 'state_change'
+    // 🔥 从 indicators_config 加载触发模式
+    const indicatorsConfigData = bot.signal_bot?.indicators_config || {}
+    triggerMode.value = indicatorsConfigData.trigger_mode || 'state_change'
 
-      // 检查是否是新的多指标格式
-      if (indicatorAlert.indicators && Array.isArray(indicatorAlert.indicators)) {
-        // 新的多指标格式
-        indicatorLogic.value = indicatorAlert.logic || 'AND'
-        selectedIndicators.value = indicatorAlert.indicators.map(ind => ind.type)
+    // 检查是否是新的多指标格式
+    if (indicatorAlert.indicators && Array.isArray(indicatorAlert.indicators)) {
+      // 新的多指标格式
+      indicatorLogic.value = indicatorAlert.logic || 'AND'
+      selectedIndicators.value = indicatorAlert.indicators.map(ind => ind.type)
 
-        // 构建 indicatorsConfig
-        const newIndicatorsConfig = {}
-        indicatorAlert.indicators.forEach(ind => {
-          newIndicatorsConfig[ind.type] = {
-            type: ind.type,
-            enabled: ind.enabled !== false,
-            weight: ind.weight || 1,
-            params: ind.params || {}
-          }
-        })
-        indicatorsConfig.value = newIndicatorsConfig
-      } else {
-        // 🔄 旧的单指标格式 → 自动转换为新的多指标格式
-        const indicatorType = indicatorAlert.indicator_type || 'rsi'
-
-        console.log('⚠️ 检测到旧版配置格式，自动转换为新的多指标格式')
-
-        // 设置为多指标模式
-        indicatorLogic.value = 'OR'  // 单指标使用 OR 逻辑
-        selectedIndicators.value = [indicatorType]
-
-        // 根据指标类型构建新格式的配置
-        let params = {}
-        if (indicatorType === 'rsi') {
-          params = {
-            period: indicatorAlert.period || 14,
-            overbought: indicatorAlert.overbought || 70,
-            oversold: indicatorAlert.oversold || 30
-          }
-        } else if (indicatorType === 'macd') {
-          params = {
-            fast: indicatorAlert.fast || 12,
-            slow: indicatorAlert.slow || 26,
-            signal: indicatorAlert.signal || 9
-          }
-        } else if (indicatorType === 'ma_crossover') {
-          params = {
-            fast: indicatorAlert.fast || 7,
-            slow: indicatorAlert.slow || 25
-          }
-        } else if (indicatorType === 'ema_cross') {
-          params = {
-            fast: indicatorAlert.fast || 9,
-            slow: indicatorAlert.slow || 21
-          }
-        } else if (indicatorType === 'atr') {
-          params = {
-            period: indicatorAlert.period || 14,
-            multiplier: indicatorAlert.multiplier || 2.0
-          }
-        } else if (indicatorType === 'volume') {
-          params = {
-            multiplier: indicatorAlert.multiplier || 2.0,
-            period: indicatorAlert.period || 20
-          }
+      // 构建 indicatorsConfig
+      const newIndicatorsConfig = {}
+      indicatorAlert.indicators.forEach(ind => {
+        newIndicatorsConfig[ind.type] = {
+          type: ind.type,
+          enabled: ind.enabled !== false,
+          weight: ind.weight || 1,
+          params: ind.params || {}
         }
+      })
+      indicatorsConfig.value = newIndicatorsConfig
+    } else {
+      // 🔄 旧的单指标格式 → 自动转换为新的多指标格式
+      const indicatorType = indicatorAlert.indicator_type || 'rsi'
 
-        // 构建新格式的 indicatorsConfig
-        indicatorsConfig.value = {
-          [indicatorType]: {
-            type: indicatorType,
-            enabled: true,
-            weight: 100,  // 单指标权重100%
-            params: params
-          }
+      console.log('⚠️ 检测到旧版配置格式，自动转换为新的多指标格式')
+
+      // 设置为多指标模式
+      indicatorLogic.value = 'OR'  // 单指标使用 OR 逻辑
+      selectedIndicators.value = [indicatorType]
+
+      // 根据指标类型构建新格式的配置
+      let params = {}
+      if (indicatorType === 'rsi') {
+        params = {
+          period: indicatorAlert.period || 14,
+          overbought: indicatorAlert.overbought || 70,
+          oversold: indicatorAlert.oversold || 30
         }
-
-        console.log('✅ 旧版配置已转换:', {
-          indicatorType,
-          params,
-          newConfig: indicatorsConfig.value
-        })
+      } else if (indicatorType === 'macd') {
+        params = {
+          fast: indicatorAlert.fast || 12,
+          slow: indicatorAlert.slow || 26,
+          signal: indicatorAlert.signal || 9
+        }
+      } else if (indicatorType === 'ma_crossover') {
+        params = {
+          fast: indicatorAlert.fast || 7,
+          slow: indicatorAlert.slow || 25
+        }
+      } else if (indicatorType === 'ema_cross') {
+        params = {
+          fast: indicatorAlert.fast || 9,
+          slow: indicatorAlert.slow || 21
+        }
+      } else if (indicatorType === 'atr') {
+        params = {
+          period: indicatorAlert.period || 14,
+          multiplier: indicatorAlert.multiplier || 2.0
+        }
+      } else if (indicatorType === 'volume') {
+        params = {
+          multiplier: indicatorAlert.multiplier || 2.0,
+          period: indicatorAlert.period || 20
+        }
       }
 
-      // 加载时间周期配置
-      const timeframesConf = config.timeframes_config || {}
-      timeframesConfig.value = {
-        primary: timeframesConf.primary || '1h',
-        confirm: timeframesConf.confirm || [],
-        require_all_confirm: timeframesConf.require_all_confirm || false,
-        min_confirm_count: timeframesConf.min_confirm_count || 1,
-        trigger: timeframesConf.trigger || { require_close: true, cooldown: 1800, re_alert: 'once', alert_interval: 300 }
-      }
-    } else if (formData.value.signal_type === 'volatility') {
-      const volatilityAlert = config.volatility_alert || {}
-      volatilityConfig.value = {
-        volatility_threshold: volatilityAlert.volatility_threshold || 5.0,
-        volatility_period: volatilityAlert.volatility_period || 20
+      // 构建新格式的 indicatorsConfig
+      indicatorsConfig.value = {
+        [indicatorType]: {
+          type: indicatorType,
+          enabled: true,
+          weight: 100,  // 单指标权重100%
+          params: params
+        }
       }
 
-      // 加载时间周期配置
-      const timeframesConf = config.timeframes_config || {}
-      timeframesConfig.value = {
-        primary: timeframesConf.primary || '1h',
-        confirm: timeframesConf.confirm || [],
-        require_all_confirm: timeframesConf.require_all_confirm || false,
-        min_confirm_count: timeframesConf.min_confirm_count || 1,
-        trigger: timeframesConf.trigger || { require_close: true, cooldown: 1800, re_alert: 'once', alert_interval: 300 }
-      }
-    } else if (formData.value.signal_type === 'volume') {
-      const volumeAlert = config.volume_alert || {}
-      volumeAlertConfig.value = {
-        volume_multiplier: volumeAlert.volume_multiplier || 2.0,
-        volume_period: volumeAlert.volume_period || 20
-      }
+      console.log('✅ 旧版配置已转换:', {
+        indicatorType,
+        params,
+        newConfig: indicatorsConfig.value
+      })
+    }
 
-      // 加载时间周期配置
-      const timeframesConf = config.timeframes_config || {}
-      timeframesConfig.value = {
-        primary: timeframesConf.primary || '1h',
-        confirm: timeframesConf.confirm || [],
-        require_all_confirm: timeframesConf.require_all_confirm || false,
-        min_confirm_count: timeframesConf.min_confirm_count || 1,
-        trigger: timeframesConf.trigger || { require_close: true, cooldown: 1800, re_alert: 'once', alert_interval: 300 }
-      }
+    // 加载时间周期配置
+    const timeframesConf = config.timeframes_config || {}
+    timeframesConfig.value = {
+      primary: timeframesConf.primary || '1h',
+      confirm: timeframesConf.confirm || [],
+      require_all_confirm: timeframesConf.require_all_confirm || false,
+      min_confirm_count: timeframesConf.min_confirm_count || 1,
+      trigger: timeframesConf.trigger || { require_close: true, cooldown: 1800, re_alert: 'once', alert_interval: 300 }
     }
 
     // 加载信号质量控制配置（从 signal_bot 对象和 config 中加载）

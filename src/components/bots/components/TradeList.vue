@@ -315,10 +315,9 @@
                     {{ trade.token_symbol?.charAt(0) || '?' }}
                   </div>
                   <img
-                    src="https://s2.coinmarketcap.com/static/img/coins/64x64/825.png"
+                    :src="USDT_LOGO"
                     alt="USDT"
                     class="w-7 h-7 rounded-full border-2 border-white shadow-sm"
-                    @error="handleImageError"
                   />
                 </div>
               </td>
@@ -429,6 +428,7 @@ import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headless
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid'
 import { botAPI } from '../../../utils/api'
 import { showError } from '../../../utils/notification'
+import { handleImageError, DEFAULT_TOKEN_LOGO, USDT_LOGO } from '../../../utils/tokenUtils.js'
 
 const loading = ref(false)
 const trades = ref([])
@@ -603,16 +603,11 @@ const getSymbolFromPair = (symbol) => {
 
 // 获取代币 logo
 const getTokenLogo = (symbol) => {
-  if (!symbol) return 'https://via.placeholder.com/24'
+  if (!symbol) return DEFAULT_TOKEN_LOGO
 
   // CryptoLogos CDN
   const symbolLower = symbol.toLowerCase()
   return `https://cryptologos.cc/logos/${symbolLower}-${symbolLower}-logo.png`
-}
-
-// 图片加载失败处理
-const handleImageError = (event) => {
-  event.target.src = 'https://via.placeholder.com/24?text=' + (event.target.alt || '?')
 }
 
 // 格式化数字 - 移除多余的小数点和0

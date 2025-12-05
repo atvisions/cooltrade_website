@@ -1144,10 +1144,10 @@ const getExchangeLogo = (exchangeName) => {
   return logos[exchangeName?.toLowerCase()] || ''
 }
 
-// 获取信号类型标签
+// 获取信号类型标签（简化：移除 price_alert）
 const getSignalTypeLabel = (signalType) => {
   const labels = {
-    'price_alert': '价格提醒',
+    'indicator_alert': '指标信号',
     'rsi': 'RSI指标',
     'ma_crossover': 'MA交叉',
     'bollinger': '布林带',
@@ -1156,7 +1156,7 @@ const getSignalTypeLabel = (signalType) => {
     'kdj': 'KDJ',
     'custom': '自定义'
   }
-  return labels[signalType] || signalType || '未知'
+  return labels[signalType] || '指标信号'
 }
 
 const formatCurrency = (value) => {

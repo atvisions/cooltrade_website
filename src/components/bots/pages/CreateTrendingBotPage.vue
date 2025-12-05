@@ -2677,6 +2677,7 @@ import AIPriceSuggestion from '../trend/AIPriceSuggestion.vue'
 import { botAPI, exchangeAPI, apiRequest, API_ENDPOINTS } from '../../../utils/api'
 import { showSuccess, showError } from '../../../utils/notification'
 import { showConfirm } from '../../../utils/confirm'
+import { handleImageError } from '../../../utils/tokenUtils.js'
 
 const router = useRouter()
 const route = useRoute()
@@ -3615,15 +3616,12 @@ const getExchangeDisplay = (exchangeName) => {
   return exchangeDisplayMap[exchangeName] || exchangeName
 }
 
-// 信号类型标签映射
+// 信号类型标签映射（简化：只保留 indicator_alert）
 const getSignalTypeLabel = (signalType) => {
   const labels = {
-    'price_alert': '价格提醒',
-    'indicator_alert': '指标信号',
-    'volatility': '波动性提醒',
-    'volume': '成交量提醒'
+    'indicator_alert': '指标信号'
   }
-  return labels[signalType] || signalType
+  return labels[signalType] || '指标信号'
 }
 
 // 余额检查函数
@@ -4482,9 +4480,7 @@ const loadSignalBots = async () => {
       // 必须是信号机器人
       if (bot.bot_type !== 'signal') return false
 
-      // 排除价格提醒类型（价格提醒不能关联交易机器人）
-      if (bot.signal_type === 'price_alert') return false
-
+      // 简化：所有信号机器人都是 indicator_alert 类型，无需过滤
       return true
     })
 
@@ -4681,12 +4677,7 @@ const loadTradingPairs = async () => {
 //   return numPrice.toFixed(8)
 // }
 
-// 图片加载错误处理
-const handleImageError = (e) => {
-  if (e.target.dataset.errorHandled) return
-  e.target.dataset.errorHandled = 'true'
-  e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHZpZXdCb3g9IjAgMCA0MCA0MCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iNDAiIGhlaWdodD0iNDAiIHJ4PSI4IiBmaWxsPSIjRTJFOEYwIi8+PHBhdGggZD0iTTIwIDEyQzE1LjU4MTcgMTIgMTIgMTUuNTgxNyAxMiAyMEMxMiAyNC40MTgzIDE1LjU4MTcgMjggMjAgMjhDMjQuNDE4MyAyOCAyOCAyNC40MTgzIDI4IDIwQzI4IDE1LjU4MTcgMjQuNDE4MyAxMiAyMCAxMloiIGZpbGw9IiM5NEE1QjgiLz48L3N2Zz4='
-}
+
 
 // 检查字段是否超过系统风控限制
 const isFieldExceedingLimit = (fieldName) => {
@@ -4951,8 +4942,13 @@ const handleSubmit = async () => {
       // ============ 仓位管理（优化后：4个字段）============
       position_sizing_method: formData.value.position_sizing_method,
       position_size_value: formData.value.position_size_value,
+      position_size_unit: formData.value.position_size_unit || 'usdt',  // 仓位单位：contracts(张) 或 usdt
       risk_per_trade: formData.value.risk_per_trade,
       kelly_fraction: formData.value.kelly_fraction,
+
+      // ============ 风控验证辅助字段（仅用于后端验证，不存储）============
+      contract_size: contractSpecInfo.value?.contract_size || 1,  // 合约规格
+      current_price: (formData.value.token || selectedSignalBotData.value?.token)?.current_price || 0,  // 当前价格
 
       // ============ 交易方向（从信号机器人继承）============
       trading_direction: inheritedTradingDirection.value,  // 从信号机器人继承
@@ -5078,7 +5074,33 @@ const handleSubmit = async () => {
     console.error(isEditMode.value ? '更新失败:' : '创建失败:', error)
     if (error.data && typeof error.data === 'object') {
       errors.value = error.data
-      showError('请检查表单填写是否正确')
+      // 提取具体的错误信息显示给用户
+      const errorMessages = []
+      const fieldNameMap = {
+        'position_size_value': '仓位大小',
+        'leverage': '杠杆倍数',
+        'stop_loss_percentage': '止损百分比',
+        'take_profit_percentage': '止盈百分比',
+        'signal_bot': '信号机器人',
+        'market_type': '市场类型',
+        'name': '机器人名称',
+        'exchange_api': '交易所API',
+        'max_daily_trades': '每日最大交易次数',
+        'max_open_positions': '最大持仓数',
+      }
+      for (const [field, messages] of Object.entries(error.data)) {
+        const fieldName = fieldNameMap[field] || field
+        if (Array.isArray(messages)) {
+          errorMessages.push(`${fieldName}: ${messages.join(', ')}`)
+        } else if (typeof messages === 'string') {
+          errorMessages.push(`${fieldName}: ${messages}`)
+        }
+      }
+      if (errorMessages.length > 0) {
+        showError(errorMessages.join('\n'))
+      } else {
+        showError('请检查表单填写是否正确')
+      }
     } else {
       showError(error.message || (isEditMode.value ? '更新失败' : '创建失败'))
     }

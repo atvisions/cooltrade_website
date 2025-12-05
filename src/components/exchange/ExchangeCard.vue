@@ -254,6 +254,7 @@
 <script setup>
 import { ref } from 'vue'
 import { ArrowPathIcon, PencilIcon, TrashIcon } from '@heroicons/vue/24/outline'
+import { handleImageError } from '../../utils/tokenUtils.js'
 
 // Props
 const props = defineProps({
@@ -354,12 +355,7 @@ const getStatusText = (status) => {
   return statusMap[status] || '未连接'
 }
 
-// 处理图片加载错误
-const handleImageError = (e) => {
-  console.error('图片加载失败:', e.target.src)
-  // 使用默认图标
-  e.target.style.display = 'none'
-}
+
 
 // 获取总余额
 const getTotalBalance = () => {

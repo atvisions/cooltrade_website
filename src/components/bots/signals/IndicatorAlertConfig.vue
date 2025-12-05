@@ -214,13 +214,13 @@
 
     <!-- 指标配置表单（仅在不显示 JSON 时显示） -->
     <div v-else>
-      <!-- 指标选择和组合逻辑（同一行） -->
-      <div class="mb-6 grid grid-cols-2 gap-4">
-        <!-- 指标多选下拉菜单 -->
-        <div>
+      <!-- 指标选择和组合逻辑（同一行：左3/4 右1/4） -->
+      <div class="mb-6 grid grid-cols-4 gap-4">
+        <!-- 指标多选下拉菜单（占3列） -->
+        <div class="col-span-3">
           <label class="block text-sm font-medium text-slate-700 mb-2">
             选择指标
-            <span class="text-xs text-slate-500 block mt-1">可以选择多个指标进行组合</span>
+            <span class="text-xs text-slate-500 ml-2">可选多个</span>
           </label>
         <div class="relative">
           <button
@@ -245,63 +245,71 @@
             </svg>
           </button>
 
-          <!-- 下拉菜单 -->
+          <!-- 下拉菜单（分类展示） -->
           <div
             v-if="showIndicatorDropdown"
             class="absolute z-10 w-full mt-2 bg-white border-2 border-slate-200 rounded-lg shadow-lg"
           >
-            <div class="p-2 space-y-1">
-              <label
-                v-for="indicator in availableIndicators"
-                :key="indicator.value"
-                class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors"
-              >
-                <input
-                  type="checkbox"
-                  :checked="selectedIndicators.includes(indicator.value)"
-                  @change="toggleIndicator(indicator.value)"
-                  class="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
-                />
-                <div class="flex-1">
-                  <div class="text-sm font-medium text-slate-900">{{ indicator.label }}</div>
-                  <div class="text-xs text-slate-500">{{ indicator.description }}</div>
+            <div class="p-2">
+              <!-- 按分类展示 -->
+              <div v-for="(category, catIndex) in indicatorCategories" :key="category.name">
+                <!-- 分类标题 -->
+                <div class="px-3 py-1.5 text-xs font-semibold text-slate-500 uppercase tracking-wide" :class="{ 'border-t border-slate-100 mt-1': catIndex > 0 }">
+                  {{ category.name }}
                 </div>
-              </label>
+                <!-- 分类下的指标 -->
+                <label
+                  v-for="indicator in category.indicators"
+                  :key="indicator.value"
+                  class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-slate-50 cursor-pointer transition-colors"
+                >
+                  <input
+                    type="checkbox"
+                    :checked="selectedIndicators.includes(indicator.value)"
+                    @change="toggleIndicator(indicator.value)"
+                    class="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
+                  />
+                  <div class="flex-1 flex items-center gap-2">
+                    <span class="text-sm font-medium text-slate-900">{{ indicator.label }}</span>
+                    <span v-if="indicator.futuresOnly" class="text-xs px-1.5 py-0.5 bg-amber-100 text-amber-700 rounded">合约</span>
+                  </div>
+                  <span class="text-xs text-slate-400">{{ indicator.description }}</span>
+                </label>
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- 组合逻辑选择 -->
+      <!-- 组合逻辑选择（占1列） -->
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-2">
           组合逻辑
-          <span class="text-xs text-slate-500 block mt-1">多个指标如何组合</span>
         </label>
         <div class="flex gap-2">
           <button
             type="button"
             @click="emit('update:logic', 'AND')"
             :class="[
-              'flex-1 px-4 py-2.5 text-sm font-medium rounded-lg border-2 transition-all',
+              'flex-1 px-3 py-2.5 text-sm font-medium rounded-lg border-2 transition-all whitespace-nowrap',
               logic === 'AND'
                 ? 'border-blue-500 bg-blue-50 text-blue-700'
                 : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
             ]"
           >
-            AND（全部满足）
+            AND
           </button>
           <button
             type="button"
             @click="emit('update:logic', 'OR')"
             :class="[
-              'flex-1 px-4 py-2.5 text-sm font-medium rounded-lg border-2 transition-all',
+              'flex-1 px-3 py-2.5 text-sm font-medium rounded-lg border-2 transition-all whitespace-nowrap',
               logic === 'OR'
                 ? 'border-blue-500 bg-blue-50 text-blue-700'
                 : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
             ]"
           >
-            OR（任一满足）
+            OR
           </button>
         </div>
       </div>
@@ -1649,36 +1657,56 @@ const updateSignalOutputConfig = (key, value) => {
   })
 }
 
-// 通用指标（现货和合约都可用）
-const commonIndicators = [
-  { label: 'RSI', value: 'rsi', description: '相对强弱指标，判断超买超卖' },
-  { label: 'MACD', value: 'macd', description: '趋势动量指标，捕捉金叉死叉' },
-  { label: 'MA交叉', value: 'ma_crossover', description: '均线交叉，判断趋势转折' },
-  { label: 'ATR', value: 'atr', description: '波动性指标，衡量市场活跃度' },
-  { label: '成交量', value: 'volume', description: '检测成交量异常放大' },
-  { label: '布林带', value: 'bollinger', description: '波动通道，检测挤压突破' },
-  { label: '支点', value: 'pivot', description: '支撑阻力位，检测关键价位' },
-  { label: 'K线形态', value: 'pattern', description: '锤子线、吞没等经典形态' },
-  { label: '背离', value: 'divergence', description: 'RSI/MACD背离，预测反转' },
-  { label: '趋势偏向', value: 'trend_bias', description: '趋势过滤，避免逆势交易' }
-]
-
-// 合约专用指标
-const futuresOnlyIndicators = [
-  { label: '资金费率', value: 'funding_rate', description: '合约资金费率，判断多空情绪', futuresOnly: true },
-  { label: '持仓量', value: 'open_interest', description: '未平仓合约量，判断趋势强度', futuresOnly: true },
-  { label: '多空比', value: 'long_short_ratio', description: '多空持仓比例，判断市场情绪', futuresOnly: true }
-]
+// 指标分类定义（趋势/波动/情绪）
+const indicatorCategories = computed(() => {
+  const categories = [
+    {
+      name: '趋势 Trend',
+      description: '判断市场方向',
+      indicators: [
+        { label: 'MACD', value: 'macd', description: '趋势动量，金叉死叉' },
+        { label: 'MA交叉', value: 'ma_crossover', description: '均线交叉，趋势转折' },
+        { label: '趋势偏向', value: 'trend_bias', description: 'MA趋势方向' },
+        // 合约专用
+        ...(props.marketType === 'futures' ? [
+          { label: '持仓量', value: 'open_interest', description: '趋势强度确认', futuresOnly: true },
+          { label: '多空比', value: 'long_short_ratio', description: '多空力量对比', futuresOnly: true }
+        ] : [])
+      ]
+    },
+    {
+      name: '波动 Volatility',
+      description: '判断市场活跃度',
+      indicators: [
+        { label: 'ATR', value: 'atr', description: '波动率指标' },
+        { label: '布林带', value: 'bollinger', description: '波动通道，挤压突破' },
+        { label: '成交量', value: 'volume', description: '量能变化' }
+      ]
+    },
+    {
+      name: '情绪 Sentiment',
+      description: '判断买卖时机',
+      indicators: [
+        { label: 'RSI', value: 'rsi', description: '超买超卖' },
+        { label: '背离', value: 'divergence', description: 'RSI/MACD顶底背离' },
+        { label: 'K线形态', value: 'pattern', description: '反转形态识别' },
+        { label: '支点', value: 'pivot', description: '支撑阻力位' },
+        // 合约专用
+        ...(props.marketType === 'futures' ? [
+          { label: '资金费率', value: 'funding_rate', description: '多空情绪', futuresOnly: true }
+        ] : [])
+      ]
+    }
+  ]
+  return categories
+})
 
 // 合约专用指标的值列表
-const futuresOnlyIndicatorValues = futuresOnlyIndicators.map(i => i.value)
+const futuresOnlyIndicatorValues = ['funding_rate', 'open_interest', 'long_short_ratio']
 
-// 根据市场类型动态计算可用指标
+// 扁平化的指标列表（用于兼容旧逻辑）
 const availableIndicators = computed(() => {
-  if (props.marketType === 'futures') {
-    return [...commonIndicators, ...futuresOnlyIndicators]
-  }
-  return commonIndicators
+  return indicatorCategories.value.flatMap(cat => cat.indicators)
 })
 
 // 监听市场类型变化，自动移除不适用的指标

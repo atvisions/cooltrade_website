@@ -17,7 +17,7 @@ export function useBotForm(initialData = null) {
     timeframe: '1h',
     bot_type: 'signal',
     // 信号机器人特定字段
-    signal_type: 'price_alert',
+    signal_type: 'indicator_alert',
     notify_email: true,
     notify_app: true,
     check_interval: '5m',
@@ -146,7 +146,7 @@ export function useBotForm(initialData = null) {
       trading_pair: 'USDT',
       timeframe: '1h',
       bot_type: 'signal',
-      signal_type: 'price_alert',
+      signal_type: 'indicator_alert',
       notify_email: true,
       notify_app: true,
       check_interval: '5m',

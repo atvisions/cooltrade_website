@@ -360,6 +360,7 @@ import Tag from 'primevue/tag'
 import { botAPI } from '../../../utils/api'
 import { showSuccess, showError } from '../../../utils/notification'
 import { showConfirm } from '../../../utils/confirm'
+import { handleImageError, DEFAULT_TOKEN_LOGO } from '../../../utils/tokenUtils.js'
 
 const router = useRouter()
 
@@ -477,16 +478,11 @@ const formatDate = (date) => {
 
 // 获取代币 logo
 const getTokenLogo = (symbol) => {
-  if (!symbol) return 'https://via.placeholder.com/40'
+  if (!symbol) return DEFAULT_TOKEN_LOGO
 
   // CryptoLogos CDN
   const symbolLower = symbol.toLowerCase()
   return `https://cryptologos.cc/logos/${symbolLower}-${symbolLower}-logo.png`
-}
-
-// 图片加载失败处理
-const handleImageError = (event) => {
-  event.target.src = 'https://via.placeholder.com/40?text=' + (event.target.alt || '?')
 }
 
 onMounted(() => {

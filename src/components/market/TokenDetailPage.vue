@@ -1017,15 +1017,12 @@ const handleTabClick = (tab) => {
   // 注意：现货/合约切换时 K 线会自动刷新，因为 TradingChart 监听 marketType 变化
 }
 
-// 信号类型标签
+// 信号类型标签（简化：只保留 indicator_alert）
 const getSignalTypeLabel = (type) => {
   const labels = {
-    'price_alert': '价格提醒',
-    'indicator_alert': '指标信号',
-    'volatility': '波动性提醒',
-    'volume': '成交量提醒'
+    'indicator_alert': '指标信号'
   }
-  return labels[type] || type || '指标信号'
+  return labels[type] || '指标信号'
 }
 
 // 复制机器人（跟单）

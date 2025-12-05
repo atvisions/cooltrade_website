@@ -171,28 +171,8 @@
 
         <!-- 指标监控 Tab 内容 -->
         <div v-show="activeTab === 'indicators'">
-          <!-- 价格提醒监控（仅 price_alert 类型） -->
-          <div v-if="bot.signal_bot?.signal_type === 'price_alert'" class="bg-white rounded-xl border border-slate-200 overflow-hidden">
-            <div class="px-5 py-3 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
-              <h2 class="text-sm font-semibold text-slate-800">价格监控</h2>
-              <button @click="refreshIndicatorValues" :disabled="loadingIndicators" class="text-xs text-blue-600 hover:text-blue-700">刷新</button>
-            </div>
-            <div class="p-5 grid grid-cols-2 gap-4">
-              <div class="bg-blue-50 rounded-lg p-4">
-                <p class="text-xs text-blue-600 mb-1">当前价格</p>
-                <p class="text-2xl font-bold text-blue-900">{{ formatPrice(indicatorValues?.price) }}</p>
-              </div>
-              <div class="bg-purple-50 rounded-lg p-4">
-                <p class="text-xs text-purple-600 mb-1">目标价格</p>
-                <p class="text-2xl font-bold text-purple-900">{{ formatPrice(bot.signal_bot?.price_alert_config?.target_price) }}</p>
-                <p class="text-xs text-purple-600 mt-1">{{ bot.signal_bot?.price_alert_config?.condition === 'above' ? '高于触发' : '低于触发' }}</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- 指标对比表格（仅 indicator_alert 类型） -->
+          <!-- 指标对比表格（简化：只支持 indicator_alert 类型） -->
           <IndicatorComparisonTable
-            v-if="bot.signal_bot?.signal_type === 'indicator_alert'"
             :indicators="bot.signal_bot?.indicators_config?.indicators || []"
             :indicatorValues="indicatorValues"
             :requireAll="bot.signal_bot?.indicators_config?.require_all"
@@ -261,15 +241,12 @@ const activeTab = ref('indicators') // 'indicators' | 'signals'
 let refreshInterval = null
 let indicatorRefreshInterval = null
 
-// 获取信号类型标签
+// 获取信号类型标签（简化：只保留 indicator_alert）
 const getSignalTypeLabel = (type) => {
   const labels = {
-    price_alert: '价格提醒',
-    indicator_alert: '指标信号',
-    volume: '成交量异动',
-    volatility: '波动率异动'
+    indicator_alert: '指标信号'
   }
-  return labels[type] || type || '未知'
+  return labels[type] || '指标信号'
 }
 
 // 格式化检查间隔

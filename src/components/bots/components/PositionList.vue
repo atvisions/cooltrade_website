@@ -195,10 +195,9 @@
                   {{ position.token_symbol ? position.token_symbol.charAt(0) : '?' }}
                 </div>
                 <img
-                  src="https://s2.coinmarketcap.com/static/img/coins/64x64/825.png"
+                  :src="USDT_LOGO"
                   alt="USDT"
                   class="w-10 h-10 rounded-full border-2 border-white shadow-sm object-contain"
-                  @error="handleImageError"
                 />
               </div>
 
@@ -418,6 +417,7 @@ import { Listbox, ListboxButton, ListboxOptions, ListboxOption } from '@headless
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/vue/20/solid'
 import { botAPI } from '../../../utils/api'
 import { showSuccess, showError } from '../../../utils/notification'
+import { handleImageError, USDT_LOGO } from '../../../utils/tokenUtils.js'
 import { showConfirm } from '../../../utils/confirm'
 
 const loading = ref(false)
@@ -510,10 +510,7 @@ const closePosition = async (positionId) => {
   }
 }
 
-// 图片加载失败处理
-const handleImageError = (event) => {
-  event.target.style.display = 'none'
-}
+
 
 // 计算保证金
 const calculateMargin = (position) => {

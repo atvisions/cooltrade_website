@@ -73,7 +73,7 @@
                 </p>
                 <p
                   :class="[
-                    'text-sm leading-5 break-words',
+                    'text-sm leading-5 break-words whitespace-pre-line',
                     notification.title ? 'mt-1 text-gray-600' : 'text-gray-900'
                   ]"
                 >

@@ -134,19 +134,13 @@ const fetchMembershipStatus = async () => {
 }
 
 const handleToggle = () => {
-  // 如果是价格提醒类型，显示提示信息
-  if (props.signalType === 'price_alert') {
-    emit('error', '价格提醒无需开启 AI 分析模式')
-    return
-  }
-
   // 如果要开启 AI 分析，检查会员权限
   if (!props.enabled && !hasAIAccess.value) {
     emit('upgrade-required')
     return
   }
 
-  // 非价格提醒类型，正常切换
+  // 正常切换
   emit('update:enabled', !props.enabled)
 }
 

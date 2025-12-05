@@ -927,11 +927,9 @@ const statusOptionsWithAll = [
   ...statusOptions
 ]
 
+// 简化：只保留 indicator_alert 类型
 const signalTypeOptions = [
-  { label: '指标信号提醒', value: 'indicator_alert' },
-  { label: '价格提醒', value: 'price_alert' },
-  { label: '成交量/持仓提醒', value: 'volume' },
-  { label: '波动性提醒', value: 'volatility' }
+  { label: '指标信号提醒', value: 'indicator_alert' }
 ]
 
 const signalTypeOptionsWithAll = [
@@ -1371,15 +1369,11 @@ const getSignalTypeLabel = (signalType, indicatorType = null) => {
     return indicatorLabels[indicatorType] || indicatorType
   }
 
-  // 否则显示大类
+  // 否则显示大类（简化：只保留 indicator_alert）
   const labels = {
-    'price_alert': '价格提醒',
-    'indicator_alert': '指标信号提醒',
-    'volatility': '波动性提醒',
-    'volume': '成交量/持仓提醒',
-    'custom': '自定义'
+    'indicator_alert': '指标信号提醒'
   }
-  return labels[signalType] || signalType || '未知'
+  return labels[signalType] || '指标信号提醒'
 }
 
 // 获取信号类型显示标签（信号记录的类型）

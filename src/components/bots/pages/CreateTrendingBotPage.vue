@@ -132,129 +132,79 @@
           <!-- 第2步: 继承配置（从信号机器人继承） -->
           <Card variant="default" class="mb-6">
             <!-- 卡片标题 -->
-            <div class="flex items-center gap-3 mb-6">
-              <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
               </div>
               <div>
-                <div class="text-lg font-semibold text-slate-900">继承配置</div>
-                <div class="text-xs text-slate-500">以下配置从信号机器人自动继承，无需重复设置</div>
+                <div class="text-base font-semibold text-slate-900">继承配置</div>
               </div>
             </div>
 
-            <div class="space-y-4">
+            <div>
               <!-- 继承的配置信息 -->
               <div v-if="selectedSignalBotData">
-                <!-- 继承信息网格 -->
-                <div class="grid grid-cols-2 gap-3 mb-4">
+                <!-- 紧凑的信息展示 -->
+                <div class="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm p-3 bg-slate-50 rounded-lg border border-slate-200">
                   <!-- 交易代币 -->
-                  <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                    <div class="text-xs text-slate-500 mb-1">交易代币</div>
-                    <div class="flex items-center gap-2">
-                      <img
-                        :src="selectedSignalBotData.token_logo || '/default-token.png'"
-                        :alt="selectedSignalBotData.token_symbol"
-                        class="w-5 h-5 rounded-full"
-                        @error="$event.target.src='/default-token.png'"
-                      />
-                      <span class="font-medium text-slate-900">{{ selectedSignalBotData.token_symbol }}</span>
-                      <span class="text-xs text-slate-500">/ {{ selectedSignalBotData.trading_pair || 'USDT' }}</span>
-                    </div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-slate-500">交易对:</span>
+                    <img
+                      :src="selectedSignalBotData.token_logo || '/default-token.png'"
+                      :alt="selectedSignalBotData.token_symbol"
+                      class="w-4 h-4 rounded-full"
+                      @error="$event.target.src='/default-token.png'"
+                    />
+                    <span class="font-medium text-slate-900">{{ selectedSignalBotData.token_symbol }}/{{ selectedSignalBotData.trading_pair || 'USDT' }}</span>
                   </div>
-
+                  <span class="text-slate-300">|</span>
                   <!-- 交易所 -->
-                  <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                    <div class="text-xs text-slate-500 mb-1">交易所</div>
-                    <div class="flex items-center gap-2">
-                      <span class="font-medium text-slate-900">{{ getExchangeDisplay(selectedSignalBotData.exchange_name) }}</span>
-                      <span v-if="selectedSignalBotData.exchange_api" class="text-xs text-green-600 bg-green-50 px-1.5 py-0.5 rounded">已绑定API</span>
-                      <span v-else class="text-xs text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">公开数据</span>
-                    </div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-slate-500">交易所:</span>
+                    <span class="text-slate-700">{{ getExchangeDisplay(selectedSignalBotData.exchange_name) }}</span>
+                    <span v-if="selectedSignalBotData.exchange_api" class="text-xs text-green-600 bg-green-50 px-1 py-0.5 rounded">API</span>
                   </div>
-
+                  <span class="text-slate-300">|</span>
                   <!-- 市场类型 -->
-                  <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                    <div class="text-xs text-slate-500 mb-1">市场类型</div>
-                    <div class="flex items-center gap-2">
-                      <span
-                        :class="[
-                          'inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium',
-                          formData.market_type === 'spot'
-                            ? 'bg-blue-100 text-blue-700'
-                            : 'bg-purple-100 text-purple-700'
-                        ]"
-                      >
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            :d="formData.market_type === 'spot'
-                              ? 'M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
-                              : 'M13 7h8m0 0v8m0-8l-8 8-4-4-6 6'"
-                          />
-                        </svg>
-                        {{ formData.market_type === 'spot' ? '现货' : '合约-USDT' }}
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-slate-500">类型:</span>
+                    <span :class="formData.market_type === 'spot' ? 'text-blue-600' : 'text-purple-600'" class="font-medium">
+                      {{ formData.market_type === 'spot' ? '现货' : '合约' }}
+                    </span>
+                  </div>
+                  <span class="text-slate-300">|</span>
+                  <!-- 时间周期 -->
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-slate-500">周期:</span>
+                    <span class="text-slate-700">{{ getTimeframeLabel(selectedSignalBotData.timeframe) }}</span>
+                  </div>
+                  <!-- 交易方向（仅合约模式显示） -->
+                  <template v-if="formData.market_type !== 'spot'">
+                    <span class="text-slate-300">|</span>
+                    <div class="flex items-center gap-1.5">
+                      <span class="text-slate-500">方向:</span>
+                      <span :class="{
+                        'text-indigo-600': inheritedTradingDirection === 'both',
+                        'text-green-600': inheritedTradingDirection === 'long_only',
+                        'text-red-600': inheritedTradingDirection === 'short_only'
+                      }" class="font-medium">
+                        {{ inheritedTradingDirection === 'both' ? '双向' : inheritedTradingDirection === 'long_only' ? '只做多' : '只做空' }}
                       </span>
                     </div>
-                  </div>
-
-                  <!-- 时间周期 -->
-                  <div class="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                    <div class="text-xs text-slate-500 mb-1">时间周期</div>
-                    <div class="flex items-center gap-2">
-                      <span class="font-medium text-slate-900">{{ getTimeframeLabel(selectedSignalBotData.timeframe) }}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- 信号配置摘要 -->
-                <div v-if="selectedSignalBotData.signal_bot" class="p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
-                  <div class="flex items-center gap-2 mb-2">
-                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
-                    <span class="text-xs font-medium text-blue-700">信号配置</span>
-                  </div>
-                  <div class="flex flex-wrap gap-2 text-xs">
-                    <!-- 信号强度阈值 -->
-                    <span class="inline-flex items-center gap-1 px-2 py-1 bg-white rounded border border-blue-100 text-slate-600">
-                      <span class="text-blue-500">📊</span>
-                      强度阈值: {{ selectedSignalBotData.signal_bot.signal_strength_threshold || 60 }}%
-                    </span>
-                    <!-- 信号过期时间 -->
-                    <span class="inline-flex items-center gap-1 px-2 py-1 bg-white rounded border border-blue-100 text-slate-600">
-                      <span class="text-amber-500">⏰</span>
-                      过期: {{ selectedSignalBotData.signal_bot.signal_expiration_hours || 24 }}小时
-                    </span>
-                    <!-- 确认K线数 -->
-                    <span class="inline-flex items-center gap-1 px-2 py-1 bg-white rounded border border-blue-100 text-slate-600">
-                      <span class="text-green-500">📈</span>
-                      确认: {{ selectedSignalBotData.signal_bot.signal_confirmation_bars || 1 }}根K线
-                    </span>
-                    <!-- 通知方式 -->
-                    <span v-if="selectedSignalBotData.signal_bot.notify_email || selectedSignalBotData.signal_bot.notify_app" class="inline-flex items-center gap-1 px-2 py-1 bg-white rounded border border-blue-100 text-slate-600">
-                      <span class="text-purple-500">🔔</span>
-                      <span v-if="selectedSignalBotData.signal_bot.notify_email && selectedSignalBotData.signal_bot.notify_app">邮件+应用</span>
-                      <span v-else-if="selectedSignalBotData.signal_bot.notify_email">邮件通知</span>
-                      <span v-else>应用通知</span>
-                    </span>
-                  </div>
-                </div>
-
-                <!-- 继承提示 -->
-                <div class="mt-3 text-xs text-slate-500 flex items-center gap-1">
-                  <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  以上配置自动继承自信号机器人「{{ selectedSignalBotData.name }}」，确保信号与执行的一致性
+                  </template>
+                  <!-- 信号配置 -->
+                  <template v-if="selectedSignalBotData.signal_bot">
+                    <span class="text-slate-300">|</span>
+                    <span class="text-slate-500 text-xs">强度≥{{ selectedSignalBotData.signal_bot.signal_strength_threshold || 60 }}%</span>
+                    <span class="text-slate-500 text-xs">· {{ selectedSignalBotData.signal_bot.signal_expiration_hours || 24 }}h过期</span>
+                  </template>
                 </div>
               </div>
 
               <!-- 未选择信号机器人时的提示 -->
-              <div v-else class="p-4 bg-slate-50 border border-slate-200 rounded-lg text-center">
+              <div v-else class="p-3 bg-slate-50 border border-slate-200 rounded-lg text-center">
                 <p class="text-sm text-slate-500">
                   💡 请先选择信号机器人，配置将自动继承
                 </p>
@@ -2009,63 +1959,6 @@
             </div>
           </Card>
 
-          <!-- 多空方向控制（从信号机器人继承，只读显示）-->
-          <Card v-if="formData.market_type === 'linear' || formData.market_type === 'inverse'" variant="default" class="mb-6">
-            <div class="flex items-center gap-3 mb-6">
-              <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center">
-                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
-                </svg>
-              </div>
-              <div>
-                <h2 class="text-lg font-semibold text-slate-900">多空方向控制</h2>
-                <p class="text-sm text-slate-500">交易方向从关联的信号机器人继承</p>
-              </div>
-            </div>
-
-            <div class="space-y-4">
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-3">
-                  交易方向 <span class="text-xs text-blue-600 ml-2">（继承自信号机器人）</span>
-                </label>
-                <div class="grid grid-cols-3 gap-3">
-                  <div
-                    v-for="direction in [
-                      { value: 'both', label: '双向交易', icon: 'M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4', color: 'indigo' },
-                      { value: 'long_only', label: '只做多', icon: 'M5 10l7-7m0 0l7 7m-7-7v18', color: 'green' },
-                      { value: 'short_only', label: '只做空', icon: 'M19 14l-7 7m0 0l-7-7m7 7V3', color: 'red' }
-                    ]"
-                    :key="direction.value"
-                    :class="[
-                      'relative flex flex-col items-center justify-center p-4 rounded-lg border-2 transition-all',
-                      inheritedTradingDirection === direction.value
-                        ? `border-${direction.color}-500 bg-${direction.color}-50`
-                        : 'border-slate-200 bg-slate-50 opacity-50'
-                    ]"
-                  >
-                    <svg class="w-6 h-6 mb-2" :class="inheritedTradingDirection === direction.value ? `text-${direction.color}-600` : 'text-slate-400'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" :d="direction.icon" />
-                    </svg>
-                    <span class="text-sm font-medium" :class="inheritedTradingDirection === direction.value ? `text-${direction.color}-900` : 'text-slate-500'">
-                      {{ direction.label }}
-                    </span>
-                    <div v-if="inheritedTradingDirection === direction.value" class="absolute top-2 right-2">
-                      <svg class="w-5 h-5" :class="`text-${direction.color}-600`" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-                <p class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs text-slate-600">
-                  <span class="font-medium text-blue-700">💡 提示：</span>
-                  交易方向由信号机器人决定，请在信号机器人的「信号输出配置」中修改。
-                  <span v-if="!formData.signal_bot" class="block mt-1 text-amber-600">请先选择关联的信号机器人。</span>
-                </p>
-              </div>
-            </div>
-          </Card>
-
-
           <!-- 通知设置 -->
           <Card variant="default" class="mb-6">
             <div class="flex items-center gap-3 mb-6">
@@ -2290,7 +2183,7 @@
                     <div class="flex justify-between text-xs">
                       <span class="text-slate-500">交易所</span>
                       <span class="font-medium text-slate-900">
-                        {{ selectedExchangeAPI?.name || getExchangeLabel(selectedExchangeAPI?.exchange) || '-' }}
+                        {{ getExchangeDisplay(selectedSignalBotData?.exchange_name) || selectedExchangeAPI?.name || getExchangeLabel(selectedExchangeAPI?.exchange) || '-' }}
                       </span>
                     </div>
                     <div class="flex justify-between text-xs">
@@ -2577,23 +2470,6 @@
                           周期{{ formData.atr_period }} / 倍数{{ formData.atr_multiplier }}
                         </span>
                       </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- 多空方向控制 -->
-                <div class="border-t border-slate-200 pt-4">
-                  <div class="text-xs font-semibold text-slate-700 mb-3">多空方向控制</div>
-                  <div class="space-y-2">
-                    <div class="flex justify-between text-xs">
-                      <span class="text-slate-500">交易方向</span>
-                      <span class="font-medium" :class="{
-                        'text-indigo-600': formData.trading_direction === 'both',
-                        'text-green-600': formData.trading_direction === 'long_only',
-                        'text-red-600': formData.trading_direction === 'short_only'
-                      }">
-                        {{ formData.trading_direction === 'both' ? '双向交易' : formData.trading_direction === 'long_only' ? '只做多' : '只做空' }}
-                      </span>
                     </div>
                   </div>
                 </div>

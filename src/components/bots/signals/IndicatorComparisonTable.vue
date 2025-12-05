@@ -68,17 +68,27 @@
               </tr>
               <!-- 条件行 -->
               <tr v-for="(cond, cIdx) in getConditions(indicator)" :key="`${idx}-${cIdx}`" class="hover:bg-slate-50">
-                <td class="px-4 py-1.5 text-xs text-slate-600 pl-10">{{ cond.label }}</td>
-                <td class="px-4 py-1.5 text-center">
-                  <span class="text-xs font-mono text-blue-600">{{ cond.operator }} {{ cond.threshold }}</span>
+                <td class="px-4 py-1.5 text-xs text-slate-600 pl-10">
+                  <!-- 显示 OR/AND 关系 -->
+                  <span v-if="cond.relation" class="text-[10px] text-orange-500 font-semibold mr-1">{{ cond.relation }}</span>
+                  {{ cond.label }}
+                </td>
+                <td class="px-4 py-1.5 text-center min-w-[120px]">
+                  <!-- 信息行（无operator）不显示设定值 -->
+                  <span v-if="cond.operator" class="text-xs font-mono text-blue-600">{{ cond.operator }} {{ cond.threshold }}</span>
+                  <span v-else class="text-xs text-slate-400">（参考值）</span>
                 </td>
                 <td class="px-4 py-1.5 text-center">
                   <span :class="['text-xs font-mono', cond.statusColor || 'text-slate-700']">{{ cond.currentValue }}</span>
                 </td>
                 <td class="px-4 py-1.5 text-center">
-                  <span :class="checkMet(cond) ? 'text-green-500' : 'text-red-400'">
-                    {{ checkMet(cond) ? '✓' : '✗' }}
-                  </span>
+                  <!-- 信息行不显示状态 -->
+                  <template v-if="cond.operator">
+                    <span :class="getConditionMet(cond) ? 'text-green-500' : 'text-red-400'">
+                      {{ getConditionMet(cond) ? '✓' : '✗' }}
+                    </span>
+                  </template>
+                  <span v-else class="text-slate-300">—</span>
                 </td>
               </tr>
             </template>
@@ -359,60 +369,95 @@ const getConditions = (indicator) => {
 
   switch (indicator.type) {
     case 'rsi':
-      if (params.oversold) conditions.push({ label: 'RSI 超卖', currentValue: fmt(values.rsi), operator: '<', threshold: params.oversold })
-      if (params.overbought) conditions.push({ label: 'RSI 超买', currentValue: fmt(values.rsi), operator: '>', threshold: params.overbought })
+      // RSI 超卖和超买是 OR 关系
+      const rsiVal = values.rsi
+      const isOversold = params.oversold && rsiVal < params.oversold
+      const isOverbought = params.overbought && rsiVal > params.overbought
+      if (params.oversold) {
+        conditions.push({
+          label: 'RSI 超卖',
+          currentValue: fmt(rsiVal),
+          operator: '<',
+          threshold: params.oversold,
+          met: isOversold,
+          relation: params.overbought ? 'OR' : null  // 有两个条件时显示 OR
+        })
+      }
+      if (params.overbought) {
+        conditions.push({
+          label: 'RSI 超买',
+          currentValue: fmt(rsiVal),
+          operator: '>',
+          threshold: params.overbought,
+          met: isOverbought
+        })
+      }
       break
     case 'macd':
-      conditions.push({ label: 'MACD 柱状图', currentValue: fmt(values.macd_histogram), operator: '>', threshold: 0 })
+      const macdMet = values.macd_histogram > 0
+      conditions.push({ label: 'MACD 柱状图', currentValue: fmt(values.macd_histogram), operator: '>', threshold: 0, met: macdMet })
       break
     case 'ma_crossover':
       const maFast = values[`ma_${params.fast || 7}`] || values.ma_7
       const maSlow = values[`ma_${params.slow || 25}`] || values.ma_25
+      const maCrossMet = maFast && maSlow && maFast > maSlow
       conditions.push({
         label: '金叉/死叉',
         currentValue: maFast && maSlow ? (maFast > maSlow ? '金叉' : '死叉') : '--',
         operator: '=',
         threshold: '金叉',
+        met: maCrossMet,
         isCross: true,
         fastVal: maFast,
-        slowVal: maSlow,
-        detail: `MA${params.fast||7}: ${fmt(maFast)} / MA${params.slow||25}: ${fmt(maSlow)}`
+        slowVal: maSlow
       })
+      // 显示 MA 详情作为参考
+      conditions.push({ label: `MA${params.fast||7}`, currentValue: fmt(maFast), operator: '', threshold: null, isInfo: true })
+      conditions.push({ label: `MA${params.slow||25}`, currentValue: fmt(maSlow), operator: '', threshold: null, isInfo: true })
       // 🔥 如果启用了价格突破快速均线条件
       if (params.break_fast_ma) {
+        const priceVal = values.current_price || currentPrice.value
+        const priceMet = priceVal && maFast && parseFloat(priceVal) > parseFloat(maFast)
         conditions.push({
           label: '价格突破快线',
-          currentValue: fmt(values.current_price || currentPrice.value),
+          currentValue: fmt(priceVal),
           operator: '>',
           threshold: fmt(maFast),
-          detail: `价格需高于 MA${params.fast||7}`
+          met: priceMet,
+          relation: 'AND'
         })
       }
       break
     case 'volume':
       const volMa = values.volume_ma || 0
       const volThreshold = volMa * (params.multiplier || 1.5)
+      const volMet = values.volume > volThreshold
       conditions.push({
         label: '成交量激增',
         currentValue: fmt(values.volume),
         operator: '>',
-        threshold: volThreshold > 0 ? Math.round(volThreshold) : '--'
+        threshold: volThreshold > 0 ? `${Math.round(volThreshold)} (${params.multiplier||1.5}×均值)` : '--',
+        met: volMet
       })
+      conditions.push({ label: '成交量均值', currentValue: fmt(volMa), operator: '', threshold: null, isInfo: true })
       break
     case 'trend_bias':
       const trendFastMa = values[`ma_${params.fast_ma || 50}`] || values.ma_50
       const trendSlowMa = values[`ma_${params.slow_ma || 200}`] || values.ma_200
+      const trendMet = trendFastMa && trendSlowMa && trendFastMa > trendSlowMa
       const currentTrend = trendFastMa && trendSlowMa ? (trendFastMa > trendSlowMa ? '上升趋势' : '下降趋势') : '--'
       conditions.push({
         label: '趋势方向',
         currentValue: currentTrend,
         operator: '=',
         threshold: '上升趋势',
+        met: trendMet,
         isCross: true,
         fastVal: trendFastMa,
-        slowVal: trendSlowMa,
-        detail: `MA${params.fast_ma||50}: ${fmt(trendFastMa)} / MA${params.slow_ma||200}: ${fmt(trendSlowMa)}`
+        slowVal: trendSlowMa
       })
+      conditions.push({ label: `MA${params.fast_ma||50}`, currentValue: fmt(trendFastMa), operator: '', threshold: null, isInfo: true })
+      conditions.push({ label: `MA${params.slow_ma||200}`, currentValue: fmt(trendSlowMa), operator: '', threshold: null, isInfo: true })
       break
 
     // === 市场状态型指标的条件显示 ===
@@ -420,68 +465,86 @@ const getConditions = (indicator) => {
       const bbPrice = props.indicatorValues.price
       const bbUpper = values.bollinger_upper
       const bbLower = values.bollinger_lower
+      const bbHitUpper = bbPrice && bbUpper && bbPrice >= bbUpper
+      const bbHitLower = bbPrice && bbLower && bbPrice <= bbLower
+      const bbMet = bbHitUpper || bbHitLower
       const bbPos = bbPrice && bbUpper && bbLower
-        ? (bbPrice >= bbUpper ? '超买区 ↑' : bbPrice <= bbLower ? '超卖区 ↓' : '中间区域')
+        ? (bbHitUpper ? '超买区 ↑' : bbHitLower ? '超卖区 ↓' : '中间区域')
         : '--'
       conditions.push({
         label: '价格位置',
         currentValue: bbPos,
         operator: '触及',
-        threshold: '上轨或下轨',
-        statusColor: bbPrice >= bbUpper ? 'text-red-600' : bbPrice <= bbLower ? 'text-green-600' : 'text-slate-600'
+        threshold: '上轨 OR 下轨',
+        met: bbMet,
+        statusColor: bbHitUpper ? 'text-red-600' : bbHitLower ? 'text-green-600' : 'text-slate-600'
       })
-      conditions.push({ label: '上轨', currentValue: fmt(bbUpper), operator: '', threshold: '--' })
-      conditions.push({ label: '下轨', currentValue: fmt(bbLower), operator: '', threshold: '--' })
+      conditions.push({ label: '当前价格', currentValue: fmt(bbPrice), operator: '', threshold: null, isInfo: true })
+      conditions.push({ label: '上轨', currentValue: fmt(bbUpper), operator: '', threshold: null, isInfo: true })
+      conditions.push({ label: '下轨', currentValue: fmt(bbLower), operator: '', threshold: null, isInfo: true })
       break
     case 'atr':
       const atrVal = values.atr
       const atrMa = values.atr_ma
+      const atrHighVol = atrVal && atrMa && atrVal > atrMa * 1.2
+      const atrLowVol = atrVal && atrMa && atrVal < atrMa * 0.8
+      const atrMet = atrHighVol || atrLowVol
       const atrStatus = atrVal && atrMa
-        ? (atrVal > atrMa * 1.2 ? '高波动' : atrVal < atrMa * 0.8 ? '低波动' : '正常')
+        ? (atrHighVol ? '高波动' : atrLowVol ? '低波动' : '正常')
         : '--'
       conditions.push({
         label: 'ATR 波动',
         currentValue: atrStatus,
-        operator: '>',
-        threshold: '均值×1.2',
-        statusColor: atrStatus === '高波动' ? 'text-orange-600' : 'text-slate-600'
+        operator: '偏离',
+        threshold: '均值±20%',
+        met: atrMet,
+        statusColor: atrHighVol ? 'text-orange-600' : atrLowVol ? 'text-blue-600' : 'text-slate-600'
       })
-      conditions.push({ label: 'ATR 值', currentValue: fmt(atrVal), operator: '', threshold: '--' })
-      conditions.push({ label: 'ATR 均值', currentValue: fmt(atrMa), operator: '', threshold: '--' })
+      conditions.push({ label: 'ATR 值', currentValue: fmt(atrVal), operator: '', threshold: null, isInfo: true })
+      conditions.push({ label: 'ATR 均值', currentValue: fmt(atrMa), operator: '', threshold: null, isInfo: true })
       break
     case 'pivot':
       const pivotPrice = props.indicatorValues.price
       const support = values.support
       const resistance = values.resistance
+      const pivotBreakUp = pivotPrice && resistance && pivotPrice >= resistance
+      const pivotBreakDown = pivotPrice && support && pivotPrice <= support
+      const pivotMet = pivotBreakUp || pivotBreakDown
       const pivotPos = pivotPrice && support && resistance
-        ? (pivotPrice >= resistance ? '突破阻力 ↑' : pivotPrice <= support ? '跌破支撑 ↓' : '区间内')
+        ? (pivotBreakUp ? '突破阻力 ↑' : pivotBreakDown ? '跌破支撑 ↓' : '区间内')
         : '--'
       conditions.push({
         label: '价格位置',
         currentValue: pivotPos,
         operator: '突破',
-        threshold: '支撑或阻力',
-        statusColor: pivotPrice >= resistance ? 'text-green-600' : pivotPrice <= support ? 'text-red-600' : 'text-slate-600'
+        threshold: '支撑 OR 阻力',
+        met: pivotMet,
+        statusColor: pivotBreakUp ? 'text-green-600' : pivotBreakDown ? 'text-red-600' : 'text-slate-600'
       })
-      conditions.push({ label: '支撑位', currentValue: fmt(support), operator: '', threshold: '--' })
-      conditions.push({ label: '阻力位', currentValue: fmt(resistance), operator: '', threshold: '--' })
+      conditions.push({ label: '当前价格', currentValue: fmt(pivotPrice), operator: '', threshold: null, isInfo: true })
+      conditions.push({ label: '支撑位', currentValue: fmt(support), operator: '', threshold: null, isInfo: true })
+      conditions.push({ label: '阻力位', currentValue: fmt(resistance), operator: '', threshold: null, isInfo: true })
       break
     case 'pattern':
+      const patternMet = !!values.pattern
       conditions.push({
         label: '识别形态',
         currentValue: values.pattern || '无',
         operator: '检测到',
         threshold: '任意形态',
-        statusColor: values.pattern ? 'text-purple-600 font-semibold' : 'text-slate-600'
+        met: patternMet,
+        statusColor: patternMet ? 'text-purple-600 font-semibold' : 'text-slate-600'
       })
       break
     case 'divergence':
+      const divMet = !!values.divergence_type
       conditions.push({
         label: '背离信号',
         currentValue: values.divergence_type || '无背离',
         operator: '检测到',
         threshold: '任意背离',
-        statusColor: values.divergence_type ? 'text-purple-600 font-semibold' : 'text-slate-600'
+        met: divMet,
+        statusColor: divMet ? 'text-purple-600 font-semibold' : 'text-slate-600'
       })
       break
     case 'funding_rate':
@@ -489,6 +552,7 @@ const getConditions = (indicator) => {
       const frDisplay = fr !== undefined ? `${(fr * 100).toFixed(4)}%` : '--'
       const frPosExtreme = params.positive_extreme || 0.01
       const frNegExtreme = params.negative_extreme || -0.01
+      const frMet = fr !== undefined && (fr >= frPosExtreme || fr <= frNegExtreme)
       const frStatus = fr !== undefined
         ? (fr >= frPosExtreme ? '极端多头' : fr <= frNegExtreme ? '极端空头' : '正常')
         : '--'
@@ -497,15 +561,17 @@ const getConditions = (indicator) => {
         currentValue: frStatus,
         operator: '超过',
         threshold: `±${(frPosExtreme * 100).toFixed(2)}%`,
-        statusColor: fr >= frPosExtreme || fr <= frNegExtreme ? 'text-orange-600 font-semibold' : 'text-slate-600'
+        met: frMet,
+        statusColor: frMet ? 'text-orange-600 font-semibold' : 'text-slate-600'
       })
-      conditions.push({ label: '当前费率', currentValue: frDisplay, operator: '', threshold: '--' })
+      conditions.push({ label: '当前费率', currentValue: frDisplay, operator: '', threshold: null, isInfo: true })
       break
     case 'open_interest':
       const oiChange = values.oi_change
       const oiDisplay = oiChange !== undefined ? `${oiChange.toFixed(2)}%` : '--'
       const oiIncThreshold = params.oi_increase_threshold || 5
       const oiDecThreshold = params.oi_decrease_threshold || -5
+      const oiMet = oiChange !== undefined && (oiChange >= oiIncThreshold || oiChange <= oiDecThreshold)
       const oiStatus = oiChange !== undefined
         ? (oiChange >= oiIncThreshold ? '大幅增仓' : oiChange <= oiDecThreshold ? '大幅减仓' : '正常')
         : '--'
@@ -513,16 +579,18 @@ const getConditions = (indicator) => {
         label: '持仓变化',
         currentValue: oiStatus,
         operator: '超过',
-        threshold: `${oiDecThreshold}%~${oiIncThreshold}%`,
-        statusColor: oiChange >= oiIncThreshold || oiChange <= oiDecThreshold ? 'text-orange-600 font-semibold' : 'text-slate-600'
+        threshold: `${oiDecThreshold}% OR ${oiIncThreshold}%`,
+        met: oiMet,
+        statusColor: oiMet ? 'text-orange-600 font-semibold' : 'text-slate-600'
       })
-      conditions.push({ label: '变化率', currentValue: oiDisplay, operator: '', threshold: '--' })
+      conditions.push({ label: '变化率', currentValue: oiDisplay, operator: '', threshold: null, isInfo: true })
       break
     case 'long_short_ratio':
       const lsr = values.long_short_ratio
       const lsrDisplay = lsr !== undefined ? lsr.toFixed(2) : '--'
       const lsrExtLong = params.extreme_long || 2.0
       const lsrExtShort = params.extreme_short || 0.5
+      const lsrMet = lsr !== undefined && (lsr >= lsrExtLong || lsr <= lsrExtShort)
       const lsrStatus = lsr !== undefined
         ? (lsr >= lsrExtLong ? '极端偏多' : lsr <= lsrExtShort ? '极端偏空' : '正常')
         : '--'
@@ -530,10 +598,11 @@ const getConditions = (indicator) => {
         label: '多空状态',
         currentValue: lsrStatus,
         operator: '超过',
-        threshold: `${lsrExtShort}~${lsrExtLong}`,
-        statusColor: lsr >= lsrExtLong || lsr <= lsrExtShort ? 'text-orange-600 font-semibold' : 'text-slate-600'
+        threshold: `<${lsrExtShort} OR >${lsrExtLong}`,
+        met: lsrMet,
+        statusColor: lsrMet ? 'text-orange-600 font-semibold' : 'text-slate-600'
       })
-      conditions.push({ label: '当前比例', currentValue: lsrDisplay, operator: '', threshold: '--' })
+      conditions.push({ label: '当前比例', currentValue: lsrDisplay, operator: '', threshold: null, isInfo: true })
       break
   }
   return conditions
@@ -700,8 +769,11 @@ const getSignalStyle = (indicator) => {
   return styles[signal]
 }
 
-// 检查单个条件是否满足
-const checkMet = (cond) => {
+// 检查单个条件是否满足（优先使用预计算的 met 属性）
+const getConditionMet = (cond) => {
+  // 如果条件已经预计算了 met 属性，直接使用
+  if (cond.met !== undefined) return cond.met
+  // 否则回退到原来的逻辑
   if (cond.isCross) {
     return cond.fastVal && cond.slowVal && cond.fastVal > cond.slowVal
   }

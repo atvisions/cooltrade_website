@@ -314,22 +314,122 @@
           </Card>
 
 
-
-          <!-- 第3步: 信号执行策略 -->
+          <!-- 第3步: 交易策略设置（外层容器） -->
           <Card variant="default" class="mb-6">
-            <div class="flex items-center gap-3 mb-6">
-              <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
+            <div class="flex items-center justify-between mb-6">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                  <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </div>
+                <div>
+                  <h2 class="text-lg font-semibold text-slate-900">交易策略设置</h2>
+                  <p class="text-sm text-slate-500">配置信号执行、订单执行和风险控制策略</p>
+                </div>
               </div>
-              <div>
-                <div class="text-lg font-semibold text-slate-900">信号执行策略</div>
-                <div class="text-xs text-slate-500">配置如何执行交易信号</div>
+
+              <!-- JSON 显示开关 -->
+              <button
+                type="button"
+                @click="showTradingStrategyJson = !showTradingStrategyJson"
+                :class="[
+                  'flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border-2 transition-all',
+                  showTradingStrategyJson
+                    ? 'border-blue-500 bg-blue-50 text-blue-700'
+                    : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'
+                ]"
+              >
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+                </svg>
+                {{ showTradingStrategyJson ? '隐藏 JSON' : '显示 JSON' }}
+              </button>
+            </div>
+
+            <!-- JSON 配置显示/编辑 -->
+            <div v-if="showTradingStrategyJson" class="mb-6 bg-slate-50 rounded-lg p-4 border border-slate-200">
+              <div class="flex items-center justify-between mb-2">
+                <label class="text-sm font-medium text-slate-700">JSON 配置</label>
+                <div class="flex items-center gap-2">
+                  <button
+                    v-if="!isEditingTradingJson"
+                    type="button"
+                    @click="startEditingTradingJson"
+                    class="flex items-center gap-1 px-2 py-1 text-xs font-medium text-green-600 hover:text-green-700 hover:bg-green-50 rounded transition-all"
+                  >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    编辑
+                  </button>
+                  <button
+                    v-if="isEditingTradingJson"
+                    type="button"
+                    @click="applyTradingJsonConfig"
+                    class="flex items-center gap-1 px-2 py-1 text-xs font-medium text-green-600 hover:text-green-700 hover:bg-green-50 rounded transition-all"
+                  >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    应用
+                  </button>
+                  <button
+                    v-if="isEditingTradingJson"
+                    type="button"
+                    @click="cancelEditingTradingJson"
+                    class="flex items-center gap-1 px-2 py-1 text-xs font-medium text-slate-600 hover:text-slate-700 hover:bg-slate-100 rounded transition-all"
+                  >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    取消
+                  </button>
+                  <button
+                    v-if="!isEditingTradingJson"
+                    type="button"
+                    @click="copyTradingJsonConfig"
+                    class="flex items-center gap-1 px-2 py-1 text-xs font-medium text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded transition-all"
+                  >
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    {{ tradingJsonCopied ? '已复制' : '复制' }}
+                  </button>
+                </div>
+              </div>
+
+              <!-- JSON 显示/编辑区域 -->
+              <textarea
+                v-if="isEditingTradingJson"
+                v-model="editingTradingJsonText"
+                class="w-full text-xs text-slate-700 bg-white rounded border border-slate-300 p-3 font-mono focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                rows="20"
+                placeholder="粘贴 JSON 配置..."
+              ></textarea>
+              <pre v-else class="text-xs text-slate-700 bg-white rounded border border-slate-200 p-3 overflow-x-auto max-h-96 overflow-y-auto font-mono">{{ formattedTradingJsonConfig }}</pre>
+
+              <!-- JSON 错误提示 -->
+              <div v-if="tradingJsonError" class="mt-2 p-3 bg-red-50 border border-red-200 rounded">
+                <div class="flex items-start gap-2">
+                  <svg class="w-5 h-5 flex-shrink-0 mt-0.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div class="flex-1">
+                    <p class="text-sm font-semibold text-red-700 mb-1">配置验证失败</p>
+                    <pre class="text-xs text-red-600 whitespace-pre-wrap font-mono">{{ tradingJsonError }}</pre>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div class="space-y-6">
+            <!-- 信号执行策略 -->
+            <div class="bg-slate-50 rounded-lg p-6 mb-6">
+              <div class="mb-4">
+                <h3 class="text-sm font-semibold text-slate-900">信号执行策略</h3>
+                <p class="text-xs text-slate-500 mt-1">配置如何执行交易信号</p>
+              </div>
+              <div class="space-y-6">
               <!-- 信号执行模式 -->
               <div>
                 <label class="block text-sm font-medium text-slate-700 mb-3">信号执行模式</label>
@@ -396,23 +496,16 @@
                 />
                 <p class="mt-1 text-xs text-slate-500">每天在指定时间执行收到的信号</p>
               </div>
+              </div>
             </div>
-          </Card>
 
-          <!-- 仓位管理配置 -->
-          <Card variant="default" class="mb-6">
-            <div class="flex items-center gap-3 mb-6">
-              <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
-                <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-                </svg>
+            <!-- 执行策略 -->
+            <div class="bg-slate-50 rounded-lg p-6 mb-6">
+              <div class="mb-4">
+                <h3 class="text-sm font-semibold text-slate-900">执行策略</h3>
+                <p class="text-xs text-slate-500 mt-1">配置订单执行方式和参数</p>
               </div>
-              <div>
-                <h2 class="text-lg font-semibold text-slate-900">执行策略</h2>
-                <p class="text-sm text-slate-500">配置订单执行方式和参数</p>
-              </div>
-            </div>
-            <div class="space-y-6">
+              <div class="space-y-6">
               <!-- 入场方式 -->
               <div>
                 <label class="block text-sm font-medium text-slate-700 mb-3">
@@ -680,43 +773,43 @@
                   </div>
                 </div>
               </div>
-
-            </div>
-          </Card>
-
-          <!-- 风险管理 -->
-          <Card variant="default" class="mb-6">
-            <div class="flex items-center justify-between mb-6">
-              <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                  <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4v2m0 4v2M6.34 7.34a9 9 0 1112.32 12.32M6.34 7.34l1.41-1.41m8.58 8.58l1.41 1.41M9 12a3 3 0 106 0 3 3 0 00-6 0z" />
-                  </svg>
-                </div>
-                <div>
-                  <h2 class="text-lg font-semibold text-slate-900">交易策略配置</h2>
-                  <p class="text-sm text-slate-500">配置仓位管理、风险控制和止盈止损策略</p>
-                </div>
-              </div>
-              <!-- 设置图标 - 链接到用户中心风险偏好 -->
-              <div class="relative group">
-                <button
-                  @click="navigateToRiskPreference"
-                  class="flex items-center justify-center w-10 h-10 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
-                >
-                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                </button>
-                <!-- Tooltip -->
-                <div class="absolute bottom-full right-0 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
-                  进入系统风控配置
-                  <div class="absolute top-full right-2 w-2 h-2 bg-slate-900 transform rotate-45"></div>
-                </div>
               </div>
             </div>
+
+            <!-- 交易策略配置（风险管理） -->
             <div class="space-y-6">
+              <!-- 风控设置链接 -->
+              <div class="flex items-center justify-between px-4 py-3 bg-slate-50 rounded-lg">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4v2m0 4v2M6.34 7.34a9 9 0 1112.32 12.32M6.34 7.34l1.41-1.41m8.58 8.58l1.41 1.41M9 12a3 3 0 106 0 3 3 0 00-6 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 class="text-sm font-semibold text-slate-900">风险控制配置</h3>
+                    <p class="text-xs text-slate-500">配置仓位管理、风险控制和止盈止损策略</p>
+                  </div>
+                </div>
+                <!-- 设置图标 - 链接到用户中心风险偏好 -->
+                <div class="relative group">
+                  <button
+                    @click="navigateToRiskPreference"
+                    class="flex items-center justify-center w-10 h-10 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+                  >
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </button>
+                  <!-- Tooltip -->
+                  <div class="absolute bottom-full right-0 mb-2 px-3 py-2 bg-slate-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                    进入系统风控配置
+                    <div class="absolute top-full right-2 w-2 h-2 bg-slate-900 transform rotate-45"></div>
+                  </div>
+                </div>
+              </div>
+
               <!-- 1. 科学仓位管理 -->
               <div class="bg-slate-50 rounded-lg p-6">
                 <div class="mb-4">
@@ -3373,6 +3466,188 @@ const formData = ref({
 })
 
 const errors = ref({})
+
+// ============ JSON 配置相关 ============
+const showTradingStrategyJson = ref(false)
+const isEditingTradingJson = ref(false)
+const editingTradingJsonText = ref('')
+const tradingJsonCopied = ref(false)
+const tradingJsonError = ref('')
+
+// 格式化交易策略 JSON 配置
+const formattedTradingJsonConfig = computed(() => {
+  const config = {
+    // 信号执行策略
+    signal_execution: {
+      mode: formData.value.signal_execution_mode,
+      delay_seconds: formData.value.signal_delay_seconds,
+      scheduled_time: formData.value.signal_scheduled_time,
+      strength_threshold: formData.value.signal_strength_threshold
+    },
+    // 执行策略
+    order_execution: {
+      entry_mode: formData.value.entry_mode,
+      entry_price_offset: formData.value.entry_price_offset,
+      slippage_limit: formData.value.slippage_limit,
+      order_retry: formData.value.order_retry,
+      order_expire_time: formData.value.order_expire_time,
+      auto_reverse: formData.value.auto_reverse,
+      max_position_time: formData.value.max_position_time,
+      cooldown_period: formData.value.cooldown_period
+    },
+    // 仓位管理
+    position_sizing: {
+      method: formData.value.position_sizing_method,
+      value: formData.value.position_size_value,
+      unit: formData.value.position_size_unit,
+      risk_per_trade: formData.value.risk_per_trade,
+      kelly_fraction: formData.value.kelly_fraction
+    },
+    // 杠杆与限制
+    leverage_limits: {
+      leverage: formData.value.leverage,
+      max_open_positions: formData.value.max_open_positions,
+      max_daily_trades: formData.value.max_daily_trades,
+      max_daily_loss: formData.value.max_daily_loss
+    },
+    // 止盈止损
+    risk_management: {
+      stop_loss_type: formData.value.stop_loss_type,
+      stop_loss_percentage: formData.value.stop_loss_percentage,
+      atr_period: formData.value.atr_period,
+      atr_multiplier: formData.value.atr_multiplier,
+      take_profit_mode: formData.value.take_profit_mode,
+      take_profit_percentage: formData.value.take_profit_percentage,
+      take_profit_targets: formData.value.take_profit_targets,
+      trailing_stop_enabled: formData.value.trailing_stop_enabled,
+      trailing_stop_trigger: formData.value.trailing_stop_trigger,
+      trailing_stop_distance: formData.value.trailing_stop_distance,
+      breakeven_enabled: formData.value.breakeven_enabled,
+      breakeven_trigger: formData.value.breakeven_trigger,
+      breakeven_offset: formData.value.breakeven_offset
+    },
+    // 加仓策略
+    scaling: {
+      enabled: formData.value.scaling_enabled,
+      max_scale_times: formData.value.max_scale_times,
+      scale_multiplier: formData.value.scale_multiplier,
+      scale_condition: formData.value.scale_condition,
+      scale_interval_minutes: formData.value.scale_interval_minutes
+    }
+  }
+  return JSON.stringify(config, null, 2)
+})
+
+// 复制 JSON 配置
+const copyTradingJsonConfig = async () => {
+  try {
+    await navigator.clipboard.writeText(formattedTradingJsonConfig.value)
+    tradingJsonCopied.value = true
+    setTimeout(() => {
+      tradingJsonCopied.value = false
+    }, 2000)
+  } catch (err) {
+    console.error('复制失败:', err)
+  }
+}
+
+// 开始编辑 JSON
+const startEditingTradingJson = () => {
+  isEditingTradingJson.value = true
+  editingTradingJsonText.value = formattedTradingJsonConfig.value
+  tradingJsonError.value = ''
+}
+
+// 取消编辑 JSON
+const cancelEditingTradingJson = () => {
+  isEditingTradingJson.value = false
+  editingTradingJsonText.value = ''
+  tradingJsonError.value = ''
+}
+
+// 应用 JSON 配置
+const applyTradingJsonConfig = () => {
+  try {
+    const config = JSON.parse(editingTradingJsonText.value)
+
+    // 应用信号执行策略
+    if (config.signal_execution) {
+      const se = config.signal_execution
+      if (se.mode) formData.value.signal_execution_mode = se.mode
+      if (se.delay_seconds !== undefined) formData.value.signal_delay_seconds = se.delay_seconds
+      if (se.scheduled_time) formData.value.signal_scheduled_time = se.scheduled_time
+      if (se.strength_threshold !== undefined) formData.value.signal_strength_threshold = se.strength_threshold
+    }
+
+    // 应用执行策略
+    if (config.order_execution) {
+      const oe = config.order_execution
+      if (oe.entry_mode) formData.value.entry_mode = oe.entry_mode
+      if (oe.entry_price_offset !== undefined) formData.value.entry_price_offset = oe.entry_price_offset
+      if (oe.slippage_limit !== undefined) formData.value.slippage_limit = oe.slippage_limit
+      if (oe.order_retry !== undefined) formData.value.order_retry = oe.order_retry
+      if (oe.order_expire_time !== undefined) formData.value.order_expire_time = oe.order_expire_time
+      if (oe.auto_reverse !== undefined) formData.value.auto_reverse = oe.auto_reverse
+      if (oe.max_position_time !== undefined) formData.value.max_position_time = oe.max_position_time
+      if (oe.cooldown_period !== undefined) formData.value.cooldown_period = oe.cooldown_period
+    }
+
+    // 应用仓位管理
+    if (config.position_sizing) {
+      const ps = config.position_sizing
+      if (ps.method) formData.value.position_sizing_method = ps.method
+      if (ps.value !== undefined) formData.value.position_size_value = ps.value
+      if (ps.unit) formData.value.position_size_unit = ps.unit
+      if (ps.risk_per_trade !== undefined) formData.value.risk_per_trade = ps.risk_per_trade
+      if (ps.kelly_fraction !== undefined) formData.value.kelly_fraction = ps.kelly_fraction
+    }
+
+    // 应用杠杆与限制
+    if (config.leverage_limits) {
+      const ll = config.leverage_limits
+      if (ll.leverage !== undefined) formData.value.leverage = ll.leverage
+      if (ll.max_open_positions !== undefined) formData.value.max_open_positions = ll.max_open_positions
+      if (ll.max_daily_trades !== undefined) formData.value.max_daily_trades = ll.max_daily_trades
+      if (ll.max_daily_loss !== undefined) formData.value.max_daily_loss = ll.max_daily_loss
+    }
+
+    // 应用止盈止损
+    if (config.risk_management) {
+      const rm = config.risk_management
+      if (rm.stop_loss_type) formData.value.stop_loss_type = rm.stop_loss_type
+      if (rm.stop_loss_percentage !== undefined) formData.value.stop_loss_percentage = rm.stop_loss_percentage
+      if (rm.atr_period !== undefined) formData.value.atr_period = rm.atr_period
+      if (rm.atr_multiplier !== undefined) formData.value.atr_multiplier = rm.atr_multiplier
+      if (rm.take_profit_mode) formData.value.take_profit_mode = rm.take_profit_mode
+      if (rm.take_profit_percentage !== undefined) formData.value.take_profit_percentage = rm.take_profit_percentage
+      if (rm.take_profit_targets) formData.value.take_profit_targets = rm.take_profit_targets
+      if (rm.trailing_stop_enabled !== undefined) formData.value.trailing_stop_enabled = rm.trailing_stop_enabled
+      if (rm.trailing_stop_trigger !== undefined) formData.value.trailing_stop_trigger = rm.trailing_stop_trigger
+      if (rm.trailing_stop_distance !== undefined) formData.value.trailing_stop_distance = rm.trailing_stop_distance
+      if (rm.breakeven_enabled !== undefined) formData.value.breakeven_enabled = rm.breakeven_enabled
+      if (rm.breakeven_trigger !== undefined) formData.value.breakeven_trigger = rm.breakeven_trigger
+      if (rm.breakeven_offset !== undefined) formData.value.breakeven_offset = rm.breakeven_offset
+    }
+
+    // 应用加仓策略
+    if (config.scaling) {
+      const sc = config.scaling
+      if (sc.enabled !== undefined) formData.value.scaling_enabled = sc.enabled
+      if (sc.max_scale_times !== undefined) formData.value.max_scale_times = sc.max_scale_times
+      if (sc.scale_multiplier !== undefined) formData.value.scale_multiplier = sc.scale_multiplier
+      if (sc.scale_condition) formData.value.scale_condition = sc.scale_condition
+      if (sc.scale_interval_minutes !== undefined) formData.value.scale_interval_minutes = sc.scale_interval_minutes
+    }
+
+    // 关闭编辑模式
+    isEditingTradingJson.value = false
+    editingTradingJsonText.value = ''
+    tradingJsonError.value = ''
+    console.log('✅ JSON 配置已应用')
+  } catch (err) {
+    tradingJsonError.value = `JSON 解析失败: ${err.message}`
+  }
+}
 
 // ============ 向后兼容：桥接新旧字段 ============
 // 为了最小化HTML改动，添加计算属性桥接新旧字段

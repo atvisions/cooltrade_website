@@ -193,19 +193,31 @@ const signalBotName = computed(() => {
 // 右侧信息面板数据
 const infoItems = computed(() => {
   const tfBot = bot.value?.trend_following_bot
+  const marketType = tfBot?.market_type || bot.value?.market_type || 'spot'
+  // 交易对：优先使用 trading_pair，否则根据市场类型拼接
+  const tradingPair = bot.value?.trading_pair ||
+    (marketType === 'spot' ? 'USDT' : (marketType === 'linear' ? 'USDT永续' : '永续'))
   return [
-    { label: '交易对', value: `${bot.value?.token_symbol}/${bot.value?.trading_pair}` },
-    { label: '交易所', value: bot.value?.exchange_display || bot.value?.exchange_name },
-    { label: '市场类型', value: getMarketTypeLabel(tfBot?.market_type) },
-    { label: '杠杆', value: tfBot?.leverage ? `${tfBot.leverage}x` : '-' }
+    { label: '交易对', value: `${bot.value?.token_symbol || '-'}/${tradingPair}` },
+    { label: '交易所', value: bot.value?.exchange_display || bot.value?.exchange_name || '-' },
+    { label: '市场类型', value: getMarketTypeLabel(marketType) },
+    { label: '杠杆', value: bot.value?.leverage ? `${bot.value.leverage}x` : '1x' }
   ]
 })
 
 const extraItems = computed(() => {
   const tfBot = bot.value?.trend_following_bot
+  // 止损：优先从 config 获取
+  const stopLoss = tfBot?.stop_loss_enabled
+    ? (tfBot?.stop_loss_config?.value || tfBot?.stop_loss_percentage || 0)
+    : null
+  // 止盈：优先从 config 获取
+  const takeProfit = tfBot?.take_profit_enabled
+    ? (tfBot?.take_profit_config?.single_value || tfBot?.take_profit_percentage || 0)
+    : null
   return [
-    { label: '止损', value: tfBot?.stop_loss_percentage ? `${tfBot.stop_loss_percentage}%` : '-' },
-    { label: '止盈', value: tfBot?.take_profit_percentage ? `${tfBot.take_profit_percentage}%` : '-' },
+    { label: '止损', value: stopLoss ? `${stopLoss}%` : '-', color: stopLoss ? 'text-red-600' : 'text-gray-400' },
+    { label: '止盈', value: takeProfit ? `${takeProfit}%` : '-', color: takeProfit ? 'text-emerald-600' : 'text-gray-400' },
     { label: '仓位大小', value: formatPositionSize(tfBot) },
     { label: '创建时间', value: formatDate(bot.value?.created_at) }
   ]

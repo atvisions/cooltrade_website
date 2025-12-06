@@ -78,26 +78,30 @@
         </div>
         <div class="flex justify-between items-center py-2 border-b border-gray-100">
           <span class="text-sm text-gray-500">杠杆</span>
-          <span class="text-sm font-medium text-gray-900">{{ bot?.trend_following_bot?.leverage || 1 }}x</span>
+          <span class="text-sm font-medium text-gray-900">{{ bot?.leverage || 1 }}x</span>
         </div>
         <div class="flex justify-between items-center py-2 border-b border-gray-100">
           <span class="text-sm text-gray-500">止损</span>
-          <span class="text-sm font-medium text-red-600">{{ bot?.trend_following_bot?.stop_loss_percentage || 0 }}%</span>
+          <span class="text-sm font-medium" :class="stopLossValue ? 'text-red-600' : 'text-gray-400'">
+            {{ stopLossValue ? `${stopLossValue}%` : '未启用' }}
+          </span>
         </div>
         <div class="flex justify-between items-center py-2 border-b border-gray-100">
           <span class="text-sm text-gray-500">止盈</span>
-          <span class="text-sm font-medium text-emerald-600">{{ bot?.trend_following_bot?.take_profit_percentage || 0 }}%</span>
+          <span class="text-sm font-medium" :class="takeProfitValue ? 'text-emerald-600' : 'text-gray-400'">
+            {{ takeProfitValue ? `${takeProfitValue}%` : '未启用' }}
+          </span>
         </div>
         <div class="flex justify-between items-center py-2 border-b border-gray-100">
           <span class="text-sm text-gray-500">追踪止损</span>
-          <span class="text-sm font-medium" :class="bot?.trend_following_bot?.trailing_stop_enabled ? 'text-emerald-600' : 'text-gray-400'">
-            {{ bot?.trend_following_bot?.trailing_stop_enabled ? '已启用' : '未启用' }}
+          <span class="text-sm font-medium" :class="trailingStopEnabled ? 'text-emerald-600' : 'text-gray-400'">
+            {{ trailingStopEnabled ? '已启用' : '未启用' }}
           </span>
         </div>
         <div class="flex justify-between items-center py-2 border-b border-gray-100">
           <span class="text-sm text-gray-500">保本止损</span>
-          <span class="text-sm font-medium" :class="bot?.trend_following_bot?.breakeven_enabled ? 'text-emerald-600' : 'text-gray-400'">
-            {{ bot?.trend_following_bot?.breakeven_enabled ? '已启用' : '未启用' }}
+          <span class="text-sm font-medium" :class="breakevenEnabled ? 'text-emerald-600' : 'text-gray-400'">
+            {{ breakevenEnabled ? '已启用' : '未启用' }}
           </span>
         </div>
       </div>
@@ -127,6 +131,32 @@ const positionSizeText = computed(() => {
   if (method === 'fixed_amount') return `${value} USDT`
   if (method === 'fixed_percent') return `${value}%`
   return `${value}`
+})
+
+// 止损值：优先从 config 获取，否则用旧字段
+const stopLossValue = computed(() => {
+  const tfBot = props.bot?.trend_following_bot
+  if (!tfBot?.stop_loss_enabled) return null
+  return tfBot.stop_loss_config?.value || tfBot.stop_loss_percentage || null
+})
+
+// 止盈值：优先从 config 获取，否则用旧字段
+const takeProfitValue = computed(() => {
+  const tfBot = props.bot?.trend_following_bot
+  if (!tfBot?.take_profit_enabled) return null
+  return tfBot.take_profit_config?.single_value || tfBot.take_profit_percentage || null
+})
+
+// 追踪止损：从 config 或旧字段获取
+const trailingStopEnabled = computed(() => {
+  const tfBot = props.bot?.trend_following_bot
+  return tfBot?.trailing_stop_config?.enabled || tfBot?.trailing_stop_enabled || false
+})
+
+// 保本止损：从 config 或旧字段获取
+const breakevenEnabled = computed(() => {
+  const tfBot = props.bot?.trend_following_bot
+  return tfBot?.breakeven_config?.enabled || tfBot?.breakeven_enabled || false
 })
 
 const formatCurrency = (value) => {

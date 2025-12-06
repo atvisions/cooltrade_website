@@ -3487,6 +3487,7 @@ const formattedTradingJsonConfig = computed(() => {
     // 执行策略
     order_execution: {
       entry_mode: formData.value.entry_mode,
+      pricing_mode: formData.value.pricing_mode,
       entry_price_offset: formData.value.entry_price_offset,
       slippage_limit: formData.value.slippage_limit,
       order_retry: formData.value.order_retry,
@@ -3512,10 +3513,13 @@ const formattedTradingJsonConfig = computed(() => {
     },
     // 止盈止损
     risk_management: {
+      stop_loss_enabled: formData.value.stop_loss_enabled,
       stop_loss_type: formData.value.stop_loss_type,
       stop_loss_percentage: formData.value.stop_loss_percentage,
       atr_period: formData.value.atr_period,
       atr_multiplier: formData.value.atr_multiplier,
+      time_stop_hours: formData.value.time_stop_hours,
+      take_profit_enabled: formData.value.take_profit_enabled,
       take_profit_mode: formData.value.take_profit_mode,
       take_profit_percentage: formData.value.take_profit_percentage,
       take_profit_targets: formData.value.take_profit_targets,
@@ -3528,11 +3532,11 @@ const formattedTradingJsonConfig = computed(() => {
     },
     // 加仓策略
     scaling: {
-      enabled: formData.value.scaling_enabled,
-      max_scale_times: formData.value.max_scale_times,
-      scale_multiplier: formData.value.scale_multiplier,
-      scale_condition: formData.value.scale_condition,
-      scale_interval_minutes: formData.value.scale_interval_minutes
+      enabled: formData.value.pyramiding_enabled,
+      max_entries: formData.value.pyramiding_max_entries,
+      scale_percentage: formData.value.pyramiding_scale,
+      price_distance: formData.value.pyramiding_price_distance,
+      time_interval: formData.value.pyramiding_time_interval
     }
   }
   return JSON.stringify(config, null, 2)
@@ -3632,11 +3636,11 @@ const applyTradingJsonConfig = () => {
     // 应用加仓策略
     if (config.scaling) {
       const sc = config.scaling
-      if (sc.enabled !== undefined) formData.value.scaling_enabled = sc.enabled
-      if (sc.max_scale_times !== undefined) formData.value.max_scale_times = sc.max_scale_times
-      if (sc.scale_multiplier !== undefined) formData.value.scale_multiplier = sc.scale_multiplier
-      if (sc.scale_condition) formData.value.scale_condition = sc.scale_condition
-      if (sc.scale_interval_minutes !== undefined) formData.value.scale_interval_minutes = sc.scale_interval_minutes
+      if (sc.enabled !== undefined) formData.value.pyramiding_enabled = sc.enabled
+      if (sc.max_entries !== undefined) formData.value.pyramiding_max_entries = sc.max_entries
+      if (sc.scale_percentage !== undefined) formData.value.pyramiding_scale = sc.scale_percentage
+      if (sc.price_distance !== undefined) formData.value.pyramiding_price_distance = sc.price_distance
+      if (sc.time_interval !== undefined) formData.value.pyramiding_time_interval = sc.time_interval
     }
 
     // 关闭编辑模式

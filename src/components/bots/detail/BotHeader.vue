@@ -42,22 +42,57 @@
 
         <!-- 右侧：操作按钮 -->
         <div class="flex items-center gap-2">
-          <button v-if="status === 'running'" @click="$emit('stop')" :disabled="actionLoading"
-            class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 flex items-center gap-1.5">
-            <svg v-if="actionLoading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-            </svg>
-            {{ actionLoading ? '停止中...' : '停止' }}
-          </button>
-          <button v-else @click="$emit('start')" :disabled="actionLoading"
-            class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 flex items-center gap-1.5">
-            <svg v-if="actionLoading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-            </svg>
-            {{ actionLoading ? '启动中...' : '启动' }}
-          </button>
+          <!-- 运行中：显示暂停和停止按钮 -->
+          <template v-if="status === 'running'">
+            <button @click="$emit('pause')" :disabled="actionLoading"
+              class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 flex items-center gap-1.5"
+              title="暂停后保留持仓，可随时恢复">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              暂停
+            </button>
+            <button @click="$emit('stop')" :disabled="actionLoading"
+              class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 flex items-center gap-1.5"
+              title="停止后会平掉所有持仓">
+              <svg v-if="actionLoading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+              <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 10a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1v-4z" />
+              </svg>
+              {{ actionLoading ? '停止中...' : '停止' }}
+            </button>
+          </template>
+          <!-- 暂停中：显示恢复和停止按钮 -->
+          <template v-else-if="status === 'paused'">
+            <button @click="$emit('start')" :disabled="actionLoading"
+              class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 flex items-center gap-1.5">
+              <svg v-if="actionLoading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+              {{ actionLoading ? '恢复中...' : '恢复运行' }}
+            </button>
+            <button @click="$emit('stop')" :disabled="actionLoading"
+              class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 flex items-center gap-1.5"
+              title="停止后会平掉所有持仓">
+              停止
+            </button>
+          </template>
+          <!-- 已停止/草稿：显示启动按钮 -->
+          <template v-else>
+            <button @click="$emit('start')" :disabled="actionLoading"
+              class="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white text-sm font-medium rounded-lg transition-colors disabled:opacity-50 flex items-center gap-1.5">
+              <svg v-if="actionLoading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+              {{ actionLoading ? '启动中...' : '启动' }}
+            </button>
+          </template>
           <button @click="$emit('edit')" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded-lg transition-colors">
             编辑
           </button>
@@ -100,7 +135,7 @@ const props = defineProps({
   showStats: { type: Boolean, default: true }
 })
 
-defineEmits(['start', 'stop', 'edit', 'delete'])
+defineEmits(['start', 'stop', 'pause', 'edit', 'delete'])
 
 const statusLabel = computed(() => {
   const map = { running: '运行中', paused: '已暂停', stopped: '已停止', draft: '草稿' }

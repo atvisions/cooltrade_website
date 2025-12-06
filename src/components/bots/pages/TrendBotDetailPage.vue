@@ -25,6 +25,7 @@
           :stats="headerStats"
           @start="handleStartBot"
           @stop="handleStopBot"
+          @pause="handlePauseBot"
           @edit="handleEditBot"
           @delete="handleDeleteBot"
         />
@@ -137,26 +138,44 @@
     </div>
 
     <!-- 确认对话框 -->
+    <!-- 暂停确认 -->
+    <ConfirmDialog
+      :show="showPauseConfirm"
+      type="warning"
+      title="暂停机器人"
+      :message="hasOpenPositions
+        ? '暂停后：\n\n✓ 保留当前 ' + positions.length + ' 个持仓\n✓ 停止信号监控\n✓ 可随时恢复运行'
+        : '暂停后：\n\n✓ 停止信号监控\n✓ 可随时恢复运行'"
+      confirm-text="确认暂停"
+      cancel-text="取消"
+      @confirm="confirmPause"
+      @close="showPauseConfirm = false"
+    />
+    <!-- 停止确认 -->
     <ConfirmDialog
       :show="showStopOnlyConfirm"
-      type="warning"
-      title="停止机器人"
-      :message="hasOpenPositions ? '停止机器人将会自动平掉所有持仓，确定要继续吗？' : '确定要停止这个机器人吗？'"
-      confirm-text="确定停止"
+      type="danger"
+      title="⚠️ 停止机器人"
+      :message="hasOpenPositions
+        ? '停止后：\n\n✗ 平掉所有 ' + positions.length + ' 个持仓（市价）\n✗ 取消所有挂单\n✗ 停止信号监控\n\n💡 如需保留持仓，请使用「暂停」'
+        : '停止后：\n\n✗ 取消所有挂单（如有）\n✗ 停止信号监控\n✗ 如有持仓将自动平仓'"
+      confirm-text="确认停止"
       cancel-text="取消"
       @confirm="confirmStop"
       @close="showStopOnlyConfirm = false"
     />
+    <!-- 编辑前确认（暂停） -->
     <ConfirmDialog
-      :show="showStopConfirm"
+      :show="showEditConfirm"
       type="warning"
-      title="停止机器人"
-      :message="hasOpenPositions ? '编辑前需要先停止机器人，停止后将自动平掉所有持仓。是否停止并继续编辑？' : '机器人正在运行中，编辑前需要先停止。是否停止并继续编辑？'"
-      confirm-text="停止并编辑"
+      title="暂停机器人"
+      message="该机器人正在运行中。编辑运行中的机器人需要先暂停它（持仓将被保留）。是否暂停机器人并继续编辑？"
+      confirm-text="暂停并编辑"
       cancel-text="取消"
-      @confirm="confirmStopAndEdit"
-      @close="showStopConfirm = false"
+      @confirm="confirmPauseAndEdit"
+      @close="showEditConfirm = false"
     />
+    <!-- 删除确认 -->
     <ConfirmDialog
       :show="showDeleteConfirm"
       type="danger"
@@ -195,7 +214,6 @@ const bot = ref(null)
 const positions = ref([])
 const trades = ref([])
 const showStopOnlyConfirm = ref(false)
-const showStopConfirm = ref(false)
 const showDeleteConfirm = ref(false)
 const activeTab = ref('positions')
 
@@ -409,24 +427,49 @@ const confirmStop = async () => {
   }
 }
 
+// 暂停机器人（保留持仓）
+const showPauseConfirm = ref(false)
+const handlePauseBot = () => {
+  showPauseConfirm.value = true
+}
+
+const confirmPause = async () => {
+  showPauseConfirm.value = false
+  actionLoading.value = true
+  try {
+    await botAPI.pauseBot(bot.value.id)
+    showSuccess('机器人已暂停，持仓已保留')
+    await loadBot()
+  } catch (err) {
+    showError(err.response?.data?.error || err.response?.data?.detail || '暂停失败')
+  } finally {
+    actionLoading.value = false
+  }
+}
+
+// 编辑确认弹窗
+const showEditConfirm = ref(false)
+
 const handleEditBot = () => {
+  // 运行中需要选择暂停或停止后才能编辑
   if (bot.value?.status === 'running') {
-    showStopConfirm.value = true
+    showEditConfirm.value = true
   } else {
+    // 暂停、已停止、草稿状态可以直接编辑
     router.push(`/bots/edit/${bot.value.id}`)
   }
 }
 
-const confirmStopAndEdit = async () => {
-  showStopConfirm.value = false
+// 暂停后编辑（保留持仓）
+const confirmPauseAndEdit = async () => {
+  showEditConfirm.value = false
   actionLoading.value = true
   try {
-    const result = await botAPI.stopBot(bot.value.id)
-    const message = result.data?.message || '机器人已停止'
-    showSuccess(message)
+    await botAPI.pauseBot(bot.value.id)
+    showSuccess('机器人已暂停，持仓已保留')
     router.push(`/bots/edit/${bot.value.id}`)
   } catch (err) {
-    showError(err.response?.data?.error || err.response?.data?.detail || '停止失败')
+    showError(err.response?.data?.error || err.response?.data?.detail || '暂停失败')
   } finally {
     actionLoading.value = false
   }

@@ -566,10 +566,10 @@
     <!-- 停止机器人并平仓确认对话框 -->
     <ConfirmModal
       v-if="showStopAndCloseConfirm"
-      type="warning"
-      title="停止机器人并平仓"
+      type="danger"
+      title="⚠️ 停止机器人"
       :message="stopConfirmMessage"
-      confirm-text="确认停止并平仓"
+      confirm-text="确认停止"
       cancel-text="取消"
       @confirm="handleConfirmStopAndClose"
       @cancel="handleCancelStopAndClose"
@@ -855,18 +855,18 @@ const handleStopBot = async (botId) => {
     const openPositions = positionsResponse.results || []
 
     if (openPositions.length > 0) {
-      // 有持仓，显示确认对话框
+      // 有持仓，显示详细的持仓信息
       const positionInfo = openPositions.map(p =>
         `${p.side_display} ${p.quantity} ${p.quantity_unit} @ $${p.entry_price}`
       ).join('、')
 
-      stopConfirmMessage.value = `该机器人当前有 ${openPositions.length} 个持仓（${positionInfo}）。\n\n停止机器人将自动平仓所有持仓。如果您想保留持仓，请使用"暂停"功能。\n\n确定要停止并平仓吗？`
-      pendingStopBotId.value = botId
-      showStopAndCloseConfirm.value = true
+      stopConfirmMessage.value = `该机器人当前有 ${openPositions.length} 个持仓（${positionInfo}）。\n\n停止机器人将会：\n• 自动平掉所有持仓（以市价平仓）\n• 取消所有挂单\n• 停止信号监控\n\n如果您想保留持仓，请使用"暂停"功能。\n\n确定要停止吗？`
     } else {
-      // 没有持仓，直接停止
-      await executeStopBot(botId)
+      // 没有持仓，也显示确认弹窗
+      stopConfirmMessage.value = `停止机器人将会：\n\n• 取消所有挂单（如有）\n• 停止信号监控\n• 如有持仓将自动平仓\n\n确定要停止吗？`
     }
+    pendingStopBotId.value = botId
+    showStopAndCloseConfirm.value = true
   } catch (error) {
     showError(error.message || '停止失败')
   }

@@ -21,7 +21,7 @@
           :status="bot.status"
           :actionLoading="actionLoading"
           backPath="/bots"
-          backLabel="趋势跟踪机器人"
+          backLabel="交易机器人"
           :stats="headerStats"
           @start="handleStartBot"
           @stop="handleStopBot"
@@ -111,14 +111,16 @@
               </h3>
               <router-link :to="`/signal-bots/${signalBotId}`" class="block p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                 <div class="flex items-center gap-3">
-                  <div class="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
-                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <img v-if="signalBotTokenLogo" :src="signalBotTokenLogo" class="w-10 h-10 rounded-lg" :alt="signalBotTokenSymbol" />
+                  <div v-else class="w-10 h-10 rounded-lg bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+                    <span v-if="signalBotTokenSymbol" class="text-white text-xs font-bold">{{ signalBotTokenSymbol.slice(0, 3) }}</span>
+                    <svg v-else class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
                     </svg>
                   </div>
                   <div>
                     <p class="text-sm font-medium text-gray-900">{{ signalBotName }}</p>
-                    <p class="text-xs text-gray-500">点击查看信号详情</p>
+                    <p class="text-xs text-gray-500">{{ signalBotTokenSymbol ? `${signalBotTokenSymbol} · ` : '' }}点击查看信号详情</p>
                   </div>
                 </div>
               </router-link>
@@ -183,12 +185,12 @@ const headerStats = computed(() => [
   { label: '持仓', value: `${positions.value.filter(p => p.status === 'open').length}个`, color: 'text-blue-600' }
 ])
 
-// 信号机器人信息
-const signalBotId = computed(() => bot.value?.trend_following_bot?.signal_bot?.id || bot.value?.trend_following_bot?.signal_bot)
-const signalBotName = computed(() => {
-  const sb = bot.value?.trend_following_bot?.signal_bot
-  return typeof sb === 'object' ? sb?.bot?.name : '信号机器人'
-})
+// 信号机器人信息 - 使用 signal_bot_info 获取完整信息
+const signalBotInfo = computed(() => bot.value?.trend_following_bot?.signal_bot_info)
+const signalBotId = computed(() => signalBotInfo.value?.id || bot.value?.trend_following_bot?.signal_bot)
+const signalBotName = computed(() => signalBotInfo.value?.name || '信号机器人')
+const signalBotTokenLogo = computed(() => signalBotInfo.value?.token_logo)
+const signalBotTokenSymbol = computed(() => signalBotInfo.value?.token_symbol)
 
 // 右侧信息面板数据
 const infoItems = computed(() => {
@@ -197,28 +199,70 @@ const infoItems = computed(() => {
   // 交易对：优先使用 trading_pair，否则根据市场类型拼接
   const tradingPair = bot.value?.trading_pair ||
     (marketType === 'spot' ? 'USDT' : (marketType === 'linear' ? 'USDT永续' : '永续'))
-  return [
+
+  const items = [
     { label: '交易对', value: `${bot.value?.token_symbol || '-'}/${tradingPair}` },
     { label: '交易所', value: bot.value?.exchange_display || bot.value?.exchange_name || '-' },
-    { label: '市场类型', value: getMarketTypeLabel(marketType) },
-    { label: '杠杆', value: bot.value?.leverage ? `${bot.value.leverage}x` : '1x' }
+    { label: '市场类型', value: getMarketTypeLabel(marketType) }
   ]
+
+  // 合约显示杠杆
+  if (marketType !== 'spot') {
+    items.push({ label: '杠杆', value: bot.value?.leverage ? `${bot.value.leverage}x` : '1x', color: 'text-orange-600' })
+  }
+
+  return items
 })
 
 const extraItems = computed(() => {
   const tfBot = bot.value?.trend_following_bot
+
   // 止损：优先从 config 获取
   const stopLoss = tfBot?.stop_loss_enabled
     ? (tfBot?.stop_loss_config?.value || tfBot?.stop_loss_percentage || 0)
     : null
+
   // 止盈：优先从 config 获取
-  const takeProfit = tfBot?.take_profit_enabled
-    ? (tfBot?.take_profit_config?.single_value || tfBot?.take_profit_percentage || 0)
-    : null
+  const tpConfig = tfBot?.take_profit_config
+  let takeProfitDisplay = '-'
+  let takeProfitColor = 'text-gray-400'
+  if (tfBot?.take_profit_enabled && tpConfig) {
+    if (tpConfig.mode === 'multiple' && tpConfig.targets?.length > 0) {
+      // 多级止盈
+      takeProfitDisplay = `${tpConfig.targets.length}级止盈`
+      takeProfitColor = 'text-emerald-600'
+    } else if (tpConfig.single_value) {
+      takeProfitDisplay = `${tpConfig.single_value}%`
+      takeProfitColor = 'text-emerald-600'
+    }
+  }
+
+  // 追踪止损
+  const trailingConfig = tfBot?.trailing_stop_config
+  let trailingDisplay = '-'
+  let trailingColor = 'text-gray-400'
+  if (trailingConfig?.enabled) {
+    trailingDisplay = `${trailingConfig.trigger}%/${trailingConfig.distance}%`
+    trailingColor = 'text-blue-600'
+  }
+
+  // 盈亏平衡
+  const breakevenConfig = tfBot?.breakeven_config
+  let breakevenDisplay = '-'
+  let breakevenColor = 'text-gray-400'
+  if (breakevenConfig?.enabled) {
+    breakevenDisplay = `${breakevenConfig.trigger}%`
+    breakevenColor = 'text-blue-600'
+  }
+
   return [
     { label: '止损', value: stopLoss ? `${stopLoss}%` : '-', color: stopLoss ? 'text-red-600' : 'text-gray-400' },
-    { label: '止盈', value: takeProfit ? `${takeProfit}%` : '-', color: takeProfit ? 'text-emerald-600' : 'text-gray-400' },
+    { label: '止盈', value: takeProfitDisplay, color: takeProfitColor },
+    { label: '追踪止损', value: trailingDisplay, color: trailingColor },
+    { label: '盈亏平衡', value: breakevenDisplay, color: breakevenColor },
     { label: '仓位大小', value: formatPositionSize(tfBot) },
+    { label: '最大持仓', value: tfBot?.max_open_positions ? `${tfBot.max_open_positions}个` : '1个' },
+    { label: '日交易上限', value: tfBot?.max_daily_trades ? `${tfBot.max_daily_trades}次` : '10次' },
     { label: '创建时间', value: formatDate(bot.value?.created_at) }
   ]
 })
@@ -233,7 +277,12 @@ const formatPositionSize = (tfBot) => {
   if (!tfBot) return '-'
   const method = tfBot.position_sizing_method
   const value = tfBot.position_size_value
-  if (method === 'fixed_amount') return `${value} USDT`
+  const marketType = tfBot.market_type || bot.value?.market_type
+  // 合约市场使用"张"，现货使用"USDT"
+  if (method === 'fixed_amount') {
+    const unit = marketType === 'linear' || marketType === 'inverse' ? '张' : 'USDT'
+    return `${value} ${unit}`
+  }
   if (method === 'fixed_percent') return `${value}%`
   return `${value}`
 }

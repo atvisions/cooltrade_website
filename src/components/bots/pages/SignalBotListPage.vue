@@ -185,41 +185,6 @@
                     </Listbox>
                   </div>
 
-                  <!-- 信号类型筛选 -->
-                  <div class="space-y-2 w-48">
-                    <label class="block text-sm font-medium text-slate-700">信号类型</label>
-                    <Listbox v-model="filters.signalType">
-                      <div class="relative">
-                        <ListboxButton class="relative w-full cursor-default rounded-xl bg-slate-50 py-3 pl-4 pr-10 text-left border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                          <span class="block truncate text-slate-700">
-                            {{ signalTypeOptionsWithAll.find(option => option.value === filters.signalType)?.label || '全部类型' }}
-                          </span>
-                          <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
-                            <ChevronUpDownIcon class="h-5 w-5 text-slate-400" aria-hidden="true" />
-                          </span>
-                        </ListboxButton>
-                        <transition leave-active-class="transition duration-100 ease-in" leave-from-class="opacity-100" leave-to-class="opacity-0">
-                          <ListboxOptions class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-base shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                            <ListboxOption
-                              v-slot="{ active, selected }"
-                              v-for="option in signalTypeOptionsWithAll"
-                              :key="option.value"
-                              :value="option.value"
-                              as="template"
-                            >
-                              <li :class="[active ? 'bg-slate-100 text-slate-900' : 'text-slate-700', 'relative cursor-default select-none py-3 pl-4 pr-4']">
-                                <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">{{ option.label }}</span>
-                                <span v-if="selected" class="absolute inset-y-0 right-0 flex items-center pr-3 text-blue-600">
-                                  <CheckIcon class="h-5 w-5" aria-hidden="true" />
-                                </span>
-                              </li>
-                            </ListboxOption>
-                          </ListboxOptions>
-                        </transition>
-                      </div>
-                    </Listbox>
-                  </div>
-
                   <!-- 市场类型筛选 -->
                   <div class="space-y-2 w-32">
                     <label class="block text-sm font-medium text-slate-700">市场类型</label>
@@ -302,7 +267,7 @@
                         <th class="px-4 py-3 text-left text-xs font-semibold text-slate-700 uppercase tracking-wider" style="width: 80px">交易对</th>
                         <th class="px-4 py-3 text-center text-xs font-semibold text-slate-700 uppercase tracking-wider" style="width: 60px">市场</th>
                         <th class="px-4 py-3 text-center text-xs font-semibold text-slate-700 uppercase tracking-wider" style="width: 60px">状态</th>
-                        <th class="px-4 py-3 text-center text-xs font-semibold text-slate-700 uppercase tracking-wider" style="width: 80px">信号类型</th>
+                        <th class="px-4 py-3 text-center text-xs font-semibold text-slate-700 uppercase tracking-wider" style="width: 80px">关联交易</th>
                         <th class="px-4 py-3 text-center text-xs font-semibold text-slate-700 uppercase tracking-wider" style="width: 60px">信号数</th>
                         <th class="px-4 py-3 text-center text-xs font-semibold text-slate-700 uppercase tracking-wider" style="width: 140px">操作</th>
                       </tr>
@@ -380,10 +345,13 @@
                             {{ getStatusLabel(bot.status) }}
                           </span>
                         </td>
-                        <!-- 信号类型 -->
+                        <!-- 关联交易 -->
                         <td class="px-4 py-3 text-center" style="width: 100px">
-                          <span class="inline-flex items-center px-2 py-0.5 rounded text-xs bg-purple-100 text-purple-700 whitespace-nowrap">
-                            {{ getSignalTypeLabel(bot.signal_type, bot.indicator_type) }}
+                          <span :class="[
+                            'inline-flex items-center px-2 py-0.5 rounded text-xs whitespace-nowrap',
+                            bot.linked_trend_bots_count > 0 ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'
+                          ]">
+                            {{ bot.linked_trend_bots_count || 0 }} 个
                           </span>
                         </td>
                         <!-- 信号数 -->
@@ -910,7 +878,6 @@ const filters = ref({
   status: '',
   bot_type: '',
   exchange: '',
-  signalType: '',
   marketType: '',
   search: ''
 })
@@ -925,16 +892,6 @@ const statusOptions = [
 const statusOptionsWithAll = [
   { label: '全部状态', value: '' },
   ...statusOptions
-]
-
-// 简化：只保留 indicator_alert 类型
-const signalTypeOptions = [
-  { label: '指标信号提醒', value: 'indicator_alert' }
-]
-
-const signalTypeOptionsWithAll = [
-  { label: '全部类型', value: '' },
-  ...signalTypeOptions
 ]
 
 const marketTypeOptions = [
@@ -964,40 +921,6 @@ const filteredBots = computed(() => {
 
   if (filters.value.exchange && filters.value.exchange !== '') {
     result = result.filter(bot => bot.exchange_name === filters.value.exchange)
-  }
-
-  if (filters.value.signalType && filters.value.signalType !== '') {
-    result = result.filter(bot => {
-      // 直接使用后端返回的 signal_type 字段
-      if (!bot.signal_type) {
-        return false
-      }
-
-      // 检查是否是策略模板筛选（格式：strategy:scalping）
-      if (filters.value.signalType.startsWith('strategy:')) {
-        const strategyType = filters.value.signalType.split(':')[1]
-        // 检查机器人的配置是否匹配策略模板
-        // 这里需要根据机器人的指标组合来判断
-        if (bot.signal_type === 'indicator_alert' && bot.config?.indicator_alert) {
-          const indicators = bot.config.indicator_alert.indicators || []
-          return matchesStrategy(indicators, strategyType)
-        }
-        return false
-      }
-
-      // 检查是否是单指标筛选（格式：indicator:rsi）
-      if (filters.value.signalType.startsWith('indicator:')) {
-        const indicatorType = filters.value.signalType.split(':')[1]
-        if (bot.signal_type === 'indicator_alert' && bot.config?.indicator_alert) {
-          const indicators = bot.config.indicator_alert.indicators || []
-          return indicators.some(ind => ind.type === indicatorType)
-        }
-        return false
-      }
-
-      // 如果选择的是 indicator_alert（不带子类型），显示所有指标信号提醒
-      return bot.signal_type === filters.value.signalType
-    })
   }
 
   if (filters.value.marketType && filters.value.marketType !== '') {
@@ -1084,7 +1007,7 @@ const updateStatistics = () => {
 }
 
 const resetFilters = () => {
-  filters.value = { status: '', bot_type: '', exchange: '', signalType: '', marketType: '', search: '' }
+  filters.value = { status: '', bot_type: '', exchange: '', marketType: '', search: '' }
 }
 
 const handleStartBot = async (botId) => {
@@ -1354,28 +1277,6 @@ const getStatusLabel = (status) => {
   return map[status] || status
 }
 
-// 获取信号类型标签（机器人配置的信号类型）
-const getSignalTypeLabel = (signalType, indicatorType = null) => {
-  // 如果是指标信号提醒，且有具体的指标类型，显示具体类型
-  if (signalType === 'indicator_alert' && indicatorType) {
-    const indicatorLabels = {
-      'rsi': 'RSI',
-      'macd': 'MACD',
-      'ma_crossover': 'MA交叉',
-      'atr': 'ATR',
-      'bollinger': '布林带',
-      'kdj': 'KDJ'
-    }
-    return indicatorLabels[indicatorType] || indicatorType
-  }
-
-  // 否则显示大类（简化：只保留 indicator_alert）
-  const labels = {
-    'indicator_alert': '指标信号提醒'
-  }
-  return labels[signalType] || '指标信号提醒'
-}
-
 // 获取信号类型显示标签（信号记录的类型）
 const getSignalTypeDisplayLabel = (signalType) => {
   const labels = {
@@ -1532,27 +1433,6 @@ const last7DaysTrend = computed(() => {
   return trend
 })
 
-
-
-// 策略匹配函数
-const matchesStrategy = (indicators, strategyType) => {
-  // 定义策略模板的指标组合
-  const strategyTemplates = {
-    scalping: ['rsi', 'macd', 'volume'],
-    day_trading: ['rsi', 'macd', 'volume'],
-    swing_trading: ['rsi', 'ma_crossover', 'volume'],
-    trend_following: ['ma_crossover', 'macd'],
-    reversal: ['rsi', 'macd', 'volume'],
-    breakout: ['atr', 'volume', 'macd']
-  }
-
-  const templateIndicators = strategyTemplates[strategyType]
-  if (!templateIndicators) return false
-
-  // 检查机器人的指标是否包含模板的所有指标
-  const botIndicatorTypes = indicators.map(ind => ind.type)
-  return templateIndicators.every(type => botIndicatorTypes.includes(type))
-}
 
 // 加载信号数据
 const loadSignals = async () => {

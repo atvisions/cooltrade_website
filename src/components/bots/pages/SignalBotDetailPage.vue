@@ -104,6 +104,48 @@
               :infoItems="infoItems"
               :extraItems="extraItems"
             />
+
+            <!-- 关联的交易机器人 -->
+            <div v-if="linkedTrendBots.length > 0" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+              <h3 class="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+                </svg>
+                关联交易机器人 ({{ linkedTrendBots.length }})
+              </h3>
+              <div class="space-y-2">
+                <router-link
+                  v-for="trendBot in linkedTrendBots"
+                  :key="trendBot.id"
+                  :to="`/bots/${trendBot.id}`"
+                  class="block p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                >
+                  <div class="flex items-center gap-3">
+                    <img v-if="trendBot.token_logo" :src="trendBot.token_logo" class="w-10 h-10 rounded-lg" alt="" />
+                    <div v-else class="w-10 h-10 rounded-lg bg-gradient-to-br from-green-500 to-blue-500 flex items-center justify-center">
+                      <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                      </svg>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <p class="text-sm font-medium text-gray-900 truncate">{{ trendBot.name }}</p>
+                      <div class="flex items-center gap-2">
+                        <span :class="[
+                          'inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium',
+                          trendBot.status === 'running' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
+                        ]">
+                          {{ trendBot.status === 'running' ? '运行中' : '已停止' }}
+                        </span>
+                        <span class="text-xs text-gray-500">点击查看详情</span>
+                      </div>
+                    </div>
+                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                  </div>
+                </router-link>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -213,6 +255,9 @@ const extraItems = computed(() => [
   { label: '触发模式', value: bot.value?.signal_bot?.indicators_config?.trigger_mode === 'current_state' ? '当前状态' : '状态变化' },
   { label: '创建时间', value: formatDate(bot.value?.created_at) }
 ])
+
+// 关联的趋势跟踪机器人列表
+const linkedTrendBots = computed(() => bot.value?.signal_bot?.linked_trend_bots || [])
 
 // 市场健康度评分计算
 const healthScore = computed(() => {

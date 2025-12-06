@@ -1078,6 +1078,9 @@
                   <!-- 系统风控限制提示 -->
                   <p v-if="userRiskConfig" class="mt-2 text-xs text-slate-500 bg-slate-50 p-2 rounded">
                     <span class="font-medium">系统限制:</span> 所有机器人总共最多 {{ userRiskConfig.max_open_positions }} 个持仓
+                    <span class="text-blue-600 ml-2">
+                      （当前已用 {{ userRiskConfig.current_open_positions || 0 }}，剩余 {{ Math.max(0, userRiskConfig.max_open_positions - (userRiskConfig.current_open_positions || 0)) }}）
+                    </span>
                   </p>
                 </div>
 
@@ -1122,6 +1125,9 @@
                   <!-- 系统风控限制提示 -->
                   <p v-if="userRiskConfig" class="mt-2 text-xs text-slate-500 bg-slate-50 p-2 rounded">
                     <span class="font-medium">系统限制:</span> 所有机器人总共最多 {{ userRiskConfig.max_trades_per_day }} 次/天
+                    <span class="text-blue-600 ml-2">
+                      （今日已用 {{ userRiskConfig.today_trades_count || 0 }}，剩余 {{ Math.max(0, userRiskConfig.max_trades_per_day - (userRiskConfig.today_trades_count || 0)) }}）
+                    </span>
                   </p>
                 </div>
 
@@ -1182,14 +1188,14 @@
                     v-model.number="formData.leverage"
                     type="number"
                     min="1"
-                    max="125"
+                    :max="userRiskConfig?.max_leverage || 125"
                     :class="[
                       'w-full px-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2',
                       isFieldExceedingLimit('leverage')
                         ? 'border-red-500 focus:ring-red-500'
                         : 'border-slate-300 focus:ring-blue-500'
                     ]"
-                    placeholder="1-125"
+                    :placeholder="`1-${userRiskConfig?.max_leverage || 125}`"
                   />
                   <p v-if="errors.leverage" class="mt-1 text-sm text-red-500">{{ errors.leverage }}</p>
                   <!-- 超出限制提示 -->
@@ -3010,6 +3016,9 @@ const loadUserRiskConfig = async () => {
         max_open_positions: Number(config.max_open_positions),
         max_trades_per_day: Number(config.max_trades_per_day),
         circuit_breaker_loss: Number(config.circuit_breaker_loss),
+        // 当前使用量
+        current_open_positions: Number(config.current_open_positions || 0),
+        today_trades_count: Number(config.today_trades_count || 0),
       }
     }
   } catch (error) {

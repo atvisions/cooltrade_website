@@ -681,41 +681,6 @@
                 </div>
               </div>
 
-              <!-- 检查资金费率（仅合约交易显示）-->
-              <div v-if="formData.market_type === 'linear' || formData.market_type === 'inverse'" class="border-t border-slate-200 pt-6 mt-6">
-                <div class="flex items-center justify-between mb-4">
-                  <div>
-                    <h3 class="text-sm font-semibold text-slate-900">检查资金费率</h3>
-                    <p class="text-xs text-slate-500 mt-1">资金费率过高时避免开仓（仅合约）</p>
-                  </div>
-                  <label class="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      v-model="formData.funding_fee_check"
-                      class="sr-only peer"
-                    />
-                    <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                  </label>
-                </div>
-
-                <div v-if="formData.funding_fee_check" class="space-y-4 pl-4 border-l-2 border-purple-200">
-                  <div>
-                    <label class="block text-sm font-medium text-slate-700 mb-2">
-                      资金费率阈值（%）
-                    </label>
-                    <input
-                      v-model.number="formData.funding_fee_threshold"
-                      type="number"
-                      min="0"
-                      max="1"
-                      step="0.01"
-                      placeholder="0.01"
-                      class="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <p class="mt-1 text-xs text-slate-500">资金费率超过此值时不开仓</p>
-                  </div>
-                </div>
-              </div>
             </div>
           </Card>
 
@@ -2294,19 +2259,6 @@
                   </div>
                 </div>
 
-                <!-- 检查资金费率 -->
-                <div v-if="formData.funding_fee_check" class="border-t border-slate-200 pt-4">
-                  <div class="text-xs font-semibold text-slate-700 mb-3">检查资金费率</div>
-                  <div class="space-y-2">
-                    <div class="flex justify-between text-xs">
-                      <span class="text-slate-500">资金费率阈值</span>
-                      <span class="font-medium text-slate-900">
-                        {{ formData.funding_fee_threshold }}%
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
                 <!-- 持仓管理 -->
                 <div class="border-t border-slate-200 pt-4">
                   <div class="text-xs font-semibold text-slate-700 mb-3">持仓管理</div>
@@ -3396,8 +3348,6 @@ const formData = ref({
   cooldown_period: 0,  // 冷却期（秒）
   pyramiding_enabled: false,  // 是否启用加仓
   pyramiding_max_entries: 3,  // 最大加仓次数
-  pause_on_high_volatility: false,  // 高波动时暂停
-  volatility_threshold: 5.0,  // 波动率阈值（%）
   allow_partial_close: false,  // 允许部分平仓
   smart_exit: false,  // 智能退出
 
@@ -3410,11 +3360,7 @@ const formData = ref({
 
   // 自动反向开仓
   auto_reverse: false,
-  max_position_time: 24,  // 最大持仓时间（小时）
-
-  // 资金费率检查
-  funding_fee_check: false,
-  funding_fee_threshold: 0.01  // 资金费率阈值（%）
+  max_position_time: 24  // 最大持仓时间（小时）
 })
 
 const errors = ref({})
@@ -4982,8 +4928,6 @@ const handleSubmit = async () => {
       cooldown_period: formData.value.cooldown_period,
       pyramiding_enabled: formData.value.pyramiding_enabled,
       pyramiding_max_entries: formData.value.pyramiding_max_entries,
-      pause_on_high_volatility: formData.value.pause_on_high_volatility,
-      volatility_threshold: formData.value.volatility_threshold,
       allow_partial_close: formData.value.allow_partial_close,
       smart_exit: formData.value.smart_exit,
 
@@ -4997,10 +4941,6 @@ const handleSubmit = async () => {
       // 自动反向开仓
       auto_reverse: formData.value.auto_reverse,
       max_position_time: formData.value.max_position_time,
-
-      // 资金费率检查
-      funding_fee_check: formData.value.funding_fee_check,
-      funding_fee_threshold: formData.value.funding_fee_threshold,
 
       // ============ 订单配置对象（新增）============
       order_config: {
@@ -5757,9 +5697,6 @@ onMounted(async () => {
         formData.value.cooldown_period = Number(trendBot.cooldown_period || 0)
         formData.value.pyramiding_enabled = trendBot.pyramiding_enabled || false
         formData.value.pyramiding_max_entries = Number(trendBot.pyramiding_max_entries || 3)
-        formData.value.funding_fee_check = trendBot.funding_fee_check !== undefined ? trendBot.funding_fee_check : false
-        formData.value.pause_on_high_volatility = trendBot.pause_on_high_volatility || false
-        formData.value.volatility_threshold = Number(trendBot.volatility_threshold || 5.0)
         formData.value.allow_partial_close = trendBot.allow_partial_close || false
         formData.value.smart_exit = trendBot.smart_exit || false
 
@@ -5785,7 +5722,6 @@ onMounted(async () => {
 
         formData.value.auto_reverse = trendBot.auto_reverse !== undefined ? trendBot.auto_reverse : false
         formData.value.max_position_time = Number(trendBot.max_position_time || 24)
-        formData.value.funding_fee_threshold = Number(trendBot.funding_fee_threshold || 0.01)
 
 
 

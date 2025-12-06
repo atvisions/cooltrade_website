@@ -137,8 +137,36 @@
     </div>
 
     <!-- 确认对话框 -->
-    <ConfirmDialog :show="showStopConfirm" type="warning" title="停止机器人" message="机器人正在运行中，编辑前需要先停止。是否停止并继续编辑？" confirm-text="停止并编辑" cancel-text="取消" @confirm="confirmStopAndEdit" @close="showStopConfirm = false" />
-    <ConfirmDialog :show="showDeleteConfirm" type="danger" title="删除机器人" message="确定要删除这个机器人吗？此操作不可恢复。" confirm-text="删除" cancel-text="取消" @confirm="confirmDelete" @close="showDeleteConfirm = false" />
+    <ConfirmDialog
+      :show="showStopOnlyConfirm"
+      type="warning"
+      title="停止机器人"
+      :message="hasOpenPositions ? '停止机器人将会自动平掉所有持仓，确定要继续吗？' : '确定要停止这个机器人吗？'"
+      confirm-text="确定停止"
+      cancel-text="取消"
+      @confirm="confirmStop"
+      @close="showStopOnlyConfirm = false"
+    />
+    <ConfirmDialog
+      :show="showStopConfirm"
+      type="warning"
+      title="停止机器人"
+      :message="hasOpenPositions ? '编辑前需要先停止机器人，停止后将自动平掉所有持仓。是否停止并继续编辑？' : '机器人正在运行中，编辑前需要先停止。是否停止并继续编辑？'"
+      confirm-text="停止并编辑"
+      cancel-text="取消"
+      @confirm="confirmStopAndEdit"
+      @close="showStopConfirm = false"
+    />
+    <ConfirmDialog
+      :show="showDeleteConfirm"
+      type="danger"
+      title="删除机器人"
+      message="确定要删除这个机器人吗？此操作不可恢复。"
+      confirm-text="删除"
+      cancel-text="取消"
+      @confirm="confirmDelete"
+      @close="showDeleteConfirm = false"
+    />
   </div>
 </template>
 
@@ -166,9 +194,13 @@ const loadingTrades = ref(false)
 const bot = ref(null)
 const positions = ref([])
 const trades = ref([])
+const showStopOnlyConfirm = ref(false)
 const showStopConfirm = ref(false)
 const showDeleteConfirm = ref(false)
 const activeTab = ref('positions')
+
+// 是否有未平仓持仓
+const hasOpenPositions = computed(() => positions.value.filter(p => p.status === 'open').length > 0)
 
 // Tab 配置
 const tabs = computed(() => [
@@ -224,11 +256,10 @@ const extraItems = computed(() => {
 
   // 止盈：优先从 config 获取
   const tpConfig = tfBot?.take_profit_config
-  let takeProfitDisplay = '-'
-  let takeProfitColor = 'text-gray-400'
+  let takeProfitDisplay = '信号平仓'
+  let takeProfitColor = 'text-blue-500'
   if (tfBot?.take_profit_enabled && tpConfig) {
     if (tpConfig.mode === 'multiple' && tpConfig.targets?.length > 0) {
-      // 多级止盈
       takeProfitDisplay = `${tpConfig.targets.length}级止盈`
       takeProfitColor = 'text-emerald-600'
     } else if (tpConfig.single_value) {
@@ -255,8 +286,11 @@ const extraItems = computed(() => {
     breakevenColor = 'text-blue-600'
   }
 
+  // 判断是否有任何出场机制
+  const hasExitMechanism = stopLoss || (tfBot?.take_profit_enabled && tpConfig) || trailingConfig?.enabled
+
   return [
-    { label: '止损', value: stopLoss ? `${stopLoss}%` : '-', color: stopLoss ? 'text-red-600' : 'text-gray-400' },
+    { label: '止损', value: stopLoss ? `${stopLoss}%` : (hasExitMechanism ? '-' : '信号平仓'), color: stopLoss ? 'text-red-600' : (hasExitMechanism ? 'text-gray-400' : 'text-blue-500') },
     { label: '止盈', value: takeProfitDisplay, color: takeProfitColor },
     { label: '追踪止损', value: trailingDisplay, color: trailingColor },
     { label: '盈亏平衡', value: breakevenDisplay, color: breakevenColor },
@@ -352,14 +386,24 @@ const handleStartBot = async () => {
   }
 }
 
-const handleStopBot = async () => {
+// 点击停止按钮时，显示确认对话框
+const handleStopBot = () => {
+  showStopOnlyConfirm.value = true
+}
+
+// 确认停止
+const confirmStop = async () => {
+  showStopOnlyConfirm.value = false
   actionLoading.value = true
   try {
-    await botAPI.stopBot(bot.value.id)
-    showSuccess('机器人已停止')
+    const result = await botAPI.stopBot(bot.value.id)
+    const message = result.data?.message || '机器人已停止'
+    showSuccess(message)
     await loadBot()
+    await loadPositions()
+    await loadTrades()
   } catch (err) {
-    showError(err.response?.data?.detail || '停止失败')
+    showError(err.response?.data?.error || err.response?.data?.detail || '停止失败')
   } finally {
     actionLoading.value = false
   }
@@ -375,8 +419,17 @@ const handleEditBot = () => {
 
 const confirmStopAndEdit = async () => {
   showStopConfirm.value = false
-  await handleStopBot()
-  router.push(`/bots/edit/${bot.value.id}`)
+  actionLoading.value = true
+  try {
+    const result = await botAPI.stopBot(bot.value.id)
+    const message = result.data?.message || '机器人已停止'
+    showSuccess(message)
+    router.push(`/bots/edit/${bot.value.id}`)
+  } catch (err) {
+    showError(err.response?.data?.error || err.response?.data?.detail || '停止失败')
+  } finally {
+    actionLoading.value = false
+  }
 }
 
 const handleDeleteBot = () => { showDeleteConfirm.value = true }

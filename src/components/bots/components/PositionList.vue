@@ -425,7 +425,7 @@ const actionLoading = ref(null)
 const positions = ref([])
 const bots = ref([])
 const filters = ref({
-  status: '',
+  status: 'open',  // 默认只显示未平仓
   side: '',
   market_type: '',
   bot_id: ''

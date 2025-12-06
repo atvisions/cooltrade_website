@@ -46,8 +46,8 @@
           </div>
           <div>
             <p class="text-gray-500 text-xs mb-0.5">盈亏</p>
-            <p :class="['font-medium', (position.unrealized_pnl || 0) >= 0 ? 'text-emerald-600' : 'text-red-600']">
-              {{ (position.unrealized_pnl || 0) >= 0 ? '+' : '' }}{{ formatCurrency(position.unrealized_pnl) }}
+            <p :class="['font-medium', getUnrealizedProfit(position) >= 0 ? 'text-emerald-600' : 'text-red-600']">
+              {{ getUnrealizedProfit(position) >= 0 ? '+' : '' }}{{ formatCurrency(getUnrealizedProfit(position)) }}
             </p>
           </div>
         </div>
@@ -72,8 +72,8 @@
               <span class="text-gray-900">{{ position.token_symbol_snapshot || position.symbol }}</span>
             </div>
             <div class="flex items-center gap-4">
-              <span :class="['font-medium', (position.realized_pnl || 0) >= 0 ? 'text-emerald-600' : 'text-red-600']">
-                {{ (position.realized_pnl || 0) >= 0 ? '+' : '' }}{{ formatCurrency(position.realized_pnl) }}
+              <span :class="['font-medium', getRealizedProfit(position) >= 0 ? 'text-emerald-600' : 'text-red-600']">
+                {{ getRealizedProfit(position) >= 0 ? '+' : '' }}{{ formatCurrency(getRealizedProfit(position)) }}
               </span>
               <span class="text-gray-400 text-xs">{{ formatDate(position.closed_at) }}</span>
             </div>
@@ -96,6 +96,16 @@ defineEmits(['close'])
 
 const openPositions = computed(() => props.positions.filter(p => p.status === 'open'))
 const closedPositions = computed(() => props.positions.filter(p => p.status !== 'open'))
+
+// 获取未实现盈亏（兼容不同字段名）
+const getUnrealizedProfit = (position) => {
+  return position.unrealized_profit || position.unrealized_pnl || 0
+}
+
+// 获取已实现盈亏（兼容不同字段名）
+const getRealizedProfit = (position) => {
+  return position.realized_profit || position.realized_pnl || 0
+}
 
 const formatPrice = (price) => {
   if (!price && price !== 0) return '--'

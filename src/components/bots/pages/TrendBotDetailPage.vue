@@ -254,11 +254,11 @@ const loadPositions = async () => {
   if (!bot.value?.id) return
   loadingPositions.value = true
   try {
-    // TODO: 实现持仓API后替换
-    // const response = await positionAPI.getPositions({ bot_id: bot.value.id })
-    // positions.value = response.results || response.data || response || []
-    positions.value = []
+    const response = await botAPI.getPositionList({ bot_id: bot.value.id })
+    const data = response.data || response
+    positions.value = Array.isArray(data.results) ? data.results : (Array.isArray(data) ? data : [])
   } catch (error) {
+    console.error('获取持仓失败:', error)
     positions.value = []
   } finally {
     loadingPositions.value = false
@@ -331,15 +331,14 @@ const confirmDelete = async () => {
   }
 }
 
-// eslint-disable-next-line no-unused-vars
-const handleClosePosition = async (_positionId) => {
+const handleClosePosition = async (positionId) => {
   try {
-    // TODO: 实现平仓API
-    // await botAPI.closePosition(_positionId)
-    showSuccess('平仓功能待实现')
+    await botAPI.closePosition(positionId)
+    showSuccess('平仓成功')
     await loadPositions()
+    await loadBot()
   } catch (err) {
-    showError(err.response?.data?.detail || '平仓失败')
+    showError(err.response?.data?.error || err.response?.data?.detail || '平仓失败')
   }
 }
 
